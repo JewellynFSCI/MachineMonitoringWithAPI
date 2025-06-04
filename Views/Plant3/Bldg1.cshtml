@@ -1,0 +1,75 @@
+﻿@{
+	ViewData["Title"] = "P3 Bldg 1";
+}
+
+
+<style>
+	#map {
+		width: 100%;
+		height: 75vh;
+		border: 1px solid #ccc;
+		display: block;
+	}
+</style>
+
+
+<!-- Main content -->
+<section class="content pt-2">
+	<!-- Default box -->
+	<div class="card">
+		<div class="card-header ui-sortable-handle" style="cursor: move;">
+			<h3 class="card-title">
+				<i class="fas fa-map fa-fw"></i>
+				Plant 3 - Bldg 1
+			</h3>
+		</div>
+		<div class="card-body">
+			@* <input asp-for="@ViewBag.AuthorityLevel" hidden /> *@
+			<input id="AuthorityLevel" value="Admin" hidden />
+			<input id="User" value="TEST" hidden />
+			<div id="map" data-image="@Url.Content("~/img/P3.jpg")"></div>
+		</div>
+	</div>
+	<!-- /.card -->
+
+	<!--MODAL-->
+	<div class="modal fade" id="MachineInfoModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLabel">New message</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group">
+							<label for="recipient-name" class="col-form-label">Recipient:</label>
+							<input type="text" class="form-control" id="recipient-name">
+						</div>
+						<div class="form-group">
+							<label for="message-text" class="col-form-label">Message:</label>
+							<textarea class="form-control" id="message-text"></textarea>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="save-marker-btn">Save Marker</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+</section>
+<!-- /.content -->
+@section Scripts {
+	@* <script src="~/js/plant1.js"></script> *@
+
+	<script src="~/js/plotcoordinates.js"></script>
+}
+

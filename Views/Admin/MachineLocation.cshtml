@@ -1,0 +1,117 @@
+﻿@model MachineMonitoring.Models.ViewModel.AdminVM
+@{
+	ViewData["Title"] = "Add Machine Location";
+}
+
+<style>
+	#map {
+		width: 100%;
+		/* height: 95vh; */
+		height: 70vh;
+		border: 1px solid #ccc;
+		display: block;
+	}
+
+	.ol-popup {
+		position: absolute;
+		background-color: white;
+		box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+		padding: 15px;
+		border-radius: 10px;
+		border: 1px solid #cccccc;
+		bottom: 12px;
+		left: -50px;
+		min-width: 450px;
+	}
+
+		.ol-popup:after, .ol-popup:before {
+			top: 100%;
+			border: solid transparent;
+			content: " ";
+			height: 0;
+			width: 0;
+			position: absolute;
+			pointer-events: none;
+		}
+
+		.ol-popup:after {
+			border-top-color: white;
+			border-width: 10px;
+			left: 48px;
+			margin-left: -10px;
+		}
+
+		.ol-popup:before {
+			border-top-color: #cccccc;
+			border-width: 11px;
+			left: 48px;
+			margin-left: -11px;
+		}
+
+	.ol-popup-closer {
+		text-decoration: none;
+		position: absolute;
+		top: 2px;
+		right: 8px;
+		cursor: pointer;
+	}
+
+		.ol-popup-closer i {
+			font-size: 18px;
+			color: dimgray;
+		}
+</style>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12">
+				<div class="card mt-3">
+					<div class="card-header">
+						<h3 class="card-title">
+							<i class="fas fa-map-pin"></i>
+							Machine Location
+						</h3>
+					</div>
+
+					<div class="card-body" style="margin-top:-0.5%">
+						<div class="row">
+							<div class="col-sm-6">
+								<div class="form-inline">
+									<label class=" mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
+									<select id="PlantNoSelect" name="PlantNoSelect" class="form-control w-100">
+										<option disabled selected>--Select Plant No--</option>
+										@foreach (var plant in Model.Plants)
+										{
+											<option value="@plant.PlantNo">@plant.PlantName</option>
+										}
+									</select>
+								</div>
+							</div>
+
+							<div class="col-sm-6">
+								<div class="form-inline">
+									<label class="mr-2">Production Map</label>
+									<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control w-100">
+										<!-- Options are populated in jQuery -->
+									</select>
+
+								</div>
+							</div>
+						</div>
+
+						<div class="mt-4">
+							<div id="map"></div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</section>
+
+@section Scripts {
+	<script src="~/js/plotcoordinates.js"></script>
+}

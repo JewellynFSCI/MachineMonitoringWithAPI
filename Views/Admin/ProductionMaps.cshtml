@@ -1,0 +1,113 @@
+﻿@* @model ProductionMap *@
+
+
+@model MachineMonitoring.Models.ViewModel.AdminVM
+@{
+	ViewData["Title"] = "Production Maps";
+}
+
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12">
+				<div class="card mt-3">
+					<div class="card-header">
+						<h3 class="card-title">
+							<i class="fas fa-map"></i>
+							List of Production Map
+						</h3>
+						<div class="card-tools">
+							<div class="input-group input-group-sm">
+								<button type="button" class="btn btn-secondary" onclick="OpenAddModal()"> <i class="fas fa-solid fa-plus"></i> Add Production Map</button>
+							</div>
+						</div>
+					</div>
+					<div class="card-body" style="margin-top: -1%">
+						<div class="table-responsive" style="height:70vh">
+							<table id="tblData" class="table table-bordered table-hover">
+								<thead>
+									<tr>
+										<th>ID</th>
+										<th>Production Map Name</th>
+										<th>Plant Name</th>
+										<th>ImgName</th>
+										<th></th>
+									</tr>
+								</thead>
+
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<!--Combine Modal for Add and Edit-->
+<!-- Add/Edit Production Map Modal -->
+<div class="modal fade" id="ProdMapModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="prodMapModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<form method="POST" enctype="multipart/form-data">
+				<div class="modal-header">
+					<h5 class="modal-title" id="prodMapModalTitle">Add Production Map</h5>
+					<button type="button"  class="close" onclick="Close()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+					<input type="hidden" id="Operation" name="Operation" />
+
+					<div class="form-group" id="ProdMapIdContainer">
+						<label for="ProductionMapId"> <i class="fas fa-hashtag"></i> Production Map ID</label>
+						<input type="text" class="form-control" id="ProductionMapId" name="ProductionMapId" readonly>
+					</div>
+
+					<div class="form-group">
+						<label for="ProductionMapName"><i class="fas fa-tag"></i> Production Map Name</label>
+						<input type="text" class="form-control" name="ProductionMapName" id="ProductionMapName" placeholder="Enter production map name">
+					</div>
+
+					<div class="form-group">
+						<label for="PlantNo"><i class="fa fa-flag"></i> Plant No</label>
+						<select id="PlantNo" name="PlantNo" class="form-control w-100">
+							<option disabled selected>--Select Plant No--</option>
+							@foreach (var plant in Model.Plants)
+							{
+								<option value="@plant.PlantNo">@plant.PlantName</option>
+							}
+						</select>
+					</div>
+
+					<h6 style="font-weight:700"><i class="fas fa-paperclip"></i> Upload File <i id="fileNote" style="font-size:10px;"></i></h6>
+					<div class="form-group custom-file">
+						<input type="file" class="custom-file-input" name="ImgFile" id="ImgFile" accept=".jpg, .png">
+						<label class="custom-file-label" for="ImgFile">Upload File</label>
+					</div>
+
+					<div class="form-group mt-3" id="ImgContainer">
+						<label for="Img"><i class="fas fa-map"></i> Current Uploaded Map</label>
+						<img class="form-control" alt="No Image Found" style="max-width: auto; height: auto;" />
+						<input type="hidden" id="ImgName" name="ImgName" />
+					</div>
+
+				</div>
+				<div class="modal-footer">
+					<button type="button"  class="btn btn-secondary" onclick="Close()"> Close</button>
+					<button type="button" id="saveButton" class="btn btn-primary" onclick="SetupSaveButton()">Save</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+
+
+
+@section Scripts {
+	<script src="~/js/ProductionMaps.js"></script>
+}
