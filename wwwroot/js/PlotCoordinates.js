@@ -1,8 +1,4 @@
-﻿//let map;              // global map variable
-//let markers = [];     // global markers array
-//let tempCoordinate = null; // temporary coordinate
-
-var productionMaps = [];
+﻿var productionMaps = [];
 var coordinates = [];
 
 $(document).ready(function () {
