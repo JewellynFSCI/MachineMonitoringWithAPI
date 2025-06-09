@@ -29,13 +29,12 @@ namespace MachineMonitoring.Controllers
         public async Task<IActionResult> ProductionMaps()
         {
             var viewModel = new AdminVM
-        {
+            {
                 Plants = await _adminrepo.GetPLantNoList(),
-                
+
             };
             return View(viewModel);
         }
-        #endregion
 
         #region 'GetProductionMaps'
         [HttpGet]
@@ -99,7 +98,7 @@ namespace MachineMonitoring.Controllers
                 {
                     return BadRequest("Failed to insert record.");
                 }
-                   
+
             }
             catch (Exception ex)
             {
@@ -113,22 +112,16 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                // ❗ Get old image filename (you must pass it in the model or retrieve it from DB)
-                string oldImageFileName = model.ImgName;
-                var oldImagePath = Path.Combine(_env.WebRootPath, "img/productionmap", oldImageFileName);
-
-
                 var delete = await _adminrepo.DeleteMapData(model);
                 if (delete)
                 {
-                    System.IO.File.Delete(oldImagePath);
                     return Ok("Operation successfully.");
                 }
                 else
                 {
                     return BadRequest("Failed to delete record.");
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -176,7 +169,7 @@ namespace MachineMonitoring.Controllers
                     var oldImagePath = Path.Combine(_env.WebRootPath, "img/productionmap", oldImageFileName);
 
 
-                    
+
 
                     var success = await _adminrepo.UploadProdMapReplacedImg(model, uniqueFileName);
                     if (success)
@@ -217,13 +210,13 @@ namespace MachineMonitoring.Controllers
             }
 
             catch (Exception ex)
-        {
+            {
                 return StatusCode(500, "Internal server error: " + ex.Message);
-        }
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveMcCoordinates([FromBody]MachineLocation model)
+        public async Task<IActionResult> SaveMcCoordinates([FromBody] MachineLocation model)
         {
             try
             {
@@ -235,6 +228,6 @@ namespace MachineMonitoring.Controllers
                 return StatusCode(500, "Internal server error." + ex.Message);
             }
 
+        }
     }
-}
 }

@@ -64,7 +64,6 @@ function GetImgNamefromDb() {
 
         var GetImgName = productionMaps.find(x => x.productionMapId == SelectedProdMapId);
         if (GetImgName && GetImgName.imgName) {
-            //$('#map').attr('data-image', `/img/productionmap/${GetImgName.imgName}`);
             var ImgName = GetImgName.imgName;
             ShowImage(ImgName);
         } else {
@@ -79,12 +78,10 @@ function GetImgNamefromDb() {
 function ShowImage(ImgName) {
     const imageUrl = 'img/productionmap/' + ImgName;
 
-    // Reset the map container safely
     if (window.map instanceof ol.Map) {
         window.map.setTarget(null);
         window.map = null;
     }
-    $('#map').empty(); // Clear map div contents
 
     $('#map').empty();
 
@@ -92,7 +89,6 @@ function ShowImage(ImgName) {
     img.onload = function () {
         const imageWidth = img.naturalWidth;
         const imageHeight = img.naturalHeight;
-
         const imageExtent = [0, 0, imageWidth, imageHeight];
 
         const imageLayer = new ol.layer.Image({
@@ -105,9 +101,9 @@ function ShowImage(ImgName) {
 
         const view = new ol.View({
             projection: new ol.proj.Projection({
-            code: 'PIXELS',
-            units: 'pixels',
-            extent: imageExtent
+                code: 'PIXELS',
+                units: 'pixels',
+                extent: imageExtent
             }),
             center: [imageWidth / 2, imageHeight / 2],
             zoom: 1,
@@ -119,7 +115,6 @@ function ShowImage(ImgName) {
             layers: [imageLayer],
             view: view
         });
-
         view.fit(imageExtent);
         window.map = map;
 
@@ -175,7 +170,7 @@ function ShowImage(ImgName) {
                 pointSource.addFeature(pointFeature);
                 return;
             }
-   
+
             activeFeature = feature;
             modifyCollection.clear();
             modifyCollection.push(activeFeature);
@@ -215,11 +210,9 @@ function ShowImage(ImgName) {
                 '</div>' +
                 '</form>';
 
-    addMarkerWithPopup(map, tempCoordinate, name, message, markers);
 
             popupOverlay.setPosition(coord);
-});
-//#endregion
+        });
 
         popupElement.addEventListener('click', function (e) {
             if (!activeFeature) return;
@@ -269,7 +262,7 @@ function ShowImage(ImgName) {
                     e.preventDefault();
                     break;
             }
-    });
+        });
 
         modifyInteraction.on('modifyend', function () {
             if (!activeFeature) return;
@@ -277,7 +270,7 @@ function ShowImage(ImgName) {
             document.getElementById('coordX').value = Math.round(coord[0]);
             document.getElementById('coordY').value = Math.round(coord[1]);
             popupOverlay.setPosition(coord);
-    });
+        });
     };
 
     img.src = imageUrl;
@@ -317,8 +310,7 @@ function Save() {
                 icon: 'error',
                 confirmButtonText: 'OK'
             });
-    }
+        }
     });
 }
 //#endregion
-

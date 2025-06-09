@@ -19,14 +19,7 @@ namespace MachineMonitoring.Models
 
         public decimal Y { get; set; }
 
-
-        
-        public string MachineCoordinates { get; set; }
-
         public string User {  get; set; }
-
-
-
 
     }
 }

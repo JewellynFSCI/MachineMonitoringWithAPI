@@ -13,7 +13,7 @@ namespace MachineMonitoring.DataAccess.Repository
         private readonly IConfiguration _configuration;
         private readonly ILogger<AdminRepo> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        
+
         public AdminRepo(IConfiguration configuration, ILogger<AdminRepo> logger, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
@@ -28,7 +28,8 @@ namespace MachineMonitoring.DataAccess.Repository
         {
             try
             {
-                if (model.PlantNo == 0) {
+                if (model.PlantNo == 0)
+                {
                     using (var connection = Connection)
                     {
                         var query = @"  SELECT ProductionMapId, ProductionMapName, ImgName, PlantName, PlantNo 
@@ -45,11 +46,11 @@ namespace MachineMonitoring.DataAccess.Repository
                         var query = @"  SELECT ProductionMapId, ProductionMapName, ImgName, PlantName,PlantNo 
                                     FROM vewprodmaplocation
                                     WHERE PlantNo = @PlantNo AND IsDeleted = 0";
-                        var result = await connection.QueryAsync<ProductionMap>(query, new {model.PlantNo});
+                        var result = await connection.QueryAsync<ProductionMap>(query, new { model.PlantNo });
                         return result.ToList();
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -140,17 +141,17 @@ namespace MachineMonitoring.DataAccess.Repository
                 {
                     if (model.ProductionMapId == 0 || model.ProductionMapId == null)
                     {
-                    var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname";
+                        var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname";
                         var result = await connection.ExecuteScalarAsync<int>(query, new { model.ProductionMapName });
                         return result;
                     }
                     else
                     {
                         var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname AND ProductionMapId != @ProductionMapId";
-                        var result = await connection.ExecuteScalarAsync<int>(query, new { model.ProductionMapName, model.ProductionMapId});
-                    return result;
+                        var result = await connection.ExecuteScalarAsync<int>(query, new { model.ProductionMapName, model.ProductionMapId });
+                        return result;
+                    }
                 }
-            }
             }
             catch (Exception ex)
             {
