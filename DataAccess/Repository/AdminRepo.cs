@@ -140,7 +140,7 @@ namespace MachineMonitoring.DataAccess.Repository
                 {
                     if (model.ProductionMapId == 0 || model.ProductionMapId == null)
                     {
-                        var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname";
+                    var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname";
                         var result = await connection.ExecuteScalarAsync<int>(query, new { model.ProductionMapName });
                         return result;
                     }
@@ -148,9 +148,9 @@ namespace MachineMonitoring.DataAccess.Repository
                     {
                         var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname AND ProductionMapId != @ProductionMapId";
                         var result = await connection.ExecuteScalarAsync<int>(query, new { model.ProductionMapName, model.ProductionMapId});
-                        return result;
-                    }
+                    return result;
                 }
+            }
             }
             catch (Exception ex)
             {

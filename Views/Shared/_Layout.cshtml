@@ -6,13 +6,22 @@
 	<title>@ViewData["Title"] - Machine Monitoring</title>
 
 
+	<!-- Font Awesome -->
 	<link href="~/plugins/fontawesome-free/css/all.min.css" rel="stylesheet" />
+
+	<!-- Theme style -->
 	<link href="~/dist/css/adminlte.min.css" rel="stylesheet" />
+	<!-- overlayScrollbars -->
 	<link href="~/plugins/overlayscrollbars/css/overlayscrollbars.min.css" rel="stylesheet" />
+	<!-- Daterange picker -->
+	<link href="~/plugins/daterangepicker/daterangepicker.css" rel="stylesheet" />
+	<!--SweetAlert-->
+	<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 
 	<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 	<link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
 	<link href="~/plugins/openlayers/ol.css" rel="stylesheet" />
+	
 	<link href="~/css/datatables.min.css" rel="stylesheet" />
 	<link rel="stylesheet" href="~/MachineMonitoring.styles.css" asp-append-version="true" />
 </head>
@@ -105,7 +114,7 @@
 								</p>
 							</a>
 						</li>
-
+						
 					</ul>
 				</nav>
 				<!-- /.sidebar-menu -->
@@ -127,16 +136,20 @@
 			<b>Version</b> 1.0.0
 		</div>
 	</footer>
-
+	
 	<!-- jQuery -->
 	<script src="~/plugins/jquery/jquery.min.js"></script>
+	<!-- jQuery UI 1.11.4 -->
 	<script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+	<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 	<script>
 		$.widget.bridge('uibutton', $.ui.button)
 	</script>
+	<!-- Bootstrap 4 -->
 	<script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 	<script src="~/plugins/select2/js/select2.min.js"></script>
 	<script src="~/plugins/overlayscrollbars/js/jquery.overlayscrollbars.min.js"></script>
+	<!-- AdminLTE App -->
 	<script src="~/dist/js/adminlte.js"></script>
 	
 	<!--OpenLayer JS-->
@@ -144,7 +157,9 @@
 	
 
 	<script src="~/lib/datatables.min.js"></script>
+	<!--SweetAlert-->
 	<script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+	<!-- bs-custom-file-input -->
 	<script src="~/plugins/bs-custom-file-input/bs-custom-file-input.min.js"></script>
 	<script>
 		$(function () {
