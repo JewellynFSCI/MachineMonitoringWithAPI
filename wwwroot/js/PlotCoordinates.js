@@ -74,7 +74,6 @@ function GetImgNamefromDb() {
 }
 //#endregion
 
-
 //#region 'ShowImage and Plot point'
 function ShowImage() {
     const imageUrl = 'img/productionmap/' + ImgName;
@@ -268,7 +267,6 @@ function ShowImage() {
 }
 //#endregion
 
-
 //#region Utility: Build Popup HTML Form
 function buildPopupHTML(coord, name, id) {
     return `
@@ -300,8 +298,6 @@ function buildPopupHTML(coord, name, id) {
             `;
 }
 //#endregion
-
-
 
 //#region 'SaveCoordinatesToDb'
 function SaveToDB() {
