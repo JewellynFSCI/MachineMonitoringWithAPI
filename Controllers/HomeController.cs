@@ -54,23 +54,47 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
+        #region 'Set Session'
         public void SetSession(SystemUser model)
         {
             HttpContext.Session.SetString("EmployeeNo", model.EmployeeNo);
             HttpContext.Session.SetString("EmployeeName", model.EmployeeName);
             HttpContext.Session.SetString("AuthorityLevel", model.AuthorityLevel.ToString());
         }
+        #endregion
 
+        #region 'Logout'
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login", "Home");
         }
+        #endregion
 
-        public IActionResult Dashboard()
+
+        public IActionResult MEDashboard()
         {
             return View();
         }
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

@@ -74,6 +74,7 @@ function GetImgNamefromDb() {
 }
 //#endregion
 
+
 //#region 'ShowImage and Plot point'
 function ShowImage() {
     const imageUrl = '/img/productionmap/' + ImgName;
@@ -158,7 +159,12 @@ function ShowImage() {
                 }
             },
             error: function () {
-                alert('Failed to load coordinates from database.');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to load coordinates from database.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
         });
 
@@ -170,11 +176,13 @@ function ShowImage() {
         modifyInteraction.setActive(false);
         map.addInteraction(modifyInteraction);
 
+        // --- NEW: Temporary feature for newly plotted points ---
+        let tempPointFeature = null;
 
         //Popup DOM Setup
         const popupElement = document.createElement('div');
         popupElement.className = 'ol-popup';
-        popupElement.innerHTML = '<a href="#" class="ol-popup-closer" id="popupCloser"><i class="fas fa-times"></i></a>';
+        // The innerHTML will be set dynamically by buildPopupHTML
         document.body.appendChild(popupElement);
 
 
@@ -193,38 +201,60 @@ function ShowImage() {
         map.on('singleclick', function (evt) {
             const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
 
+            // If there's an unsaved temporary point and a click occurs elsewhere, remove it
+            if (tempPointFeature && feature !== tempPointFeature) {
+                pointSource.removeFeature(tempPointFeature);
+                tempPointFeature = null;
+            }
+
             if (!feature) {
                 popupOverlay.setPosition(undefined);
                 activeFeature = null;
-                modifyInteraction.setActive(true);  //allow it to be movable
                 modifyCollection.clear();
+                modifyInteraction.setActive(false);
 
                 const coordinate = evt.coordinate;
-                const pointFeature = new ol.Feature(new ol.geom.Point(coordinate));
-                pointFeature.set('name', 'Point ' + (pointSource.getFeatures().length + 1));
-                pointSource.addFeature(pointFeature);
+                const newPointFeature = new ol.Feature(new ol.geom.Point(coordinate));
 
+                // Assign to tempPointFeature
+                tempPointFeature = newPointFeature;
+                pointSource.addFeature(tempPointFeature); // Temporarily add to source for display and modification
 
-                activeFeature = pointFeature;
+                activeFeature = tempPointFeature;
                 modifyCollection.push(activeFeature);
+                modifyInteraction.setActive(true); // Allow movement of the new point
+
+                // Build popup for new point
                 popupElement.innerHTML = buildPopupHTML(coordinate);
                 popupOverlay.setPosition(coordinate);
+
+                // Populate coordinates in the popup form immediately
+                document.getElementById('X').value = Math.round(coordinate[0]);
+                document.getElementById('Y').value = Math.round(coordinate[1]);
+
                 return;
             }
 
+            // Existing feature clicked
             activeFeature = feature;
+            tempPointFeature = null; // Clear tempPointFeature if an existing one is clicked
             modifyCollection.clear();
             modifyCollection.push(activeFeature);
-            modifyInteraction.setActive(true);  //allow it to be movable
+            modifyInteraction.setActive(true); //allow it to be movable
 
             const coord = feature.getGeometry().getCoordinates();
             const name = feature.get('name') || '';
             const id = feature.get('machineLocationId') || '';
-            popupElement.innerHTML = buildPopupHTML(coord, name,id);
+            popupElement.innerHTML = buildPopupHTML(coord, name, id);
             popupOverlay.setPosition(coord);
+
+            // Populate coordinates in the popup form for existing point
+            document.getElementById('X').value = Math.round(coord[0]);
+            document.getElementById('Y').value = Math.round(coord[1]);
+            document.getElementById('MachineCode').value = name; // Set machine code for existing
         });
 
-        //Popup Click Events (MOVE, DELETE)
+        //Popup Click Events (SAVE, UPDATE, DELETE, CLOSER)
         popupElement.addEventListener('click', function (e) {
             if (!activeFeature) return;
 
@@ -233,6 +263,10 @@ function ShowImage() {
 
             // Check if clicked element is the closer or inside it
             if (closerEl && (target === closerEl || closerEl.contains(target))) {
+                if (activeFeature === tempPointFeature) {
+                    pointSource.removeFeature(tempPointFeature); // Remove the unsaved point
+                    tempPointFeature = null;
+                }
                 popupOverlay.setPosition(undefined);
                 activeFeature = null;
                 modifyCollection.clear();
@@ -241,14 +275,25 @@ function ShowImage() {
                 return;
             }
 
-            switch (e.target.id) {
-                case 'popupCloser':
-                case 'popupCloserIcon':
-                    popupOverlay.setPosition(undefined);
-                    activeFeature = null;
-                    modifyCollection.clear();
-                    modifyInteraction.setActive(false);
-                    e.preventDefault();
+            switch (target.id) {
+                case 'btnSave':
+                    SaveToDB();
+                    break;
+                case 'btnDelete':
+                    // Need to get the ID from the form for deletion
+                    const machineLocationIdToDelete = document.getElementById('MachineLocationId').value;
+                    if (machineLocationIdToDelete) {
+                        Delete(machineLocationIdToDelete);
+                    } else {
+                        if (activeFeature === tempPointFeature) {
+                            pointSource.removeFeature(tempPointFeature);
+                            tempPointFeature = null;
+                            popupOverlay.setPosition(undefined);
+                            activeFeature = null;
+                            modifyCollection.clear();
+                            modifyInteraction.setActive(false);
+                        }
+                    }
                     break;
             }
         });
@@ -257,6 +302,7 @@ function ShowImage() {
         modifyInteraction.on('modifyend', function () {
             if (!activeFeature) return;
             const coord = activeFeature.getGeometry().getCoordinates();
+            // Update the coordinates in the popup form inputs
             document.getElementById('X').value = Math.round(coord[0]);
             document.getElementById('Y').value = Math.round(coord[1]);
             popupOverlay.setPosition(coord);
@@ -268,34 +314,37 @@ function ShowImage() {
 //#endregion
 
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML(coord, name, id) {
+function buildPopupHTML(coord, name = '', id = '') { // Added default values for name and id
     return `
-           <a href="#" class="ol-popup-closer" id="popupCloser"><i class="fas fa-times"></i></a>
-                <form method="POST" id="popupForm">
-                    <input type="hidden" id="MachineLocationId" name="MachineLocationId" value="${id || ''}"/>
-                    <div class="row">
-                        <div class="form-group col-sm-6">
-                            <label for="X"> <i class="fas fa-arrows-alt-h"></i> X Coordinate</label>
-                            <input type="text" class="form-control" id="X" name="X" value="${Math.round(coord[0])}" readonly>
-                        </div>
-                        <div class="form-group col-sm-6">
-                            <label for="Y"> <i class="fas fa-arrows-alt-v"></i> Y Coordinate</label>
-                            <input type="text" class="form-control" id="Y" name="Y" value="${Math.round(coord[1])}" readonly>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="MachineCode">Machine Code:</label><br/>
-                        <input type="text" class="form-control w-100" id="MachineCode" name="MachineCode" placeholder="Enter Machine Code. . ." value="${name || ''}" />
-                    </div>
-                    <div class="row mt-10">
-                        <div class="form-group">
-                             
-                            <button type="button" class="btn btn-danger" id="btnDelete" onclick="Delete(${id})"> <i class="fas fa-trash"></i> DELETE</button>
-                            <button type="button" class="btn btn-success" id="btnSave" onclick="SaveToDB()"> <i class="fas fa-save"></i> SAVE</button> 
-                        </div>
-                    </div>
-                </form>
-            `;
+    <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
+        <form method="POST" id="popupForm">
+            <input type="hidden" id="MachineLocationId" name="MachineLocationId" value="${id || ''}" />
+            <div class="row">
+                <div class="form-group col-sm-6">
+                    <label for="X"> <i class="fas fa-arrows-alt-h"></i> X Coordinate</label>
+                    <input type="text" class="form-control" id="X" name="X" value="${Math.round(coord[0])}" readonly>
+                </div>
+                <div class="form-group col-sm-6">
+                    <label for="Y"> <i class="fas fa-arrows-alt-v"></i> Y Coordinate</label>
+                    <input type="text" class="form-control" id="Y" name="Y" value="${Math.round(coord[1])}" readonly>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="MachineCode">Machine Code:</label><br />
+                <input type="text" class="form-control w-100" id="MachineCode" name="MachineCode" placeholder="Enter Machine Code. . ." value="${name || ''}" />
+            </div>
+            <div class="row mt-10">
+                <div class="form-group">
+                    ${id ? // If ID exists, it's an existing point, show delete and update (save)
+                        `<button type="button" class="btn btn-danger" id="btnDelete"> <i class="fas fa-trash"></i> DELETE</button>
+                        <button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> UPDATE</button>`
+                        : // If no ID, it's a new point, show only save
+                        `<button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> SAVE</button>`
+                    }
+                </div>
+            </div>
+        </form>
+`;
 }
 //#endregion
 
@@ -306,7 +355,6 @@ function SaveToDB() {
 
     var PlantNo = $('#PlantNoSelect').val();
     var ProductionMapId = $('#ProductionMapIdSelect').val();
-
 
     formData.append('PlantNo', PlantNo);
     formData.append('ProductionMapId', ProductionMapId);
@@ -324,7 +372,7 @@ function SaveToDB() {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                ShowImage();
+                ShowImage(); 
             });
         },
         error: function (xhr) {
@@ -333,8 +381,6 @@ function SaveToDB() {
                 text: xhr.responseText,
                 icon: 'error',
                 confirmButtonText: 'OK'
-            }).then(() => {
-                ShowImage();
             });
         }
     });
@@ -364,7 +410,7 @@ function Delete(id) {
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        ShowImage();
+                        ShowImage(); // Re-render the map after deletion
                     });
                 },
                 error: function (xhr, status, error) {
