@@ -197,13 +197,14 @@ function ShowImage() {
             if (!feature) {
                 popupOverlay.setPosition(undefined);
                 activeFeature = null;
-                modifyInteraction.setActive(false);
+                modifyInteraction.setActive(true);
                 modifyCollection.clear();
 
                 const coordinate = evt.coordinate;
                 const pointFeature = new ol.Feature(new ol.geom.Point(coordinate));
                 pointFeature.set('name', 'Point ' + (pointSource.getFeatures().length + 1));
                 pointSource.addFeature(pointFeature);
+
 
                 activeFeature = pointFeature;
                 modifyCollection.push(activeFeature);
@@ -215,7 +216,7 @@ function ShowImage() {
             activeFeature = feature;
             modifyCollection.clear();
             modifyCollection.push(activeFeature);
-            modifyInteraction.setActive(false);
+            modifyInteraction.setActive(true);
 
             const coord = feature.getGeometry().getCoordinates();
             const name = feature.get('name') || '';
@@ -242,21 +243,6 @@ function ShowImage() {
             }
 
             switch (e.target.id) {
-                case 'btnMove':
-                    modifyInteraction.setActive(true);
-                    break;
-                //case 'btnEdit':
-                //    document.getElementById('MachineCode').removeAttribute('readonly');
-                //    break;
-                //case 'btnDelete':
-                //    if (confirm('Are you sure?')) {
-                //        pointSource.removeFeature(activeFeature);
-                //        popupOverlay.setPosition(undefined);
-                //        activeFeature = null;
-                //        modifyCollection.clear();
-                //        modifyInteraction.setActive(false);
-                //    }
-                //    break;
                 case 'popupCloser':
                 case 'popupCloserIcon':
                     popupOverlay.setPosition(undefined);
@@ -284,7 +270,7 @@ function ShowImage() {
 
 
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML(coord, name,id) {
+function buildPopupHTML(coord, name, id) {
     return `
            <a href="#" class="ol-popup-closer" id="popupCloser"><i class="fas fa-times"></i></a>
                 <form method="POST" id="popupForm">
@@ -305,7 +291,7 @@ function buildPopupHTML(coord, name,id) {
                     </div>
                     <div class="row mt-10">
                         <div class="form-group">
-                            <button type="button" class="btn btn-primary" id="btnMove"> <i class="fas fa-arrows-alt"></i> MOVE</button>       
+                             
                             <button type="button" class="btn btn-danger" id="btnDelete" onclick="Delete(${id})"> <i class="fas fa-trash"></i> DELETE</button>
                             <button type="button" class="btn btn-success" id="btnSave" onclick="SaveToDB()"> <i class="fas fa-save"></i> SAVE</button> 
                         </div>
