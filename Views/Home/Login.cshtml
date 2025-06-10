@@ -1,0 +1,77 @@
+﻿@{
+	Layout = null;
+}
+@model MachineMonitoring.Models.ViewModel.AdminVM
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Machine Monitoring | Login</title>
+	
+	<link href="~/plugins/fontawesome-free/css/all.min.css" rel="stylesheet" />
+	<link href="~/dist/css/adminlte.min.css" rel="stylesheet" />
+	<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+
+</head>
+<body class="hold-transition login-page">
+	<div class="login-box">
+		<div class="card card-outline">
+			<div class="card-header text-center">
+				<img class="animation__shake" src="~/img/icon3.png" alt="MachineLocation" height="100" width="100">
+				<h2>Machine Monitoring</h2>
+			</div>
+			<div class="card-body">
+				<p class="login-box-msg">Sign in to start your session</p>
+
+				<form id="LoginForm" method="post">
+					<div class="input-group mb-3">
+						<input type="text" class="form-control" id="EmployeeNo" name="EmployeeNo" placeholder="Employee Number">
+						<div class="input-group-append">
+							<div class="input-group-text">
+								<span class="fas fa-user"></span>
+							</div>
+						</div>
+					</div>
+					<div class="input-group mb-3">
+						<input type="password" class="form-control" id="Password" name="Password" placeholder="Password">
+						<div class="input-group-append">
+							<div class="input-group-text">
+								<span class="fas fa-lock"></span>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="w-100 mb-2">
+							<button type="button" class="btn btn-primary btn-block" onclick="Submit()">Sign In<i class="fas fa-sign-in-alt ml-2"></i></button>
+						</div>
+					</div>
+				</form>
+
+				<div class="text-center">
+					<p class="mb-1">
+						<a href="">Forgot password</a>
+					</p>
+					<p class="mb-0">
+						<a href="" class="text-center">Register</a>
+					</p>
+				</div>
+				
+
+			</div>
+
+		</div>
+
+	</div>
+
+
+
+
+	<script src="~/plugins/jquery/jquery.min.js"></script>
+	<script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<script src="~/dist/js/adminlte.js"></script>
+	<script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+	<script src="~/js/home.js"></script>
+</body>
+</html>

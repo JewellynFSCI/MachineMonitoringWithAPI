@@ -12,7 +12,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<AdminRepo>();
+builder.Services.AddScoped<HomeRepo>();
 builder.Services.AddScoped<AdminVM>();
+builder.Services.AddSession();
 
 
 var app = builder.Build();
@@ -34,6 +36,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Admin}/{action=MachineLocation}/{id?}");
+    pattern: "{controller=Home}/{action=Login}/{id?}");
 
 app.Run();

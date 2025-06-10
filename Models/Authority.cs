@@ -8,11 +8,11 @@ namespace MachineMonitoring.Models
         public int AuthorityLevel { get; set; }
 
        
-        public string AuthorityName { get; set; }
+        public string? AuthorityName { get; set; }
 
        
         public string? AuthorityDescription { get; set; }
-        public string User { get; set; }
+        public string? User { get; set; }
 
 
     }

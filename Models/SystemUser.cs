@@ -16,7 +16,7 @@ namespace MachineMonitoring.Models
         public string Password { get; set; }
 
         
-        public string AccountStatus { get; set; }
+        public bool IsActive { get; set; }
 
         
         public int AuthorityLevel { get; set; }
@@ -25,6 +25,6 @@ namespace MachineMonitoring.Models
         public int PlantNo { get; set; }
 
 
-        public string User { get; set; }
+        public string? User { get; set; }
     }
 }

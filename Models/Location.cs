@@ -13,7 +13,7 @@ namespace MachineMonitoring.Models
 
         public int PlantNo { get; set; }
 
-        public string User { get; set; }
+        public string? User { get; set; }
 
     }
 }

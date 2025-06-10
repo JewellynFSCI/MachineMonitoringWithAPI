@@ -76,7 +76,7 @@ function GetImgNamefromDb() {
 
 //#region 'ShowImage and Plot point'
 function ShowImage() {
-    const imageUrl = 'img/productionmap/' + ImgName;
+    const imageUrl = '/img/productionmap/' + ImgName;
 
     //Check map
     if (window.map instanceof ol.Map) {

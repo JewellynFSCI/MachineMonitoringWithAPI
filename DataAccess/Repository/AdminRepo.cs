@@ -94,7 +94,7 @@ namespace MachineMonitoring.DataAccess.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving Plant Nos list");
+                _logger.LogError(ex, "Error retrieving Machines");
                 return new List<Machine>();
             }
         }
