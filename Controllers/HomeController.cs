@@ -2,8 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MachineMonitoring.Models;
 using MachineMonitoring.DataAccess.Repository;
-using System.Data;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 
 namespace MachineMonitoring.Controllers
 {
@@ -44,15 +43,29 @@ namespace MachineMonitoring.Controllers
             } 
             else if (user.AuthorityLevel == 1)  //ADMIN
             {
+                SetSession(user);
                 return Json(new { success = true, redirectUrl = Url.Action("ProductionMaps", "Admin") });
             }
             else
             {
-                return Json(new { success = true, redirectUrl = Url.Action("Privacy", "Home") });
+                SetSession(user);
+                return Json(new { success = true, redirectUrl = Url.Action("Dashboard", "Home") });
             }     
         }
         #endregion
 
+        public void SetSession(SystemUser model)
+        {
+            HttpContext.Session.SetString("EmployeeNo", model.EmployeeNo);
+            HttpContext.Session.SetString("EmployeeName", model.EmployeeName);
+            HttpContext.Session.SetString("AuthorityLevel", model.AuthorityLevel.ToString());
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login", "Home");
+        }
 
         public IActionResult Dashboard()
         {
