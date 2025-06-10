@@ -197,7 +197,7 @@ function ShowImage() {
             if (!feature) {
                 popupOverlay.setPosition(undefined);
                 activeFeature = null;
-                modifyInteraction.setActive(true);
+                modifyInteraction.setActive(true);  //allow it to be movable
                 modifyCollection.clear();
 
                 const coordinate = evt.coordinate;
@@ -216,7 +216,7 @@ function ShowImage() {
             activeFeature = feature;
             modifyCollection.clear();
             modifyCollection.push(activeFeature);
-            modifyInteraction.setActive(true);
+            modifyInteraction.setActive(true);  //allow it to be movable
 
             const coord = feature.getGeometry().getCoordinates();
             const name = feature.get('name') || '';
