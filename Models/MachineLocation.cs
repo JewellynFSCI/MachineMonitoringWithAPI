@@ -7,7 +7,7 @@ namespace MachineMonitoring.Models
     public class MachineLocation
     {
         
-        public int MachineLocationId { get; set; }
+        public int? MachineLocationId { get; set; }
 
         public string MachineCode { get; set; }
 
@@ -15,11 +15,11 @@ namespace MachineMonitoring.Models
 
         public int ProductionMapId { get; set; }
 
-        public decimal X {  get; set; }
+        public int X {  get; set; }
 
-        public decimal Y { get; set; }
+        public int Y { get; set; }
 
-        public string User {  get; set; }
+        public string? User {  get; set; }
 
     }
 }

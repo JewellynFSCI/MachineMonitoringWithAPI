@@ -215,11 +215,19 @@ namespace MachineMonitoring.Controllers
             }
         }
 
+        #region 'SaveMCCoordinates'
         [HttpPost]
-        public async Task<IActionResult> SaveMcCoordinates([FromBody] MachineLocation model)
+        public async Task<IActionResult> SaveMcCoordinates(MachineLocation model)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    return BadRequest("Model validation failed: " + errors );
+                }
+
+
                 var saved = await _adminrepo.SaveMcCoordinatesRepo(model);
                 return Ok("Saved successfully.");
             }
@@ -227,7 +235,40 @@ namespace MachineMonitoring.Controllers
             {
                 return StatusCode(500, "Internal server error." + ex.Message);
             }
-
         }
+        #endregion
+
+        #region 'GetMCLocation'
+        [HttpGet]
+        public async Task<IActionResult> GetMCLocation(MachineLocation? model)
+        {
+            var mclist = await _adminrepo.GetMCLocationRepo(model);
+            return Json(new { mclist });
+        }
+        #endregion
+
+        #region 'DeleteMCLocation'
+        public async Task<IActionResult> DeleteMCLocation(MachineLocation model)
+        {
+            try
+            {
+                var delete = await _adminrepo.DeleteMCLocationRepo(model);
+                if (delete)
+                {
+                    return Ok("Operation successfully.");
+                }
+                else
+                {
+                    return BadRequest("Failed to delete record.");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        #endregion
+
     }
 }

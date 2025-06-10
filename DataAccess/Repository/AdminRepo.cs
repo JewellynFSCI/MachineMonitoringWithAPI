@@ -246,26 +246,54 @@ namespace MachineMonitoring.DataAccess.Repository
         {
             try
             {
-                using (var connection = Connection)
+                if (model.MachineLocationId == 0 || model.MachineLocationId == null)
                 {
-                    var query = @"  INSERT INTO machinelocations 
-                                    (MachineCode, PlantNo, ProductionMapId, X, Y, CreatedBy) 
-                                    VALUES (@MachineCode, @PlantNo, @ProductionMapId, X, Y, @CreatedBy)";
-
-                    var parameters = new
+                    using (var connection = Connection)
                     {
-                        MachineCode = model.MachineCode,
-                        PlantNo = model.PlantNo,
-                        ProductionMapId = model.ProductionMapId,
-                        X = model.X,
-                        Y = model.Y,
-                        CreatedBy = "System"
-                    };
+                        var query = @"  INSERT INTO machinelocations 
+                                    (MachineCode, PlantNo, ProductionMapId, X, Y, CreatedBy) 
+                                    VALUES (@MachineCode, @PlantNo, @ProductionMapId, @X, @Y, @CreatedBy)";
 
-                    var result = await connection.ExecuteAsync(query, parameters);
+                        var parameters = new
+                        {
+                            MachineCode = model.MachineCode,
+                            PlantNo = model.PlantNo,
+                            ProductionMapId = model.ProductionMapId,
+                            X = model.X,
+                            Y = model.Y,
+                            CreatedBy = "System"
+                        };
 
-                    return result > 0;
+                        var result = await connection.ExecuteAsync(query, parameters);
+
+                        return result > 0;
+                    }
                 }
+                else
+                {
+                    using (var connection = Connection)
+                    {
+
+                        var queryupdate = @"UPDATE machinelocations SET
+                                                MachineCode = @MachineCode,
+                                                X = @X, Y = @Y
+                                            WHERE MachineLocationId = @MachineLocationId";
+                        var parameters = new
+                        {
+                            MachineLocationId = model.MachineLocationId,
+                            MachineCode = model.MachineCode,
+                            X = model.X,
+                            Y = model.Y,
+                            CreatedBy = "System Update"
+                        };
+
+                        var result = await connection.ExecuteAsync(queryupdate, parameters);
+
+                        return result > 0;
+                    }
+                }
+
+                
             }
             catch (Exception ex)
             {
@@ -275,5 +303,46 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
+        #region 'GetMCLocationRepo'
+        public async Task<List<MachineLocation>> GetMCLocationRepo(MachineLocation? model)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = @"  SELECT MachineLocationId, MachineCode, PlantNo, ProductionMapId, X, Y
+                                        FROM machinelocations
+                                        WHERE PlantNo = @PlantNo and ProductionMapId = @ProductionMapId";
+                    var result = await connection.QueryAsync<MachineLocation>(query, new { model.PlantNo, model.ProductionMapId });
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving ProductionMap list");
+                return new List<MachineLocation>();
+            }
+        }
+        #endregion
+
+        #region 'DeleteMCLocationRepo'
+        public async Task<bool> DeleteMCLocationRepo(MachineLocation model)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "DELETE FROM MachineLocations WHERE MachineLocationId = @MachineLocationId";
+                    var deleteExec = await connection.ExecuteAsync(query, new { model.MachineLocationId });
+                    return deleteExec > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting ProductionMap");
+                throw;
+            }
+        }
+        #endregion
     }
 }
