@@ -53,7 +53,7 @@
 		<!-- Main Sidebar Container -->
 		<aside class="main-sidebar sidebar-dark-primary elevation-4">
 			<!-- Brand Logo -->
-			<a asp-controller="Home" asp-action="Dashboard" class="brand-link">
+			<a asp-controller="Home" asp-action="MEDashboard" class="brand-link">
 				<img src="@Url.Content("~/img/icon3.png")" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
 				<span class="brand-text font-weight-light">Machine Monitoring</span>
 			</a>
@@ -66,7 +66,8 @@
 						<img src="@Url.Content("~/dist/img/user2-160x160.jpg")" class="img-circle elevation-2" alt="User Image">
 					</div>
 					<div class="info">
-						<a href="#" class="d-block">@Context.Session.GetString("EmployeeName")</a>
+						<a href="#" class="d-block">@Context.Session.GetString("EmployeeName") <br /> 
+							<i style="font-size: 13px;"> @Context.Session.GetString("AuthorityName") </i> </a>
 					</div>
 				</div>
 
@@ -86,7 +87,7 @@
 						@{
 							var authlevel = Context.Session.GetString("AuthorityLevel");
 
-							if(authlevel == "1")
+							if(authlevel == "1" || authlevel == "3")
 							{
 								<li class="nav-header">Authorized Employee</li>
 								<li class="nav-item">

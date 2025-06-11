@@ -21,9 +21,13 @@ namespace MachineMonitoring.Models
         
         public int AuthorityLevel { get; set; }
 
-        
+        [ValidateNever]
+        public string AuthorityName { get; set; }
+
         public int PlantNo { get; set; }
 
+        [ValidateNever]
+        public string? PlantName { get; set; }
 
         public string? User { get; set; }
     }

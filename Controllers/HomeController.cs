@@ -41,15 +41,20 @@ namespace MachineMonitoring.Controllers
             {
                 return Json(new { success = false, message = "Employee Number is not active user for this system." });
             } 
-            else if (user.AuthorityLevel == 1)  //ADMIN
+            else if (user.AuthorityLevel == 1)  //SYSTEM ADMIN
             {
                 SetSession(user);
                 return Json(new { success = true, redirectUrl = Url.Action("ProductionMaps", "Admin") });
             }
+            else if (user.AuthorityLevel == 3)  //ADMIN (SUPERVISOR)
+            {
+                SetSession(user);
+                return Json(new { success = true, redirectUrl = Url.Action("MachineLocation", "Admin") });
+            }
             else
             {
                 SetSession(user);
-                return Json(new { success = true, redirectUrl = Url.Action("Dashboard", "Home") });
+                return Json(new { success = true, redirectUrl = Url.Action("MEDashboard", "Home") });
             }     
         }
         #endregion
@@ -60,6 +65,7 @@ namespace MachineMonitoring.Controllers
             HttpContext.Session.SetString("EmployeeNo", model.EmployeeNo);
             HttpContext.Session.SetString("EmployeeName", model.EmployeeName);
             HttpContext.Session.SetString("AuthorityLevel", model.AuthorityLevel.ToString());
+            HttpContext.Session.SetString("AuthorityName", model.AuthorityName);
         }
         #endregion
 

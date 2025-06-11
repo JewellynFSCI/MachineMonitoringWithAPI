@@ -26,7 +26,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "Select * FROM systemusers where EmployeeNo = @EmployeeNo and Password = @Password";
+                    var query = "Select * FROM vewsystemuser where EmployeeNo = @EmployeeNo and Password = @Password";
                     
                     var check = await connection.QueryAsync<SystemUser>(query, new { model.EmployeeNo, model.Password});
                     return check.ToList();
