@@ -16,14 +16,16 @@ namespace MachineMonitoring.Controllers
         private readonly AdminRepo _adminrepo;
         private readonly IWebHostEnvironment _env;
         private readonly AdminVM _adminvm;
+        private readonly HomeRepo _homerepo;
 
 
-        public AdminController(ILogger<AdminController> logger, AdminRepo adminrepo, IWebHostEnvironment env, AdminVM adminvm)
+        public AdminController(ILogger<AdminController> logger, AdminRepo adminrepo, IWebHostEnvironment env, AdminVM adminvm, HomeRepo homerepo)
         {
             _logger = logger;
             _adminrepo = adminrepo;
             _env = env;
             _adminvm = adminvm;
+            _homerepo = homerepo;
         }
 
         public async Task<IActionResult> ProductionMaps()
@@ -269,6 +271,25 @@ namespace MachineMonitoring.Controllers
             }
         }
         #endregion
+
+        public async Task<IActionResult> UserMangement()
+        {
+            try
+            {
+                var viewModel = new AdminVM
+                {
+                    SystemUsers = await _homerepo.GetUserRepo()
+                };
+
+                return View(viewModel);
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+
 
     }
 }

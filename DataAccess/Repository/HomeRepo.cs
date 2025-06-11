@@ -20,15 +20,15 @@ namespace MachineMonitoring.DataAccess.Repository
         private IDbConnection Connection => new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
 
         #region 'LoginRepo'
-        public async Task<List<SystemUser>> LoginRepo(SystemUser model)
+        public async Task<List<SystemUser>> GetUserRepo()
         {
             try
             {
                 using (var connection = Connection)
                 {
-                    var query = "Select * FROM vewsystemuser where EmployeeNo = @EmployeeNo and Password = @Password";
+                    var query = "Select * FROM vewsystemuser";
                     
-                    var check = await connection.QueryAsync<SystemUser>(query, new { model.EmployeeNo, model.Password});
+                    var check = await connection.QueryAsync<SystemUser>(query);
                     return check.ToList();
                 }
             }

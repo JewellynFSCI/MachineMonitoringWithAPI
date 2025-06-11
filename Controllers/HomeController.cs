@@ -27,33 +27,36 @@ namespace MachineMonitoring.Controllers
 
 
         #region 'Login - POST'
-        [HttpPost]
-        public async Task<IActionResult> LoginUser(SystemUser model)
+        public async Task<ActionResult<SystemUser>> LoginUser(SystemUser model)
         {
-            var CheckCredential = await _homerepo.LoginRepo(model);
-            var user =CheckCredential.FirstOrDefault();
+            IEnumerable<SystemUser> AllEmployee = await _homerepo.GetUserRepo();
+
+            SystemUser? foundEmployee = AllEmployee.SingleOrDefault(e => e.EmployeeNo == model.EmployeeNo);
+
+
+            //var user =CheckCredential.FirstOrDefault();
             
-            if(user == null)
+            if(foundEmployee == null)
             {
                 return Json(new { success = false, message = "Empno or password is incorrect!" });
             }
-            else if (user.IsActive == false)
+            else if (foundEmployee.IsActive == false)
             {
                 return Json(new { success = false, message = "Employee Number is not active user for this system." });
             } 
-            else if (user.AuthorityLevel == 1)  //SYSTEM ADMIN
+            else if (foundEmployee.AuthorityLevel == 1)  //SYSTEM ADMIN
             {
-                SetSession(user);
+                SetSession(foundEmployee);
                 return Json(new { success = true, redirectUrl = Url.Action("ProductionMaps", "Admin") });
             }
-            else if (user.AuthorityLevel == 3)  //ADMIN (SUPERVISOR)
+            else if (foundEmployee.AuthorityLevel == 3)  //ADMIN (SUPERVISOR)
             {
-                SetSession(user);
+                SetSession(foundEmployee);
                 return Json(new { success = true, redirectUrl = Url.Action("MachineLocation", "Admin") });
             }
             else
             {
-                SetSession(user);
+                SetSession(foundEmployee);
                 return Json(new { success = true, redirectUrl = Url.Action("MEDashboard", "Home") });
             }     
         }
