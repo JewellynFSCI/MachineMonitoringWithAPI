@@ -292,8 +292,6 @@ namespace MachineMonitoring.DataAccess.Repository
                         return result > 0;
                     }
                 }
-
-                
             }
             catch (Exception ex)
             {
@@ -344,5 +342,112 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
         #endregion
+
+        #region 'DeleteUserRepo'
+        public async Task<bool> DeleteUserRepo(SystemUser model)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "DELETE FROM systemusers WHERE EmployeeNo = @EmployeeNo";
+                    var deleteExec = await connection.ExecuteAsync(query, new { model.EmployeeNo });
+                    return deleteExec > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting in database");
+                throw;
+            }
+        }
+        #endregion
+
+        #region 'GetAuthorityListRepo'
+        public async Task<List<Authority>> GetAuthorityListRepo()
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "SELECT AuthorityLevel, AuthorityName FROM authority";
+                    var result = await connection.QueryAsync<Authority>(query);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving Machines");
+                return new List<Authority>();
+            }
+        }
+        #endregion
+
+
+        #region 'SaveUserRepo'
+        public async Task<bool> SaveUserRepo(SystemUser model)
+        {
+            try
+            {
+                if (model.Operation == "Add")
+                {
+                    using (var connection = Connection)
+                    {
+                        var query = @"  INSERT INTO systemusers 
+                                    (EmployeeNo, EmployeeName, Password, IsActive, AuthorityLevel, PlantNo, CreatedBy ) 
+                                    VALUES (@EmployeeNo, @EmployeeName, @Password, @IsActive, @AuthorityLevel, @PlantNo, @CreatedBy)";
+
+                        var parameters = new
+                        {
+                            EmployeeNo = model.EmployeeNo,
+                            EmployeeName = model.EmployeeName,
+                            Password = model.EmployeeNo,
+                            IsActive = model.IsActive,
+                            AuthorityLevel = model.AuthorityLevel,
+                            PlantNo = model.PlantNo,
+                            CreatedBy = model.CreatedBy
+                        };
+
+                        var result = await connection.ExecuteAsync(query, parameters);
+
+                        return result > 0;
+                    }
+                }
+                else
+                {
+                    using (var connection = Connection)
+                    {
+
+                        var queryupdate = @"UPDATE systemusers SET
+                                                EmployeeName = @EmployeeName,
+                                                IsActive = @IsActive,
+                                                AuthorityLevel = @AuthorityLevel,
+                                                PlantNo = @PlantNo,
+                                                UpdatedBy = @UpdatedBy
+                                            WHERE EmployeeNo = @EmployeeNo";
+                        var parameters = new
+                        {
+                            EmployeeNo = model.EmployeeNo,
+                            EmployeeName = model.EmployeeName,
+                            IsActive = model.IsActive,
+                            AuthorityLevel = model.AuthorityLevel,
+                            PlantNo = model.PlantNo,
+                            UpdatedBy = model.CreatedBy
+                        };
+
+                        var result = await connection.ExecuteAsync(queryupdate, parameters);
+
+                        return result > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving to database.");
+                throw; // Let the controller handle the exception
+            }
+        }
+        #endregion
+
     }
 }

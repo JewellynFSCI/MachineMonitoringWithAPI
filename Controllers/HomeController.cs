@@ -65,7 +65,7 @@ namespace MachineMonitoring.Controllers
         #region 'Set Session'
         public void SetSession(SystemUser model)
         {
-            HttpContext.Session.SetString("EmployeeNo", model.EmployeeNo);
+            HttpContext.Session.SetString("EmployeeNo", model.EmployeeNo.ToString());
             HttpContext.Session.SetString("EmployeeName", model.EmployeeName);
             HttpContext.Session.SetString("AuthorityLevel", model.AuthorityLevel.ToString());
             HttpContext.Session.SetString("AuthorityName", model.AuthorityName);

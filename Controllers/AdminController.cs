@@ -87,6 +87,9 @@ namespace MachineMonitoring.Controllers
 
                 var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
 
+                //var sessionUser = HttpContext.Session.GetString("EmployeeName");
+                //model.CreatedBy = sessionUser;
+
                 var success = await _adminrepo.UploadProdMapRepo(model, uniqueFileName);
                 if (success)
                 {
@@ -231,7 +234,14 @@ namespace MachineMonitoring.Controllers
 
 
                 var saved = await _adminrepo.SaveMcCoordinatesRepo(model);
-                return Ok("Saved successfully.");
+                if (saved)
+                {
+                    return Ok("Saved successfully.");
+                }
+                else
+                {
+                    return BadRequest("Error in saving..");
+                }
             }
             catch (Exception ex)
             {
@@ -272,13 +282,15 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-        public async Task<IActionResult> UserMangement()
+        public async Task<IActionResult> UserManagement()
         {
             try
             {
                 var viewModel = new AdminVM
                 {
-                    SystemUsers = await _homerepo.GetUserRepo()
+                    SystemUsers = await _homerepo.GetUserRepo(),
+                    Plants = await _adminrepo.GetPLantNoList(),
+                    AuthorityList = await _adminrepo.GetAuthorityListRepo()
                 };
 
                 return View(viewModel);
@@ -290,6 +302,93 @@ namespace MachineMonitoring.Controllers
             }
         }
 
+        #region 'DeleteUser'
+        public async Task<IActionResult> DeleteUser(SystemUser model)
+        {
+            try
+            {
+                if (model.EmployeeNo == null)
+                {
+                    return BadRequest("Please reload page.");
+                }
+                var delete = await _adminrepo.DeleteUserRepo(model);
+                if (delete)
+                {
+                    return Ok("Operation successfully.");
+                }
+                else
+                {
+                    return BadRequest("Failed to delete record.");
+                }
 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        #endregion
+
+        #region 'Partial-UserManagement'
+        public async Task<IActionResult> RefreshUserTable()
+        {
+            try
+            {
+                var users = await _homerepo.GetUserRepo();
+                return PartialView("_PartialUserManagement", users);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        #endregion
+
+        #region 'AddNewUser'
+        [HttpPost]
+        public async Task<IActionResult> AddNewUser(SystemUser model)
+        {
+            try
+            {
+                //if (model.EmployeeNo == 0)
+                //{
+                //    return BadRequest("Employee Number is required.");
+                //}
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                    var errorMessage = string.Join("<br> ", errors);
+                    return BadRequest(errorMessage);
+                }
+
+                if (model.Operation == "Add")
+                {
+                    var checkUser = await _homerepo.GetUserRepo();
+                    var userExists = checkUser.FirstOrDefault(u => u.EmployeeNo == model.EmployeeNo);
+                    if (userExists != null)
+                    {
+                        return BadRequest("Employee number already exists.");
+                    }
+                }
+
+                var sessionUser = HttpContext.Session.GetString("EmployeeName");
+                model.CreatedBy = sessionUser;
+
+                var saved = await _adminrepo.SaveUserRepo(model);
+                if (saved)
+                {
+                    return Ok("Saved successfully.");
+                }
+                else
+                {
+                    return BadRequest("Error in saving.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error." + ex.Message);
+            }
+        }
+        #endregion
     }
 }

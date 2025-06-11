@@ -1,0 +1,119 @@
+﻿@model MachineMonitoring.Models.ViewModel.AdminVM
+@{
+	ViewData["Title"] = "User Management";
+}
+
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-12">
+				<div class="card mt-3">
+					<div class="card-header">
+						<h3 class="card-title">
+							<i class="fas fa-users mr-1"></i> List of System User
+						</h3>
+						<div class="card-tools">
+							<div class="input-group input-group-sm">
+								<button type="button" class="btn btn-secondary" onclick="OpenAddModal()"> 
+									<i class="fas fa-solid fa-plus mr-1"></i> Add User</button>
+							</div>
+						</div>
+					</div>
+					<div class="card-body" style="margin-top: -1%">
+						<div class="table-responsive" style="height:70vh">
+							<table id="tblData" class="table table-bordered table-hover">
+								<thead>
+									<tr style="text-align:center;">
+										<th>Employee No</th>
+										<th>Employee Name</th>
+										<th>Role</th>
+										<th>Assigned Plant</th>
+										<th>Active System User</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody id="userTableBody">
+									<partial name="_PartialUserManagement" model="Model.SystemUsers" />
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="UserModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="UserModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<form method="POST">
+				<div class="modal-header">
+					<h5 class="modal-title" id="UserModalTitle"></h5>
+					<button type="button" class="close" onclick="Close()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+					<input type="hidden" id="Operation" name="Operation" />
+
+					<div class="form-group" id="UserIdContainer">
+						<label for="EmployeeNo"> <i class="fas fa-barcode"></i> Employee No</label>
+						<input type="text" class="form-control" id="EmployeeNo" name="EmployeeNo" maxlength="10" oninput="this.value = this.value.replace(/[^0-9.]/g, '');"  readonly>
+					</div>
+
+					<div class="form-group">
+						<label for="EmployeeName"><i class="fas fa-id-card"></i> Employee Name</label>
+						<input type="text" class="form-control" name="EmployeeName" id="EmployeeName" placeholder="Enter employee name">
+					</div>
+
+					<div class="form-group">
+						<label for="AuthorityLevel"><i class="fa fa-flag"></i> Plant No</label>
+						<select id="AuthorityLevel" name="AuthorityLevel" class="form-control w-100">
+							<option disabled selected>--Select Role--</option>
+							@foreach (var role in Model.AuthorityList)
+							{
+								<option value="@role.AuthorityLevel">@role.AuthorityName</option>
+							}
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="PlantNo"><i class="fa fa-flag"></i> Plant No</label>
+						<select id="PlantNo" name="PlantNo" class="form-control w-100">
+							<option disabled selected>--Select Plant No--</option>
+							@foreach (var plant in Model.Plants)
+							{
+								<option value="@plant.PlantNo">@plant.PlantName</option>
+							}
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="IsActive"><i class="fas fa-toggle-on"></i> Account Status</label>
+						<select id="IsActive" name="IsActive" class="form-control w-100" required>
+							<option value="True">Active</option>
+							<option value="False">Disabled</option>
+						</select>
+					</div>
+
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" onclick="Close()"> Close</button>
+					<button type="button" id="sumbitButton" class="btn btn-primary" onclick="SaveUser()"></button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+
+@section Scripts {
+	<script src="~/js/UserManagement.js"></script>
+
+}

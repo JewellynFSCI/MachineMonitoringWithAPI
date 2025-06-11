@@ -87,7 +87,7 @@
 						@{
 							var authlevel = Context.Session.GetString("AuthorityLevel");
 
-							if(authlevel == "1" || authlevel == "3")
+							if(authlevel == "1" || authlevel == "3") // OR authlevel != "2"
 							{
 								<li class="nav-header">Authorized Employee</li>
 								<li class="nav-item">
@@ -109,7 +109,7 @@
 
 								<li class="nav-header">System Administrator</li>
 								<li class="nav-item">
-									<a href="#" class="nav-link">
+									<a asp-controller="Admin" asp-action="UserManagement" class="nav-link">
 										<i class="fas fa-users-cog"></i>
 										<p>
 											User Management
