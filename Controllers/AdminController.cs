@@ -350,10 +350,6 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                //if (model.EmployeeNo == 0)
-                //{
-                //    return BadRequest("Employee Number is required.");
-                //}
                 if (!ModelState.IsValid)
                 {
                     var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
