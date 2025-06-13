@@ -449,5 +449,36 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
+        #region 'ResetPasswordRepo'
+        public async Task<bool> ResetPasswordRepo(SystemUser model)
+        {
+            try
+            {
+                using (var connection = Connection)
+                    {
+                        var queryupdate = @"UPDATE systemusers SET
+                                                Password = @Password,
+                                                UpdatedBy = @UpdatedBy
+                                            WHERE EmployeeNo = @EmployeeNo";
+                        var parameters = new
+                        {
+                            EmployeeNo = model.EmployeeNo,
+                            Password = model.EmployeeNo,
+                            UpdatedBy = model.CreatedBy
+                        };
+
+                        var result = await connection.ExecuteAsync(queryupdate, parameters);
+
+                        return result > 0;
+                    }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving to database.");
+                throw; // Let the controller handle the exception
+            }
+        }
+        #endregion
+
     }
 }

@@ -350,13 +350,6 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-                    var errorMessage = string.Join("<br> ", errors);
-                    return BadRequest(errorMessage);
-                }
-
                 if (model.Operation == "Add")
                 {
                     var checkUser = await _homerepo.GetUserRepo();
@@ -372,6 +365,32 @@ namespace MachineMonitoring.Controllers
 
                 var saved = await _adminrepo.SaveUserRepo(model);
                 if (saved)
+                {
+                    return Ok("Saved successfully.");
+                }
+                else
+                {
+                    return BadRequest("Error in saving.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error." + ex.Message);
+            }
+        }
+        #endregion
+
+        #region 'ResetPassword'
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(SystemUser model)
+        {
+            try
+            {
+                var sessionUser = HttpContext.Session.GetString("EmployeeName");
+                model.CreatedBy = sessionUser;
+
+                var reset = await _adminrepo.ResetPasswordRepo(model);
+                if (reset)
                 {
                     return Ok("Saved successfully.");
                 }

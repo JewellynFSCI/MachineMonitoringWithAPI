@@ -72,6 +72,7 @@ function OpenAddModal() {
     $('#EmployeeNo').removeAttr('readonly');
     $('#EmployeeName').val("");
     $('#EmployeeName').removeAttr('readonly');
+    $('#ResetPassBtn').hide();
 }
 //#endregion
 
@@ -93,6 +94,7 @@ function OpenEditModal(EmployeeNo, EmployeeName, AuthorityLevel,PlantNo) {
     }
     $('#AuthorityLevel').val(AuthorityLevel);
     $('#PlantNo').val(PlantNo);
+    $('#ResetPassBtn').show();
 }
 //#endregion
 
@@ -118,8 +120,67 @@ function SaveUser() {
     var form = $('#UserModal').find('form')[0];
     var formData = new FormData(form);
 
+    var employeeNo = formData.get('EmployeeNo');
+    var employeeName = formData.get('EmployeeName');
+    var plantNo = formData.get('PlantNo');
+    var authorityLevel = formData.get('AuthorityLevel');
+
+    if (!employeeNo || !employeeName || !plantNo || !authorityLevel) {
+        Swal.fire({
+            title: 'Error',
+            text: "Please fill all fields.",
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return; // prevent further action
+    }
+
     $.ajax({
         url: '/Admin/AddNewUser',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            Swal.fire({
+                title: 'Success',
+                text: response,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                Close();
+            });
+        },
+        error: function (xhr) {
+            Swal.fire({
+                title: 'Error',
+                html: xhr.responseText,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+}
+//#endregion
+
+//#region 'ResetPass'
+function ResetPass() {
+    var form = $('#UserModal').find('form')[0];
+    var formData = new FormData(form);
+
+    var employeeNo = formData.get('EmployeeNo');
+    if (!employeeNo) {
+        Swal.fire({
+            title: 'Error',
+            text: "Please reload page.",
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return; // prevent further action
+    }
+
+    $.ajax({
+        url: '/Admin/ResetPassword',
         type: 'POST',
         data: formData,
         contentType: false,

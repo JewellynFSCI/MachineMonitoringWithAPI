@@ -3,6 +3,20 @@
 	ViewData["Title"] = "User Management";
 }
 
+<style>
+	/* Chrome, Safari, Edge, Opera */
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+	}
+
+	/* Firefox */
+	input[type="number"] {
+	-moz-appearance: textfield;
+	}
+</style>
+
 
 <section class="content">
 	<div class="container-fluid">
@@ -62,7 +76,7 @@
 
 					<div class="form-group" id="UserIdContainer">
 						<label for="EmployeeNo"> <i class="fas fa-barcode"></i> Employee No</label>
-						<input type="text" class="form-control" id="EmployeeNo" name="EmployeeNo" maxlength="10" oninput="this.value = this.value.replace(/[^0-9.]/g, '');"  readonly>
+						<input type="number" class="form-control" id="EmployeeNo" name="EmployeeNo" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" readonly>
 					</div>
 
 					<div class="form-group">
@@ -71,12 +85,17 @@
 					</div>
 
 					<div class="form-group">
-						<label for="AuthorityLevel"><i class="fa fa-flag"></i> Plant No</label>
+						<label for="AuthorityLevel"><i class="fas fa-user-tag"></i> Role</label>
 						<select id="AuthorityLevel" name="AuthorityLevel" class="form-control w-100">
 							<option disabled selected>--Select Role--</option>
 							@foreach (var role in Model.AuthorityList)
 							{
-								<option value="@role.AuthorityLevel">@role.AuthorityName</option>
+								//If the end-user is Supervisor, it cannot register a System Admin (MIS/Developer)
+								var currentAuthorityLevel = Context.Session.GetString("AuthorityLevel");
+								if (!(currentAuthorityLevel == "3" && role.AuthorityLevel == 1))
+								{
+									<option value="@role.AuthorityLevel">@role.AuthorityName</option>
+								}
 							}
 						</select>
 					</div>
@@ -102,9 +121,20 @@
 
 
 				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" onclick="Close()"> Close</button>
-					<button type="button" id="sumbitButton" class="btn btn-primary" onclick="SaveUser()"></button>
+				<div class="modal-footer d-flex justify-content-between w-100">
+					<!-- Left side -->
+					<div>
+						<button type="button" id="ResetPassBtn" name="resetPassBtn" class="btn btn-dark"
+								onclick="ResetPass()">
+							Reset Password
+						</button>
+					</div>
+
+					<!-- Right side -->
+					<div>
+						<button type="button" class="btn btn-secondary" onclick="Close()">Close</button>
+						<button type="button" id="sumbitButton" class="btn btn-primary" onclick="SaveUser()">Update</button>
+					</div>
 				</div>
 			</form>
 		</div>
