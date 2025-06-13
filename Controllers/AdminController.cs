@@ -200,6 +200,7 @@ namespace MachineMonitoring.Controllers
         #endregion
 
 
+        #region 'MachineLocation - View'
         public async Task<IActionResult> MachineLocation(ProductionMap? model)
         {
             try
@@ -219,6 +220,7 @@ namespace MachineMonitoring.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        #endregion
 
         #region 'SaveMCCoordinates'
         [HttpPost]
@@ -282,6 +284,8 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
+
+        #region 'UserManagement - View'
         public async Task<IActionResult> UserManagement()
         {
             try
@@ -301,6 +305,7 @@ namespace MachineMonitoring.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
+        #endregion
 
         #region 'DeleteUser'
         public async Task<IActionResult> DeleteUser(SystemUser model)
