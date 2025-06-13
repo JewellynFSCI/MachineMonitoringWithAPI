@@ -18,7 +18,7 @@ namespace MachineMonitoring.Controllers
             _homerepo = homerepo;
         }
 
-        
+
 
         public IActionResult Login()
         {
@@ -35,15 +35,20 @@ namespace MachineMonitoring.Controllers
 
 
             //var user =CheckCredential.FirstOrDefault();
-            
-            if(foundEmployee == null)
+
+            if (foundEmployee == null)
             {
                 return Json(new { success = false, message = "Empno or password is incorrect!" });
             }
             else if (foundEmployee.IsActive == false)
             {
                 return Json(new { success = false, message = "Employee Number is not active user for this system." });
-            } 
+            }
+            else if (foundEmployee.EmployeeNo.ToString() == model.Password)  //Password is EmployeeNo
+            {
+                SetSession(foundEmployee);
+                return Json(new { success = true, redirectUrl = Url.Action("ChangePassword", "Home") });
+            }
             else if (foundEmployee.AuthorityLevel == 1)  //SYSTEM ADMIN
             {
                 SetSession(foundEmployee);
@@ -58,7 +63,7 @@ namespace MachineMonitoring.Controllers
             {
                 SetSession(foundEmployee);
                 return Json(new { success = true, redirectUrl = Url.Action("MEDashboard", "Home") });
-            }     
+            }
         }
         #endregion
 
@@ -83,22 +88,65 @@ namespace MachineMonitoring.Controllers
 
         public IActionResult MEDashboard()
         {
-            return View();
+            var usersession = HttpContext.Session.GetString("EmployeeNo");
+            if (usersession == null)
+            {
+                return RedirectToAction("Logout", "Home");
+            }
+            else
+            {
+                return View();
+            }
         }
 
-        
+
+        public IActionResult ChangePassword()
+        {
+            var usersession = HttpContext.Session.GetString("EmployeeNo");
+            if (usersession == null)
+            {
+                return RedirectToAction("Logout", "Home");
+            }
+            else
+            {
+                return View();
+            }
+        }
 
 
+        #region 'ChangePassword'
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(SystemUser model)
+        {
+            try
+            {
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
+                {
+                    return RedirectToAction("Logout", "Home");
+                }
+                else
+                {
+                    model.CreatedBy = HttpContext.Session.GetString("EmployeeName");
+                    model.EmployeeNo = int.Parse(HttpContext.Session.GetString("EmployeeNo"));
 
-
-
-
-
-
-
-
-
-
+                    var reset = await _homerepo.ChangePasswordRepo(model);
+                    if (reset)
+                    {
+                        return Ok("Saved successfully.");
+                    }
+                    else
+                    {
+                        return BadRequest("Error in saving.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error." + ex.Message);
+            }
+        }
+        #endregion
 
 
 

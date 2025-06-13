@@ -32,5 +32,8 @@ namespace MachineMonitoring.Models
 
         [NotMapped]
         public string? Operation { get; set; }
+
+        [NotMapped]
+        public string? CPassword { get; set; }
     }
 }
