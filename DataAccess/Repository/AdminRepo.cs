@@ -116,7 +116,7 @@ namespace MachineMonitoring.DataAccess.Repository
                         ProductionName = model.ProductionMapName,
                         ImgName = uniqueFileName,
                         PlantNo = model.PlantNo,
-                        CreatedBy = "ApplicationUser"
+                        CreatedBy = model.CreatedBy
                     };
 
                     var result = await connection.ExecuteAsync(query, parameters);
@@ -168,10 +168,9 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    //var query = "DELETE FROM ProductionMaps WHERE ProductionMapId = @ProductionMapId";
-                    var query = @"  UPDATE ProductionMaps SET IsDeleted = 1, UpdatedBy = 'Emp Name Session'
+                    var query = @"  UPDATE ProductionMaps SET IsDeleted = 1, UpdatedBy = @CreatedBy
                                     WHERE ProductionMapId = @ProductionMapId";
-                    var deleteExec = await connection.ExecuteAsync(query, new { model.ProductionMapId });
+                    var deleteExec = await connection.ExecuteAsync(query, new { model.ProductionMapId,model.CreatedBy });
                     return deleteExec > 0;
                 }
             }
@@ -196,7 +195,7 @@ namespace MachineMonitoring.DataAccess.Repository
                     {
                         ImgName = uniqueFileName,
                         model.ProductionMapId,
-                        UpdatedBy = "Emp Name session"
+                        UpdatedBy = model.CreatedBy
                     };
                     var result = await connection.ExecuteAsync(query, parameters);
                     return result > 0;
@@ -204,7 +203,7 @@ namespace MachineMonitoring.DataAccess.Repository
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating to database.");
+                _logger.LogError(ex, "Error updating.");
                 throw; // Let the controller handle the exception
             }
         }
@@ -227,7 +226,7 @@ namespace MachineMonitoring.DataAccess.Repository
                         model.ProductionMapId,
                         model.ProductionMapName,
                         model.PlantNo,
-                        UpdatedBy = "Emp Name session"
+                        UpdatedBy = model.CreatedBy
                     };
                     var result = await connection.ExecuteAsync(query, parameters);
                     return result > 0;
@@ -261,7 +260,7 @@ namespace MachineMonitoring.DataAccess.Repository
                             ProductionMapId = model.ProductionMapId,
                             X = model.X,
                             Y = model.Y,
-                            CreatedBy = "System"
+                            CreatedBy = model.CreatedBy
                         };
 
                         var result = await connection.ExecuteAsync(query, parameters);
@@ -475,6 +474,40 @@ namespace MachineMonitoring.DataAccess.Repository
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving to database.");
+                throw; // Let the controller handle the exception
+            }
+        }
+        #endregion
+
+
+        #region 'UpdateProfileDetails'
+        public async Task<bool> UpdateProfileDetails(string EmployeeName, int PlantNo, int usersession)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var queryupdate = @"UPDATE systemusers SET
+                                                EmployeeName = @EmployeeName,
+                                                PlantNo = @PlantNo,
+                                                UpdatedBy = @UpdatedBy
+                                            WHERE EmployeeNo = @EmployeeNo";
+                    var parameters = new
+                    {
+                        EmployeeNo = usersession,
+                        EmployeeName = EmployeeName,
+                        PlantNo = PlantNo,
+                        UpdatedBy = usersession
+                    };
+
+                    var result = await connection.ExecuteAsync(queryupdate, parameters);
+
+                    return result > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving.");
                 throw; // Let the controller handle the exception
             }
         }

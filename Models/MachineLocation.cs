@@ -20,6 +20,7 @@ namespace MachineMonitoring.Models
         public int Y { get; set; }
 
         public string? User {  get; set; }
+        public string? CreatedBy { get; set; }
 
     }
 }

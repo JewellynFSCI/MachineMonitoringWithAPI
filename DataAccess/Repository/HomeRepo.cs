@@ -53,7 +53,7 @@ namespace MachineMonitoring.DataAccess.Repository
                                             WHERE EmployeeNo = @EmployeeNo";
                     var parameters = new
                     {
-                        EmployeeNo = model.EmployeeNo,
+                        EmployeeNo = model.CreatedBy,
                         Password = model.CPassword,
                         UpdatedBy = model.CreatedBy
                     };

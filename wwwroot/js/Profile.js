@@ -133,6 +133,8 @@ function ChangePassword() {
     var form = $('#ChangePasswordForm')[0];
     var formData = new FormData(form);
 
+    var operation = $('#Operation').val();
+
     $.ajax({
         url: '/Home/ChangePassword',
         type: 'POST',
@@ -146,9 +148,13 @@ function ChangePassword() {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = "/Home/Logout";
+                if (operation == "ModalChangePass") {
+                    Close();
+                } else {
+                    window.location.href = "/Home/Logout";
+                }
             });
-            
+
         },
         error: function (xhr) {
             Swal.fire({
@@ -159,5 +165,57 @@ function ChangePassword() {
             });
         }
     });
+}
+//#endregion
+
+//#region 'Close Modal'
+function Close() {
+    $('#ChangePasswordForm')[0].reset();
+
+    //Remove color of inputs
+    $('#CPassword').css('background-color', 'transparent');
+    $('#NewPassword').css('background-color', 'transparent');
+    updateIcon("Upper", "");
+    updateIcon("Lower", "");
+    updateIcon("Special", "");
+    updateIcon("Num", "");
+    updateIcon("Length", "");
+
+    // Hide the modal
+    $('#ChangePasswordModal').modal('hide');
+}
+//#endregion
+
+//#region 'Open Modal for Add'
+function OpenModal() {
+    $('#ChangePasswordModal').modal('show');
+}
+//#endregion
+
+//#region 'SaveUserDetails'
+function SaveUserDetails() {
+    var newEmployeeName = $('#EmployeeName').val().trim();
+    var newPlantNo = $('#PlantNoSelect').val();
+
+    $.ajax({
+        url: '/Admin/ChangeProfileDetails',
+        type: 'POST',
+        data: { EmployeeName: newEmployeeName, PlantNo: newPlantNo },
+        success: function (response) {
+            Swal.fire({
+                title: 'Success',
+                text: response,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                location.reload();
+            });
+        },
+        error: function (xhr) {
+            ErrorMessage(xhr.responseText);
+        }
+    });
+
+
 }
 //#endregion

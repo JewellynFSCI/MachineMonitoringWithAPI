@@ -51,7 +51,7 @@ namespace MachineMonitoring.Controllers
             else if (foundEmployee.AuthorityLevel == 1)  //SYSTEM ADMIN
             {
                 SetSession(foundEmployee);
-                return Json(new { success = true, redirectUrl = Url.Action("ProductionMaps", "Admin") });
+                return Json(new { success = true, redirectUrl = Url.Action("Profile", "Admin") });
             }
             else if (foundEmployee.AuthorityLevel == 3)  //ADMIN (SUPERVISOR)
             {
@@ -69,10 +69,11 @@ namespace MachineMonitoring.Controllers
         #region 'Set Session'
         public void SetSession(SystemUser model)
         {
-            HttpContext.Session.SetString("EmployeeNo", model.EmployeeNo.ToString());
+            HttpContext.Session.SetInt32("EmployeeNo", model.EmployeeNo);
             HttpContext.Session.SetString("EmployeeName", model.EmployeeName);
-            HttpContext.Session.SetString("AuthorityLevel", model.AuthorityLevel.ToString());
+            HttpContext.Session.SetInt32("AuthorityLevel", model.AuthorityLevel);
             HttpContext.Session.SetString("AuthorityName", model.AuthorityName);
+            HttpContext.Session.SetInt32("PlantNo", model.PlantNo);
         }
         #endregion
 
@@ -105,16 +106,14 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
                 if (usersession == null)
                 {
-                    //return RedirectToAction("Logout", "Home");
                     return BadRequest("Error. Please reload page.");
                 }
                 else
                 {
-                    model.CreatedBy = HttpContext.Session.GetString("EmployeeName");
-                    model.EmployeeNo = int.Parse(HttpContext.Session.GetString("EmployeeNo"));
+                    model.CreatedBy = usersession.ToString();
 
                     var reset = await _homerepo.ChangePasswordRepo(model);
                     if (reset)
@@ -148,10 +147,6 @@ namespace MachineMonitoring.Controllers
             }
         }
         #endregion
-
-
-
-
 
 
 

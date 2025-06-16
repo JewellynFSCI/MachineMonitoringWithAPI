@@ -1,0 +1,157 @@
+﻿@model MachineMonitoring.Models.ViewModel.AdminVM
+@{
+	ViewData["Title"] = "User Profile";
+}
+
+<style>
+		.rule {
+			font-size: 12px;
+			color: dimgray;
+			margin-bottom: 0rem;
+		}
+
+		input::placeholder {
+			font-weight: bold;
+		}
+	</style>
+
+<section class="content">
+	<div class="container-fluid">
+		<div class="row justify-content-center">
+			<div class="col-8">
+				<div class="card mt-3">
+					<div class="card-header">
+						<h3 class="card-title">
+							<i class="fas fa-user mr-1"></i>
+							Profile
+						</h3>
+						<div class="card-tools">
+							<div class="input-group input-group-sm">
+								<button type="button" class="btn btn-secondary" onclick="OpenModal()"> 
+									<i class="fas fa-user-shield mr-1"></i> Change Password
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<form method="post" asp-controller="Admin" asp-action="SaveUsersDetails">
+						<div class="card-body" style="margin-top:-0.5%">
+							<div class="row">
+
+								<div class="col-sm-6 mb-2">
+									<div class="form-group">
+										<label for="EmployeeNo"> <i class="fas fa-hashtag"></i> Employee No</label>
+										<input type="text" class="form-control" 
+											id="EmployeeNo" name="EmployeeNo" 
+											value="@Context.Session.GetInt32("EmployeeNo")" readonly>
+									</div>
+								</div>
+
+								<div class="col-sm-6 mb-2">
+									<div class="form-group">
+										<label for="AuthorityLevel"> <i class="fas fa-hashtag"></i> Role</label>
+										<input type="text" class="form-control" 
+											id="AuthorityLevel" name="AuthorityLevel" 
+											value="@Context.Session.GetString("AuthorityName")" readonly>
+									</div>
+								</div>
+
+								<div class="col-sm-12 mb-2">
+									<div class="form-group">
+										<label for="EmployeeName"> <i class="fas fa-hashtag"></i> Employee Name</label>
+										<input type="text" class="form-control" 
+											id="EmployeeName" name="EmployeeName" 
+											value='@Context.Session.GetString("EmployeeName")'>
+									</div>
+								</div>
+
+
+								@{
+									int? selectedPlantNo = Context.Session.GetInt32("PlantNo");
+								}
+								<div class="col-sm-6 mb-2">
+									<div class="form-group">
+										<label class="mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
+										<select id="PlantNoSelect" name="PlantNoSelect" class="form-control w-100">
+											<option disabled>--Select Plant No--</option>
+											@foreach (var plant in Model.Plants)
+											{
+												@:<option value="@plant.PlantNo" @(plant.PlantNo == selectedPlantNo ? "selected" : "")>@plant.PlantName</option>
+											}
+										</select>
+									</div>
+								</div>
+
+								<div class="input-group">
+									<button type="button" class="btn btn-success"
+										onclick="SaveUserDetails()">
+										<i class="fas fa-save mr-1"></i> Save Changes
+									</button>
+								</div>
+
+							</div>
+						</div>
+					</form>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="ChangePasswordModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<form method="POST" id="ChangePasswordForm">
+				<div class="modal-header">
+					<h5 class="modal-title" id="ModalTitle">Change Password</h5>
+					<button type="button"  class="close" onclick="Close()" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+					<input type="hidden" id="Operation" value="ModalChangePass" />
+
+					<div class="form-group">
+						<label for="NewPassword"> <i class="fas fa-lock mr-1"></i> Type new password</label>
+						<input type="password" class="form-control" id="NewPassword" name="NewPassword" placeholder="Type new password">
+					</div>
+
+					<div class="form-group">
+						<label for="CPassword"><i class="fas fa-lock mr-1"></i> Re-type Password</label>
+						<input type="password" class="form-control" name="CPassword" id="CPassword" placeholder="Re-type password">
+					</div>
+
+					<div class="form-group" hidden >
+						<i id="IconNewPass" class="fa fa-times fa-2x" style="padding-left:5px;"></i>
+						<i id="IconConfirmPass" class="fa fa-times fa-2x" style="padding-left:5px;"></i>
+					</div>
+
+					<div class="form-group">
+						<p class="rule"><i class="fa fa-times" id="Upper"></i> 1 Upper case</p>
+						<p class="rule"><i class="fa fa-times" id="Lower"></i> 1 Lower case</p>
+						<p class="rule"><i class="fa fa-times" id="Special"></i> 1 Special character</p>
+						<p class="rule"><i class="fa fa-times" id="Num"></i> Must have number/s</p>
+						<p class="rule"><i class="fa fa-times" id="Length"></i> Length must be 8 - 12 characters</p>
+					</div>
+
+
+				</div>
+				<div class="modal-footer">
+					<button type="button"  class="btn btn-secondary" onclick="Close()"> Close</button>
+					<button type="button" id="saveButton" class="btn btn-primary" onclick="CheckInputs()">
+						<i class="fas fa-save mr-1"></i> Save
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+@section Scripts {
+	<script src="~/js/Profile.js"></script>
+}

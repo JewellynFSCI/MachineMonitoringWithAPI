@@ -77,7 +77,7 @@ function OpenAddModal() {
 //#endregion
 
 //#region 'OpenEditModal'
-function OpenEditModal(EmployeeNo, EmployeeName, AuthorityLevel,PlantNo) {
+function OpenEditModal(EmployeeNo, EmployeeName, AuthorityLevel,PlantNo,IsActive) {
     $('#UserModal').modal('show');
     $('#UserModalTitle').text("Edit Employee Data");
     $('#sumbitButton').text("Update");
@@ -94,6 +94,7 @@ function OpenEditModal(EmployeeNo, EmployeeName, AuthorityLevel,PlantNo) {
     }
     $('#AuthorityLevel').val(AuthorityLevel);
     $('#PlantNo').val(PlantNo);
+    $('#IsActive').val(IsActive);
     $('#ResetPassBtn').show();
 }
 //#endregion

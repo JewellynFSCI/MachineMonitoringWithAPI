@@ -42,13 +42,13 @@
 						<i class="fas fa-expand-arrows-alt fa-lg"></i>
 					</a>
 				</li>
-				<!-- Notifications Dropdown Menu -->
+				<!-- Profile Dropdown Menu -->
 				<li class="nav-item dropdown">
 					<a class="nav-link" data-toggle="dropdown" href="#">
 						<i class="fas fa-user-circle fa-lg"></i>
 					</a>
 					<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-						<a href="#" class="dropdown-item">
+						<a asp-controller="Admin" asp-action="Profile" class="dropdown-item">
 							<i class="fas fa-user-circle fa-lg mr-3"></i> Profile
 						</a>
 						<div class="dropdown-divider"></div>
@@ -77,7 +77,8 @@
 						<img src="@Url.Content("~/img/user.png")" class="img-circle elevation-2" alt="User Image">
 					</div>
 					<div class="info">
-						<a href="#" class="d-block">@Context.Session.GetString("EmployeeName") <br /> 
+						<a asp-controller="Admin" asp-action="Profile" class="d-block">
+							@Context.Session.GetString("EmployeeName") <br />
 							<i style="font-size: 13px;"> @Context.Session.GetString("AuthorityName") </i> </a>
 					</div>
 				</div>
