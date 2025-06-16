@@ -273,10 +273,9 @@ namespace MachineMonitoring.Controllers
                     return RedirectToAction("Logout", "Home");
                 }
 
-                if (!ModelState.IsValid)
+                if (model.MachineCode == null)
                 {
-                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                    return BadRequest("Model validation failed: " + errors );
+                    return BadRequest("Please select machine code");
                 }
 
                 model.CreatedBy = usersession.ToString();

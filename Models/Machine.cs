@@ -4,7 +4,8 @@ namespace MachineMonitoring.Models
 {
     public class Machine
     {
-  
+
+        [Required(ErrorMessage ="Please fill out MachineCode.")]
         public string MachineCode { get; set; }
 
 
