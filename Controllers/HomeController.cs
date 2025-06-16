@@ -18,13 +18,12 @@ namespace MachineMonitoring.Controllers
             _homerepo = homerepo;
         }
 
-
-
+        #region 'Login - View'
         public IActionResult Login()
         {
             return View();
         }
-
+        #endregion
 
         #region 'Login - POST'
         public async Task<ActionResult<SystemUser>> LoginUser(SystemUser model)
@@ -85,21 +84,7 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-
-        public IActionResult MEDashboard()
-        {
-            var usersession = HttpContext.Session.GetString("EmployeeNo");
-            if (usersession == null)
-            {
-                return RedirectToAction("Logout", "Home");
-            }
-            else
-            {
-                return View();
-            }
-        }
-
-
+        #region 'ChangePassword - View'
         public IActionResult ChangePassword()
         {
             var usersession = HttpContext.Session.GetString("EmployeeNo");
@@ -112,7 +97,7 @@ namespace MachineMonitoring.Controllers
                 return View();
             }
         }
-
+        #endregion
 
         #region 'ChangePassword'
         [HttpPost]
@@ -123,7 +108,8 @@ namespace MachineMonitoring.Controllers
                 var usersession = HttpContext.Session.GetString("EmployeeNo");
                 if (usersession == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    //return RedirectToAction("Logout", "Home");
+                    return BadRequest("Error. Please reload page.");
                 }
                 else
                 {
@@ -147,6 +133,23 @@ namespace MachineMonitoring.Controllers
             }
         }
         #endregion
+
+        #region 'ME Dashboard - View'
+        public IActionResult MEDashboard()
+        {
+            var usersession = HttpContext.Session.GetString("EmployeeNo");
+            if (usersession == null)
+            {
+                return RedirectToAction("Logout", "Home");
+            }
+            else
+            {
+                return View();
+            }
+        }
+        #endregion
+
+
 
 
 

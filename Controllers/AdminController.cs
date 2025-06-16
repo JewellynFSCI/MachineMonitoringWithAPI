@@ -120,7 +120,7 @@ namespace MachineMonitoring.Controllers
                 var delete = await _adminrepo.DeleteMapData(model);
                 if (delete)
                 {
-                    return Ok("Operation successfully.");
+                    return Ok("Deleted successfully.");
                 }
                 else
                 {
@@ -199,7 +199,6 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-
         #region 'MachineLocation - View'
         public async Task<IActionResult> MachineLocation(ProductionMap? model)
         {
@@ -269,7 +268,7 @@ namespace MachineMonitoring.Controllers
                 var delete = await _adminrepo.DeleteMCLocationRepo(model);
                 if (delete)
                 {
-                    return Ok("Operation successfully.");
+                    return Ok("Deleted successfully.");
                 }
                 else
                 {
@@ -283,7 +282,6 @@ namespace MachineMonitoring.Controllers
             }
         }
         #endregion
-
 
         #region 'UserManagement - View'
         public async Task<IActionResult> UserManagement()
@@ -319,7 +317,7 @@ namespace MachineMonitoring.Controllers
                 var delete = await _adminrepo.DeleteUserRepo(model);
                 if (delete)
                 {
-                    return Ok("Operation successfully.");
+                    return Ok("Deleted successfully.");
                 }
                 else
                 {
@@ -371,7 +369,7 @@ namespace MachineMonitoring.Controllers
                 var saved = await _adminrepo.SaveUserRepo(model);
                 if (saved)
                 {
-                    return Ok("Saved successfully.");
+                    return Ok("New user added successfully.");
                 }
                 else
                 {
@@ -397,7 +395,7 @@ namespace MachineMonitoring.Controllers
                 var reset = await _adminrepo.ResetPasswordRepo(model);
                 if (reset)
                 {
-                    return Ok("Saved successfully.");
+                    return Ok("Password already reset");
                 }
                 else
                 {
