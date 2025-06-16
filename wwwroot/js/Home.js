@@ -25,6 +25,7 @@ function ErrorMessage(message) {
 }
 //#endregion
 
+//#region 'Submit - Login'
 function Submit() {
     var form = $('#LoginForm')[0];
     var formData = new FormData(form);
@@ -48,3 +49,4 @@ function Submit() {
         }
     });
 }
+//#endregion

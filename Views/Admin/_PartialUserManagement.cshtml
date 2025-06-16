@@ -3,8 +3,10 @@
 @{
 	var currentSessionEmployeeNo = Context.Session.GetString("EmployeeNo");
 	var userAuthorityLevel = Context.Session.GetString("AuthorityLevel");
+
+	// Supervisors can't see Admins (AuthorityLevel == "1")
 	var filteredUsers = (userAuthorityLevel == "3")
-		? Model.Where(u => u.AuthorityLevel == 2)
+		? Model.Where(u => u.AuthorityLevel != 1)
 		: Model;
 }
 
@@ -20,7 +22,12 @@
 			<td style="width: 15%;">@user.IsActive</td>
 			<td style="width: 20%;">
 				<div class="btn-group w-100" role="group">
-					@if (userAuthorityLevel != "2" && user.EmployeeNo.ToString() != currentSessionEmployeeNo)
+					@if (
+							(userAuthorityLevel == "1" && user.EmployeeNo.ToString() != currentSessionEmployeeNo) || // Admin can manage all except self
+							(userAuthorityLevel == "3" && // Supervisor can manage only regular users, not self or supervisors
+							user.AuthorityLevel.ToString() == "2" &&
+							user.EmployeeNo.ToString() != currentSessionEmployeeNo)
+						)
 					{
 						<button class="btn btn-danger" onclick="DeleteUser('@user.EmployeeNo')">
 							<i class="fas fa-trash mr-1"></i> Delete
