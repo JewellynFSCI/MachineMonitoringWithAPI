@@ -382,7 +382,6 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-
         #region 'SaveUserRepo'
         public async Task<bool> SaveUserRepo(SystemUser model)
         {
@@ -478,7 +477,6 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
         #endregion
-
 
         #region 'UpdateProfileDetails'
         public async Task<bool> UpdateProfileDetails(string EmployeeName, int PlantNo, int usersession)

@@ -74,7 +74,6 @@ function GetImgNamefromDb() {
 }
 //#endregion
 
-
 //#region 'ShowImage and Plot point'
 function ShowImage() {
     const imageUrl = '/img/productionmap/' + ImgName;
