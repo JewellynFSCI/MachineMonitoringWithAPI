@@ -479,7 +479,7 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'UpdateProfileDetails'
-        public async Task<bool> UpdateProfileDetails(string EmployeeName, int PlantNo, int usersession)
+        public async Task<bool> UpdateProfileDetails(string EmployeeName, int PlantNo, string usersession)
         {
             try
             {

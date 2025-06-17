@@ -97,9 +97,9 @@
 
 
 						@{
-							var authlevel = Context.Session.GetString("AuthorityLevel");
+							var authlevel = Context.Session.GetInt32("AuthorityLevel");
 
-							if(authlevel != "2")      //(authlevel == "1" || authlevel == "3") // OR authlevel != "2"
+							if(authlevel != 2)      //(authlevel == "1" || authlevel == "3") // OR authlevel != "2"
 							{
 								<li class="nav-header">Authorized Employee</li>
 								<li class="nav-item">

@@ -6,7 +6,7 @@ namespace MachineMonitoring.Models
 {
     public class SystemUser
     {
-        public int EmployeeNo { get; set; }
+        public string EmployeeNo { get; set; }
 
         public string EmployeeName { get; set; }
 

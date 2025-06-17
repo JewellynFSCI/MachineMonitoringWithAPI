@@ -33,8 +33,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -58,8 +58,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -80,8 +80,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -113,7 +113,7 @@ namespace MachineMonitoring.Controllers
 
                 var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
 
-                model.CreatedBy = usersession.ToString();
+                model.CreatedBy = usersession;
                 var success = await _adminrepo.UploadProdMapRepo(model, uniqueFileName);
                 if (success)
                 {
@@ -141,12 +141,12 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
-                model.CreatedBy = usersession.ToString();
+                model.CreatedBy = usersession;
                 var delete = await _adminrepo.DeleteMapData(model);
                 if (delete)
                 {
@@ -171,8 +171,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -189,7 +189,7 @@ namespace MachineMonitoring.Controllers
                     return BadRequest("Production Name already exists!");
                 }
 
-                model.CreatedBy = usersession.ToString();
+                model.CreatedBy = usersession;
 
                 #region 'image replacement if replaced by end-user'
                 if (ImgFile != null)
@@ -238,8 +238,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -267,8 +267,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -278,7 +278,7 @@ namespace MachineMonitoring.Controllers
                     return BadRequest("Please select machine code");
                 }
 
-                model.CreatedBy = usersession.ToString();
+                model.CreatedBy = usersession;
                 var saved = await _adminrepo.SaveMcCoordinatesRepo(model);
                 if (saved)
                 {
@@ -300,12 +300,11 @@ namespace MachineMonitoring.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMCLocation(MachineLocation? model)
         {
-            var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-            if (usersession == null || usersession == 0)
+            var usersession = HttpContext.Session.GetString("EmployeeNo");
+            if (usersession == null)
             {
                 return RedirectToAction("Logout", "Home");
             }
-
             var mclist = await _adminrepo.GetMCLocationRepo(model);
             return Json(new { mclist });
         }
@@ -316,8 +315,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -345,8 +344,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -373,8 +372,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -423,8 +422,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -439,7 +438,7 @@ namespace MachineMonitoring.Controllers
                     }
                 }
 
-                model.CreatedBy = usersession.ToString();
+                model.CreatedBy = usersession;
                 var saved = await _adminrepo.SaveUserRepo(model);
                 if (saved)
                 {
@@ -470,13 +469,13 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
 
-                model.CreatedBy = usersession.ToString();
+                model.CreatedBy = usersession;
                 var reset = await _adminrepo.ResetPasswordRepo(model);
                 if (reset)
                 {
@@ -499,8 +498,8 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
-                if (usersession == null || usersession == 0)
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -527,11 +526,11 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
                 var usersessionname = HttpContext.Session.GetString("EmployeeName");
                 var usersessionplantno = HttpContext.Session.GetInt32("PlantNo");
 
-                if (usersession == null || usersession == 0)
+                if (usersession == null)
                 {
                     return RedirectToAction("Logout", "Home");
                 }
@@ -541,7 +540,7 @@ namespace MachineMonitoring.Controllers
                     return BadRequest("There are no changes to save.");
                 }
 
-                var update = await _adminrepo.UpdateProfileDetails(EmployeeName,PlantNo,(int)usersession);
+                var update = await _adminrepo.UpdateProfileDetails(EmployeeName,PlantNo,usersession);
                 if (update)
                 {
                     HttpContext.Session.SetString("EmployeeName", EmployeeName);

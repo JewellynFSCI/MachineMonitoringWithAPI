@@ -32,9 +32,6 @@ namespace MachineMonitoring.Controllers
 
             SystemUser? foundEmployee = AllEmployee.SingleOrDefault(e => e.EmployeeNo == model.EmployeeNo);
 
-
-            //var user =CheckCredential.FirstOrDefault();
-
             if (foundEmployee == null)
             {
                 return Json(new { success = false, message = "Empno or password is incorrect!" });
@@ -43,7 +40,12 @@ namespace MachineMonitoring.Controllers
             {
                 return Json(new { success = false, message = "Employee Number is not active user for this system." });
             }
-            else if (foundEmployee.EmployeeNo.ToString() == model.Password)  //Password is EmployeeNo
+            else if (foundEmployee.EmployeeNo == model.Password)  //Password is EmployeeNo
+            {
+                SetSession(foundEmployee);
+                return Json(new { success = true, redirectUrl = Url.Action("ChangePassword", "Home") });
+            }
+            else if (foundEmployee.EmployeeNo == foundEmployee.Password)  //Password is EmployeeNo
             {
                 SetSession(foundEmployee);
                 return Json(new { success = true, redirectUrl = Url.Action("ChangePassword", "Home") });
@@ -58,10 +60,14 @@ namespace MachineMonitoring.Controllers
                 SetSession(foundEmployee);
                 return Json(new { success = true, redirectUrl = Url.Action("MachineLocation", "Admin") });
             }
-            else
+            else if (foundEmployee.AuthorityLevel == 2)     //Maintenance Engineer
             {
                 SetSession(foundEmployee);
                 return Json(new { success = true, redirectUrl = Url.Action("MEDashboard", "Home") });
+            }
+            else
+            {
+                return BadRequest("Error. Please reload page.");
             }
         }
         #endregion
@@ -69,7 +75,7 @@ namespace MachineMonitoring.Controllers
         #region 'Set Session'
         public void SetSession(SystemUser model)
         {
-            HttpContext.Session.SetInt32("EmployeeNo", model.EmployeeNo);
+            HttpContext.Session.SetString("EmployeeNo", model.EmployeeNo);
             HttpContext.Session.SetString("EmployeeName", model.EmployeeName);
             HttpContext.Session.SetInt32("AuthorityLevel", model.AuthorityLevel);
             HttpContext.Session.SetString("AuthorityName", model.AuthorityName);
@@ -106,24 +112,28 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetInt32("EmployeeNo");
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
                 if (usersession == null)
                 {
                     return BadRequest("Error. Please reload page.");
                 }
-                else
+                
+                model.EmployeeNo = usersession;
+                var reset = await _homerepo.ChangePasswordRepo(model);
+                if (reset)
                 {
-                    model.CreatedBy = usersession.ToString();
-
-                    var reset = await _homerepo.ChangePasswordRepo(model);
-                    if (reset)
+                    if (model.Operation == "ModalChangePass")
                     {
                         return Ok("Saved successfully.");
                     }
                     else
                     {
-                        return BadRequest("Error in saving.");
+                        return RedirectToAction("LoginUser", "Home", new { EmployeeNo = usersession });
                     }
+                }
+                else
+                {
+                    return BadRequest("Error in saving.");
                 }
             }
             catch (Exception ex)

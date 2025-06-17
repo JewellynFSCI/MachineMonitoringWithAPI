@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<MachineMonitoring.Models.SystemUser>
 
 @{
-	var currentSessionEmployeeNo = Context.Session.GetInt32("EmployeeNo");
+	var currentSessionEmployeeNo = Context.Session.GetString("EmployeeNo");
 	var userAuthorityLevel = Context.Session.GetInt32("AuthorityLevel");
 
 	// Supervisors can't see Admins (AuthorityLevel == "1")

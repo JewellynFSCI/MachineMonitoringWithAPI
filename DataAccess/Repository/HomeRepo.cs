@@ -53,9 +53,9 @@ namespace MachineMonitoring.DataAccess.Repository
                                             WHERE EmployeeNo = @EmployeeNo";
                     var parameters = new
                     {
-                        EmployeeNo = model.CreatedBy,
+                        EmployeeNo = model.EmployeeNo,
                         Password = model.CPassword,
-                        UpdatedBy = model.CreatedBy
+                        UpdatedBy = model.EmployeeNo
                     };
 
                     var result = await connection.ExecuteAsync(queryupdate, parameters);

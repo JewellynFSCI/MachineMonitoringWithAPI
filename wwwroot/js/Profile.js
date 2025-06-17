@@ -134,6 +134,7 @@ function ChangePassword() {
     var formData = new FormData(form);
 
     var operation = $('#Operation').val();
+    formData.append('Operation', operation);
 
     $.ajax({
         url: '/Home/ChangePassword',
@@ -142,19 +143,18 @@ function ChangePassword() {
         contentType: false,
         processData: false,
         success: function (response) {
-            Swal.fire({
-                title: 'Success',
-                text: response,
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                if (operation == "ModalChangePass") {
+            if (operation == "ModalChangePass") {
+                Swal.fire({
+                    title: 'Success',
+                    text: response,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
                     Close();
-                } else {
-                    window.location.href = "/Home/Logout";
-                }
-            });
-
+                });
+            } else {
+                window.location.href = response.redirectUrl;
+            }
         },
         error: function (xhr) {
             Swal.fire({
