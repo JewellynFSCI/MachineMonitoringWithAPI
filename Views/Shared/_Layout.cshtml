@@ -95,6 +95,15 @@
 							</a>
 						</li>
 
+						<li class="nav-item">
+							<a asp-controller="Admin" asp-action="ProductionMap" class="nav-link">
+								<i class="fas fa-map mr-1"></i>
+								<p>
+									Production Map
+								</p>
+							</a>
+						</li>
+
 
 						@{
 							var authlevel = Context.Session.GetInt32("AuthorityLevel");
@@ -103,7 +112,7 @@
 							{
 								<li class="nav-header">Authorized Employee</li>
 								<li class="nav-item">
-									<a asp-controller="Admin" asp-action="ProductionMaps" class="nav-link">
+									<a asp-controller="Admin" asp-action="ListProductionMaps" class="nav-link">
 										<i class="fas fa-map mr-1"></i>
 										<p>
 											List of Production Map
@@ -111,7 +120,7 @@
 									</a>
 								</li>
 								<li class="nav-item">
-									<a asp-controller="Admin" asp-action="MachineLocation" class="nav-link">
+									<a asp-controller="Admin" asp-action="ListMachineLocation" class="nav-link">
 										<i class="fas fa-map-pin mr-2"></i>
 										<p>
 											Add Machine Location

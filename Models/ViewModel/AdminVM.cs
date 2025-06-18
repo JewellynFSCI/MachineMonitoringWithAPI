@@ -6,7 +6,7 @@ namespace MachineMonitoring.Models.ViewModel
 {
     public class AdminVM
     {
-        public List<ProductionMap> ProductionMaps { get; set; }
+        public List<ProductionMap>? ProductionMaps { get; set; }
 
         public List<Plant> Plants { get; set; }
 

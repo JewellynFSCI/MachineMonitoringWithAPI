@@ -28,8 +28,8 @@ namespace MachineMonitoring.Controllers
             _homerepo = homerepo;
         }
 
-        #region 'ProductionMaps - View'
-        public async Task<IActionResult> ProductionMaps()
+        #region 'ListProductionMaps - View'
+        public async Task<IActionResult> ListProductionMaps()
         {
             try
             {
@@ -233,8 +233,8 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-        #region 'MachineLocation - View'
-        public async Task<IActionResult> MachineLocation(ProductionMap? model)
+        #region 'ListMachineLocation - View'
+        public async Task<IActionResult> ListMachineLocation(ProductionMap? model)
         {
             try
             {
@@ -247,7 +247,7 @@ namespace MachineMonitoring.Controllers
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
-                    Machines = await _adminrepo.GetMachineRepo(),
+                    //Machines = await _adminrepo.GetMachineRepo(),
                     ProductionMaps = await _adminrepo.GetProductionMapList(model)
                 };
 
@@ -553,6 +553,34 @@ namespace MachineMonitoring.Controllers
                 }
 
             }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        #endregion
+
+        #region 'ProductionMap - View'
+        [HttpGet]
+        public async Task<IActionResult> ProductionMap(ProductionMap? model)
+        {
+            try
+            {
+                var usersession = HttpContext.Session.GetString("EmployeeNo");
+                if (usersession == null)
+                {
+                    return RedirectToAction("Logout", "Home");
+                }
+
+                var viewModel = new AdminVM
+                {
+                    Plants = await _adminrepo.GetPLantNoList(),
+                    ProductionMaps = await _adminrepo.GetProductionMapList(model)
+                };
+
+                return View(viewModel);
+            }
+
             catch (Exception ex)
             {
                 return StatusCode(500, "Internal server error: " + ex.Message);

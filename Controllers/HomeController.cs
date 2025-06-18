@@ -53,12 +53,12 @@ namespace MachineMonitoring.Controllers
             else if (foundEmployee.AuthorityLevel == 1)  //SYSTEM ADMIN
             {
                 SetSession(foundEmployee);
-                return Json(new { success = true, redirectUrl = Url.Action("MachineLocation", "Admin") });
+                return Json(new { success = true, redirectUrl = Url.Action("ProductionMap", "Admin") });
             }
             else if (foundEmployee.AuthorityLevel == 3)  //ADMIN (SUPERVISOR)
             {
                 SetSession(foundEmployee);
-                return Json(new { success = true, redirectUrl = Url.Action("MachineLocation", "Admin") });
+                return Json(new { success = true, redirectUrl = Url.Action("ListMachineLocation", "Admin") });
             }
             else if (foundEmployee.AuthorityLevel == 2)     //Maintenance Engineer
             {
