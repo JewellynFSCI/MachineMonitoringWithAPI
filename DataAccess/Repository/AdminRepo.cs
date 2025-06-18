@@ -275,7 +275,8 @@ namespace MachineMonitoring.DataAccess.Repository
 
                         var queryupdate = @"UPDATE machinelocations SET
                                                 MachineCode = @MachineCode,
-                                                X = @X, Y = @Y
+                                                X = @X, Y = @Y,
+                                                UpdatedBy = @CreatedBy
                                             WHERE MachineLocationId = @MachineLocationId";
                         var parameters = new
                         {
@@ -283,7 +284,7 @@ namespace MachineMonitoring.DataAccess.Repository
                             MachineCode = model.MachineCode,
                             X = model.X,
                             Y = model.Y,
-                            CreatedBy = "System Update"
+                            CreatedBy = model.CreatedBy
                         };
 
                         var result = await connection.ExecuteAsync(queryupdate, parameters);
