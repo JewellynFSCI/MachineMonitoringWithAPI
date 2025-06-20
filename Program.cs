@@ -12,7 +12,6 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<AdminRepo>();
-builder.Services.AddScoped<HomeRepo>();
 builder.Services.AddScoped<AdminVM>();
 builder.Services.AddSession();
 

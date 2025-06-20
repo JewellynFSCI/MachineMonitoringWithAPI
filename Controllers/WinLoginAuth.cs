@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using MachineMonitoring.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MachineMonitoring.Controllers
 {
@@ -25,6 +27,7 @@ namespace MachineMonitoring.Controllers
         }
 
 
+        #region 'Login - POST'
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Login(LoginDto dto)
@@ -51,6 +54,7 @@ namespace MachineMonitoring.Controllers
                         userType = "MIS";
                         hasAccount = true;
                     }
+
                     if (hasAccount)
                     {
                         HttpContext.Session.SetString(_sessionUserName, accounts.Username);
@@ -59,26 +63,27 @@ namespace MachineMonitoring.Controllers
                         HttpContext.Session.SetString(_sessionEmployeeNumber, employeeNumber);
                         ViewBag.Session = accounts.Username;
 
-                        TempData["SweetAlertMessage"] = "Login Sucessful!";
+                        //TempData["SweetAlertMessage"] = "Login Sucessful!";
 
-                        return Redirect(TempData["ReturnURL"] as string ?? "~/Home/Index");
+                        return Redirect(TempData["ReturnURL"] as string ?? "~/Admin/ProductionMap");
                     }
                     else
                     {
                         ViewData["Message"] = "Username is not registered to the system!";
-                        return View("Login");
+                        return View("Win_Login");
                     }
                 }
                 else
                 {
                     ViewData["Message"] = response.Message;
-                    return View("Login");
+                    return View("Win_Login");
                 }
             }
             return View();
         }
+#endregion
 
-        // Login the account using API
+        #region 'Login the account using API'
         private async Task<Response<Account>> GetAccount(LoginDto dto)
         {
             Response<Account> Res;
@@ -98,8 +103,16 @@ namespace MachineMonitoring.Controllers
                 Res = JsonConvert.DeserializeObject<Response<Account>>(result) ?? new Response<Account>();
             }
             return Res;
-
         }
+        #endregion
+
+        #region 'Logout'
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Win_Login", "WinLoginAuth");
+        }
+        #endregion
 
     }
 }

@@ -16,16 +16,14 @@ namespace MachineMonitoring.Controllers
         private readonly AdminRepo _adminrepo;
         private readonly IWebHostEnvironment _env;
         private readonly AdminVM _adminvm;
-        private readonly HomeRepo _homerepo;
 
 
-        public AdminController(ILogger<AdminController> logger, AdminRepo adminrepo, IWebHostEnvironment env, AdminVM adminvm, HomeRepo homerepo)
+        public AdminController(ILogger<AdminController> logger, AdminRepo adminrepo, IWebHostEnvironment env, AdminVM adminvm)
         {
             _logger = logger;
             _adminrepo = adminrepo;
             _env = env;
             _adminvm = adminvm;
-            _homerepo = homerepo;
         }
 
         #region 'ListProductionMaps - View'
@@ -33,11 +31,12 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
+
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
@@ -58,10 +57,10 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 var locationList = await _adminrepo.GetProductionMapList(model);
@@ -80,10 +79,10 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 var allowedExtensions = new[] { ".jpg", ".png" };
@@ -113,7 +112,8 @@ namespace MachineMonitoring.Controllers
 
                 var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
 
-                model.CreatedBy = usersession;
+                var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
+                model.CreatedBy = _sessionEmployeeName;
                 var success = await _adminrepo.UploadProdMapRepo(model, uniqueFileName);
                 if (success)
                 {
@@ -141,12 +141,14 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
-                model.CreatedBy = usersession;
+
+                var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
+                model.CreatedBy = _sessionEmployeeName;
                 var delete = await _adminrepo.DeleteMapData(model);
                 if (delete)
                 {
@@ -171,10 +173,10 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 if (!ModelState.IsValid)
@@ -189,7 +191,8 @@ namespace MachineMonitoring.Controllers
                     return BadRequest("Production Name already exists!");
                 }
 
-                model.CreatedBy = usersession;
+                var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
+                model.CreatedBy = _sessionEmployeeName;
 
                 #region 'image replacement if replaced by end-user'
                 if (ImgFile != null)
@@ -238,10 +241,10 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 var viewModel = new AdminVM
@@ -266,10 +269,10 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 if (model.MachineCode == null)
@@ -277,7 +280,8 @@ namespace MachineMonitoring.Controllers
                     return BadRequest("Please select machine code");
                 }
 
-                model.CreatedBy = usersession;
+                var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
+                model.CreatedBy = _sessionEmployeeName;
                 var saved = await _adminrepo.SaveMcCoordinatesRepo(model);
                 if (saved)
                 {
@@ -299,10 +303,10 @@ namespace MachineMonitoring.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMCLocation(MachineLocation? model)
         {
-            var usersession = HttpContext.Session.GetString("EmployeeNo");
-            if (usersession == null)
+            var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+            if (_sessionEmployeeNUmber == null)
             {
-                return RedirectToAction("Logout", "Home");
+                return RedirectToAction("Logout", "WinLoginAuth");
             }
             var mclist = await _adminrepo.GetMCLocationRepo(model);
             return Json(new { mclist });
@@ -314,10 +318,10 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 var delete = await _adminrepo.DeleteMCLocationRepo(model);
@@ -336,178 +340,22 @@ namespace MachineMonitoring.Controllers
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
-        #endregion
-
-        #region 'UserManagement - View'
-        public async Task<IActionResult> UserManagement()
-        {
-            try
-            {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
-                {
-                    return RedirectToAction("Logout", "Home");
-                }
-
-                var viewModel = new AdminVM
-                {
-                    SystemUsers = await _homerepo.GetUserRepo(),
-                    Plants = await _adminrepo.GetPLantNoList(),
-                    AuthorityList = await _adminrepo.GetAuthorityListRepo()
-                };
-
-                return View(viewModel);
-            }
-
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
-        }
-        #endregion
-
-        #region 'DeleteUser'
-        public async Task<IActionResult> DeleteUser(SystemUser model)
-        {
-            try
-            {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
-                {
-                    return RedirectToAction("Logout", "Home");
-                }
-
-                if (model.EmployeeNo == null)
-                {
-                    return BadRequest("Please reload page.");
-                }
-
-                var delete = await _adminrepo.DeleteUserRepo(model);
-                if (delete)
-                {
-                    return Ok("Deleted successfully.");
-                }
-                else
-                {
-                    return BadRequest("Failed to delete record.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
-        }
-        #endregion
-
-        #region 'Partial-UserManagement'
-        public async Task<IActionResult> RefreshUserTable()
-        {
-            try
-            {
-                var users = await _homerepo.GetUserRepo();
-                return PartialView("_PartialUserManagement", users);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
-        }
-        #endregion
-
-        #region 'AddNewUser'
-        [HttpPost]
-        public async Task<IActionResult> AddNewUser(SystemUser model)
-        {
-            try
-            {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
-                {
-                    return RedirectToAction("Logout", "Home");
-                }
-
-                if (model.Operation == "Add")
-                {
-                    var checkUser = await _homerepo.GetUserRepo();
-                    var userExists = checkUser.FirstOrDefault(u => u.EmployeeNo == model.EmployeeNo);
-                    if (userExists != null)
-                    {
-                        return BadRequest("Employee number already exists.");
-                    }
-                }
-
-                model.CreatedBy = usersession;
-                var saved = await _adminrepo.SaveUserRepo(model);
-                if (saved)
-                {
-                    if(model.Operation == "Add")
-                    {
-                        return Ok("New user added successfully.");
-                    }
-                    else
-                    {
-                        return Ok("Updated successfully.");
-                    }
-                }
-                else
-                {
-                    return BadRequest("Error in saving.");
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error." + ex.Message);
-            }
-        }
-        #endregion
-
-        #region 'ResetPassword'
-        [HttpPost]
-        public async Task<IActionResult> ResetPassword(SystemUser model)
-        {
-            try
-            {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
-                {
-                    return RedirectToAction("Logout", "Home");
-                }
-
-                model.CreatedBy = usersession;
-                var reset = await _adminrepo.ResetPasswordRepo(model);
-                if (reset)
-                {
-                    return Ok("Password already reset");
-                }
-                else
-                {
-                    return BadRequest("Error in saving.");
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error." + ex.Message);
-            }
-        }
-        #endregion
+        #endregion             
 
         #region 'Profile - View'
         public async Task<IActionResult> Profile()
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNumber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNumber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 var viewModel = new AdminVM
                 {
-                    SystemUsers = await _homerepo.GetUserRepo(),
-                    Plants = await _adminrepo.GetPLantNoList(),
-                    AuthorityList = await _adminrepo.GetAuthorityListRepo()
+                     Plants = await _adminrepo.GetPLantNoList()
                 };
 
                 return View(viewModel);
@@ -529,12 +377,13 @@ namespace MachineMonitoring.Controllers
                 var usersessionname = HttpContext.Session.GetString("EmployeeName");
                 var usersessionplantno = HttpContext.Session.GetInt32("PlantNo");
 
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
-                if(EmployeeName == usersessionname && PlantNo == usersessionplantno)
+                if (EmployeeName == usersessionname && PlantNo == usersessionplantno)
                 {
                     return BadRequest("There are no changes to save.");
                 }
@@ -565,10 +414,10 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                if (usersession == null)
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
                 {
-                    return RedirectToAction("Logout", "Home");
+                    return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
                 var viewModel = new AdminVM

@@ -48,10 +48,10 @@
 						<i class="fas fa-user-circle fa-lg"></i>
 					</a>
 					<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-						<a asp-controller="Admin" asp-action="Profile" class="dropdown-item">
+						@* <a asp-controller="Admin" asp-action="Profile" class="dropdown-item">
 							<i class="fas fa-user-circle fa-lg mr-3"></i> Profile
 						</a>
-						<div class="dropdown-divider"></div>
+						<div class="dropdown-divider"></div> *@
 						<a asp-controller="Home" asp-action="Logout" class="dropdown-item dropdown-footer">
 							<i class="nav-icon fas fa-sign-out-alt fa-lg mr-1"></i> Logout
 						</a>
@@ -64,7 +64,7 @@
 		<!-- Main Sidebar Container -->
 		<aside class="main-sidebar sidebar-dark-primary elevation-4">
 			<!-- Brand Logo -->
-			<a asp-controller="Home" asp-action="MEDashboard" class="brand-link">
+			<a asp-controller="Admin" asp-action="ProductionMap" class="brand-link">
 				<img src="@Url.Content("~/img/icon3.png")" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
 				<span class="brand-text font-weight-light">Machine Monitoring</span>
 			</a>
@@ -78,22 +78,14 @@
 					</div>
 					<div class="info">
 						<a asp-controller="Admin" asp-action="Profile" class="d-block">
-							@Context.Session.GetString("EmployeeName") <br />
-							<i style="font-size: 13px;"> @Context.Session.GetString("AuthorityName") </i> </a>
+							@Context.Session.GetString("_Username") <br />
+						</a>
 					</div>
 				</div>
 
 				<!-- Sidebar Menu -->
 				<nav class="mt-2">
 					<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-						<li class="nav-item">
-							<a asp-controller="Home" asp-action="MEDashboard" class="nav-link">
-								<i class="nav-icon fas fa-tachometer-alt"></i>
-								<p>
-									Dashboard
-								</p>
-							</a>
-						</li>
 
 						<li class="nav-item">
 							<a asp-controller="Admin" asp-action="ProductionMap" class="nav-link">
@@ -104,40 +96,24 @@
 							</a>
 						</li>
 
+						<li class="nav-header">Authorized Employee</li>
+						<li class="nav-item">
+							<a asp-controller="Admin" asp-action="ListProductionMaps" class="nav-link">
+								<i class="fas fa-map mr-1"></i>
+								<p>
+									List of Production Map
+								</p>
+							</a>
+						</li>
 
-						@{
-							var authlevel = Context.Session.GetInt32("AuthorityLevel");
-
-							if(authlevel != 2)      //(authlevel == "1" || authlevel == "3") // OR authlevel != "2"
-							{
-								<li class="nav-header">Authorized Employee</li>
-								<li class="nav-item">
-									<a asp-controller="Admin" asp-action="ListProductionMaps" class="nav-link">
-										<i class="fas fa-map mr-1"></i>
-										<p>
-											List of Production Map
-										</p>
-									</a>
-								</li>
-								<li class="nav-item">
-									<a asp-controller="Admin" asp-action="ListMachineLocation" class="nav-link">
-										<i class="fas fa-map-pin mr-2"></i>
-										<p>
-											Add Machine Location
-										</p>
-									</a>
-								</li>
-								<li class="nav-item">
-									<a asp-controller="Admin" asp-action="UserManagement" class="nav-link">
-										<i class="fas fa-users-cog mr-1"></i>
-										<p>
-											User Management
-										</p>
-									</a>
-								</li>
-							}
-						}
-
+						<li class="nav-item">
+							<a asp-controller="Admin" asp-action="ListMachineLocation" class="nav-link">
+								<i class="fas fa-map-pin mr-2"></i>
+								<p>
+									Add Machine Location
+								</p>
+							</a>
+						</li>
 					</ul>
 				</nav>
 				<!-- /.sidebar-menu -->

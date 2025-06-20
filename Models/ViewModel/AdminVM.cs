@@ -14,8 +14,5 @@ namespace MachineMonitoring.Models.ViewModel
 
         public List<MachineLocation> MachineLocations { get; set; }
 
-        public List<SystemUser> SystemUsers { get; set; }
-
-        public List<Authority> AuthorityList { get; set; }
     }
 }
