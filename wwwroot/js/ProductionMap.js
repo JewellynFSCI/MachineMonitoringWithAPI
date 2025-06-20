@@ -137,24 +137,124 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 }
 //#endregion
 
+////#region 'addPointLayer'
+//function addPointLayer(map, pointSource) {
+//    const pointLayer = new ol.layer.Vector({
+//        source: pointSource,
+//        style: function (feature, resolution) {
+//            // Desired size in map units (e.g., 10 pixels at base resolution)
+//            const baseSize = 8;
+//            const adjustedRadius = baseSize / resolution;
+
+//            return new ol.style.Style({
+//                image: new ol.style.Circle({
+//                    radius: adjustedRadius,
+//                    fill: new ol.style.Fill({ color: 'red' }),
+//                    stroke: new ol.style.Stroke({ color: 'white', width: 2 })
+//                })
+//            });
+//        }
+//    });
+//    map.addLayer(pointLayer);
+//    return pointLayer;
+//}
+////#endregion
+
 //#region 'addPointLayer'
 function addPointLayer(map, pointSource) {
+    let start = new Date().getTime(); // animation reference
+
+    //const pointLayer = new ol.layer.Vector({
+    //    source: pointSource,
+    //    style: function (feature, resolution) {
+    //        const elapsed = new Date().getTime() - start;
+    //        const pulseDuration = 500; // 3 seconds
+    //        const progress = (elapsed % pulseDuration) / pulseDuration;
+
+    //        const baseSize =30;
+    //        const adjustedRadius = baseSize / resolution;
+
+    //        const radius = adjustedRadius * progress;
+    //        const opacity = 1 - progress;
+
+    //        return [
+    //            // Pulse Circle
+    //            new ol.style.Style({
+    //                image: new ol.style.Circle({
+    //                    radius: radius,
+    //                    stroke: new ol.style.Stroke({
+    //                        color: 'rgba(255, 0, 0, ' + opacity + ')',
+    //                        width: 2
+    //                    }),
+    //                    fill: new ol.style.Fill({
+    //                        color: 'rgba(255, 0, 0, ' + (opacity * 1) + ')'
+    //                    })
+    //                })
+    //            }),
+    //            // Static Icon
+    //            new ol.style.Style({
+    //                image: new ol.style.Icon({
+    //                    radius: radius,
+    //                    anchor: [0.5, 0.5],
+    //                    src: '/img/alarmGIF.gif',
+    //                    scale: 0.05
+    //                })
+    //            }),
+    //        ];
+    //    }
+    //});
+
     const pointLayer = new ol.layer.Vector({
         source: pointSource,
         style: function (feature, resolution) {
-            // Desired size in map units (e.g., 10 pixels at base resolution)
-            const baseSize = 8;
+            const elapsed = new Date().getTime() - start;
+            const pulseDuration = 500;
+            const progress = (elapsed % pulseDuration) / pulseDuration;
+
+            const baseSize = 30;
             const adjustedRadius = baseSize / resolution;
 
-            return new ol.style.Style({
-                image: new ol.style.Circle({
-                    radius: adjustedRadius,
-                    fill: new ol.style.Fill({ color: 'red' }),
-                    stroke: new ol.style.Stroke({ color: 'white', width: 2 })
-                })
-            });
+            const radius = adjustedRadius * progress;
+            const opacity = 1 - progress;
+
+            const iconScale = adjustedRadius / 600; // adjust the denominator for size tuning
+
+            return [
+                // Pulse Circle
+                new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: radius,
+                        stroke: new ol.style.Stroke({
+                            color: 'rgba(255, 0, 0, ' + opacity + ')',
+                            width: 2
+                        }),
+                        fill: new ol.style.Fill({
+                            color: 'rgba(255, 0, 0, ' + opacity + ')'
+                        })
+                    })
+                }),
+                // Resizable GIF Icon
+                new ol.style.Style({
+                    image: new ol.style.Icon({
+                        anchor: [0.5, 0.5],
+                        anchorXUnits: 'fraction',
+                        anchorYUnits: 'fraction',
+                        src: '/img/alarmGIF.gif',
+                        scale: iconScale
+                    })
+                }),
+            ];
         }
     });
+
+
+    // Trigger re-rendering every frame (~60fps)
+    const animate = function () {
+        pointLayer.changed();
+        requestAnimationFrame(animate);
+    };
+    animate();
+
     map.addLayer(pointLayer);
     return pointLayer;
 }

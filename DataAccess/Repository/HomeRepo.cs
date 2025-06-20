@@ -70,5 +70,7 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
         #endregion
+
+
     }
 }

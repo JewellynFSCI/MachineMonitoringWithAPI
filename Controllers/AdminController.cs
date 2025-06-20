@@ -247,7 +247,6 @@ namespace MachineMonitoring.Controllers
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
-                    //Machines = await _adminrepo.GetMachineRepo(),
                     ProductionMaps = await _adminrepo.GetProductionMapList(model)
                 };
 
