@@ -57,12 +57,6 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
-                if (_sessionEmployeeNUmber == null)
-                {
-                    return RedirectToAction("Logout", "WinLoginAuth");
-                }
-
                 var locationList = await _adminrepo.GetProductionMapList(model);
                 return Json(new { locationList });
             }
@@ -303,11 +297,6 @@ namespace MachineMonitoring.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMCLocation(MachineLocation? model)
         {
-            var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
-            if (_sessionEmployeeNUmber == null)
-            {
-                return RedirectToAction("Logout", "WinLoginAuth");
-            }
             var mclist = await _adminrepo.GetMCLocationRepo(model);
             return Json(new { mclist });
         }
@@ -368,58 +357,12 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-        #region 'ChangeProfileDetails'
-        public async Task<IActionResult> ChangeProfileDetails(string EmployeeName, int PlantNo)
-        {
-            try
-            {
-                var usersession = HttpContext.Session.GetString("EmployeeNo");
-                var usersessionname = HttpContext.Session.GetString("EmployeeName");
-                var usersessionplantno = HttpContext.Session.GetInt32("PlantNo");
-
-                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
-                if (_sessionEmployeeNUmber == null)
-                {
-                    return RedirectToAction("Logout", "WinLoginAuth");
-                }
-
-                if (EmployeeName == usersessionname && PlantNo == usersessionplantno)
-                {
-                    return BadRequest("There are no changes to save.");
-                }
-
-                var update = await _adminrepo.UpdateProfileDetails(EmployeeName,PlantNo,usersession);
-                if (update)
-                {
-                    HttpContext.Session.SetString("EmployeeName", EmployeeName);
-                    HttpContext.Session.SetInt32("PlantNo", PlantNo);
-                    return Ok("Update successfully.");
-                }
-                else
-                {
-                    return BadRequest("Failed to update record.");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
-        }
-        #endregion
-
         #region 'ProductionMap - View'
         [HttpGet]
         public async Task<IActionResult> ProductionMap(ProductionMap? model)
         {
             try
             {
-                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
-                if (_sessionEmployeeNUmber == null)
-                {
-                    return RedirectToAction("Logout", "WinLoginAuth");
-                }
-
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),

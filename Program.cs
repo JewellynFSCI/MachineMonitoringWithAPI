@@ -35,6 +35,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=WinLoginAuth}/{action=Win_Login}/{id?}");
+    pattern: "{controller=Admin}/{action=ProductionMap}/{id?}");
 
 app.Run();

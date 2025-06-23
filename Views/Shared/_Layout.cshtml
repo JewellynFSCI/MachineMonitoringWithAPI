@@ -48,11 +48,11 @@
 						<i class="fas fa-user-circle fa-lg"></i>
 					</a>
 					<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-						@* <a asp-controller="Admin" asp-action="Profile" class="dropdown-item">
+						<a asp-controller="Admin" asp-action="Profile" class="dropdown-item">
 							<i class="fas fa-user-circle fa-lg mr-3"></i> Profile
 						</a>
-						<div class="dropdown-divider"></div> *@
-						<a asp-controller="Home" asp-action="Logout" class="dropdown-item dropdown-footer">
+						<div class="dropdown-divider"></div>
+						<a asp-controller="WinLoginAuth" asp-action="Logout" class="dropdown-item dropdown-footer">
 							<i class="nav-icon fas fa-sign-out-alt fa-lg mr-1"></i> Logout
 						</a>
 					</div>
@@ -64,7 +64,7 @@
 		<!-- Main Sidebar Container -->
 		<aside class="main-sidebar sidebar-dark-primary elevation-4">
 			<!-- Brand Logo -->
-			<a asp-controller="Admin" asp-action="ProductionMap" class="brand-link">
+			<a asp-controller="Admin" asp-action="ListProductionMaps" class="brand-link">
 				<img src="@Url.Content("~/img/icon3.png")" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
 				<span class="brand-text font-weight-light">Machine Monitoring</span>
 			</a>
@@ -87,16 +87,6 @@
 				<nav class="mt-2">
 					<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-						<li class="nav-item">
-							<a asp-controller="Admin" asp-action="ProductionMap" class="nav-link">
-								<i class="fas fa-map mr-1"></i>
-								<p>
-									Production Map
-								</p>
-							</a>
-						</li>
-
-						<li class="nav-header">Authorized Employee</li>
 						<li class="nav-item">
 							<a asp-controller="Admin" asp-action="ListProductionMaps" class="nav-link">
 								<i class="fas fa-map mr-1"></i>

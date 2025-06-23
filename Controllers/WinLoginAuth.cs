@@ -12,6 +12,7 @@ namespace MachineMonitoring.Controllers
         private const string _sessionUserType = "_Usertype";
         private const string _sessionEmployeeName = "_EmployeeName";
         private const string _sessionEmployeeNumber = "_EmployeeNumber";
+        private const string _sessionDisplayName = "_DisplayName";
         private const string _memberOfAcc = "";
         private const string _memberOfAdmin = "app.planvsactual.admin";
         private readonly string _ldapUrl = "";
@@ -61,11 +62,10 @@ namespace MachineMonitoring.Controllers
                         HttpContext.Session.SetString(_sessionUserType, userType);
                         HttpContext.Session.SetString(_sessionEmployeeName, employeeName);
                         HttpContext.Session.SetString(_sessionEmployeeNumber, employeeNumber);
+                        HttpContext.Session.SetString(_sessionDisplayName, accounts.DisplayName);
                         ViewBag.Session = accounts.Username;
 
-                        //TempData["SweetAlertMessage"] = "Login Sucessful!";
-
-                        return Redirect(TempData["ReturnURL"] as string ?? "~/Admin/ProductionMap");
+                        return Redirect(TempData["ReturnURL"] as string ?? "~/Admin/ListProductionMaps");
                     }
                     else
                     {
@@ -81,7 +81,7 @@ namespace MachineMonitoring.Controllers
             }
             return View();
         }
-#endregion
+        #endregion
 
         #region 'Login the account using API'
         private async Task<Response<Account>> GetAccount(LoginDto dto)
@@ -110,7 +110,7 @@ namespace MachineMonitoring.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction("Win_Login", "WinLoginAuth");
+            return RedirectToAction("ProductionMap", "Admin");
         }
         #endregion
 

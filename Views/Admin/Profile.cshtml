@@ -3,18 +3,6 @@
 	ViewData["Title"] = "User Profile";
 }
 
-<style>
-		.rule {
-			font-size: 12px;
-			color: dimgray;
-			margin-bottom: 0rem;
-		}
-
-		input::placeholder {
-			font-weight: bold;
-		}
-	</style>
-
 <section class="content">
 	<div class="container-fluid">
 		<div class="row justify-content-center">
@@ -54,11 +42,9 @@
 										<label for="EmployeeName"> <i class="fas fa-id-card mr-1"></i> Employee Name</label>
 										<input type="text" class="form-control" 
 											id="EmployeeName" name="EmployeeName"
-											   value='@Context.Session.GetString("_EmployeeName")' readonly>
+											   value='@Context.Session.GetString("_DisplayName")' readonly>
 									</div>
 								</div>
-
-
 							</div>
 						</div>
 					</form>

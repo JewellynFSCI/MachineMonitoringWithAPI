@@ -343,42 +343,6 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-        
-
-        
-
-        #region 'UpdateProfileDetails'
-        public async Task<bool> UpdateProfileDetails(string EmployeeName, int PlantNo, string usersession)
-        {
-            try
-            {
-                using (var connection = Connection)
-                {
-                    var queryupdate = @"UPDATE systemusers SET
-                                                EmployeeName = @EmployeeName,
-                                                PlantNo = @PlantNo,
-                                                UpdatedBy = @UpdatedBy
-                                            WHERE EmployeeNo = @EmployeeNo";
-                    var parameters = new
-                    {
-                        EmployeeNo = usersession,
-                        EmployeeName = EmployeeName,
-                        PlantNo = PlantNo,
-                        UpdatedBy = usersession
-                    };
-
-                    var result = await connection.ExecuteAsync(queryupdate, parameters);
-
-                    return result > 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving.");
-                throw; // Let the controller handle the exception
-            }
-        }
-        #endregion
 
     }
 }

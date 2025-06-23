@@ -9,27 +9,6 @@
 	var username = HttpContextAccessor.HttpContext != null ? HttpContextAccessor.HttpContext.Session.GetString("_Username") : "";
 	var userId = HttpContextAccessor.HttpContext != null ? HttpContextAccessor.HttpContext.Session.GetString("_EmployeeNumber") : "";
 }
-@if (TempData["SweetAlertMessage"] != null)
-{
-	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			Swal.fire({
-				toast: true,
-				icon: 'success',
-				position: 'top-end',
-				timer: 2000,
-				timerProgressBar: true,
-				title: '@TempData["SweetAlertMessage"]',
-				customClass: {
-					popup: 'bg-success text-light'
-				},
-				showConfirmButton: false
-			})
-		});
-	</script>
-}
-
-
 
 <!DOCTYPE html>
 <html lang="en">

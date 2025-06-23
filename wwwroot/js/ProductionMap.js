@@ -137,78 +137,15 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 }
 //#endregion
 
-////#region 'addPointLayer'
-//function addPointLayer(map, pointSource) {
-//    const pointLayer = new ol.layer.Vector({
-//        source: pointSource,
-//        style: function (feature, resolution) {
-//            // Desired size in map units (e.g., 10 pixels at base resolution)
-//            const baseSize = 8;
-//            const adjustedRadius = baseSize / resolution;
-
-//            return new ol.style.Style({
-//                image: new ol.style.Circle({
-//                    radius: adjustedRadius,
-//                    fill: new ol.style.Fill({ color: 'red' }),
-//                    stroke: new ol.style.Stroke({ color: 'white', width: 2 })
-//                })
-//            });
-//        }
-//    });
-//    map.addLayer(pointLayer);
-//    return pointLayer;
-//}
-////#endregion
-
 //#region 'addPointLayer'
 function addPointLayer(map, pointSource) {
     let start = new Date().getTime(); // animation reference
-
-    //const pointLayer = new ol.layer.Vector({
-    //    source: pointSource,
-    //    style: function (feature, resolution) {
-    //        const elapsed = new Date().getTime() - start;
-    //        const pulseDuration = 500; // 3 seconds
-    //        const progress = (elapsed % pulseDuration) / pulseDuration;
-
-    //        const baseSize =30;
-    //        const adjustedRadius = baseSize / resolution;
-
-    //        const radius = adjustedRadius * progress;
-    //        const opacity = 1 - progress;
-
-    //        return [
-    //            // Pulse Circle
-    //            new ol.style.Style({
-    //                image: new ol.style.Circle({
-    //                    radius: radius,
-    //                    stroke: new ol.style.Stroke({
-    //                        color: 'rgba(255, 0, 0, ' + opacity + ')',
-    //                        width: 2
-    //                    }),
-    //                    fill: new ol.style.Fill({
-    //                        color: 'rgba(255, 0, 0, ' + (opacity * 1) + ')'
-    //                    })
-    //                })
-    //            }),
-    //            // Static Icon
-    //            new ol.style.Style({
-    //                image: new ol.style.Icon({
-    //                    radius: radius,
-    //                    anchor: [0.5, 0.5],
-    //                    src: '/img/alarmGIF.gif',
-    //                    scale: 0.05
-    //                })
-    //            }),
-    //        ];
-    //    }
-    //});
 
     const pointLayer = new ol.layer.Vector({
         source: pointSource,
         style: function (feature, resolution) {
             const elapsed = new Date().getTime() - start;
-            const pulseDuration = 500;
+            const pulseDuration = 500;      //0.5 second
             const progress = (elapsed % pulseDuration) / pulseDuration;
 
             const baseSize = 30;
@@ -234,15 +171,15 @@ function addPointLayer(map, pointSource) {
                     })
                 }),
                 // Resizable GIF Icon
-                new ol.style.Style({
-                    image: new ol.style.Icon({
-                        anchor: [0.5, 0.5],
-                        anchorXUnits: 'fraction',
-                        anchorYUnits: 'fraction',
-                        src: '/img/alarmGIF.gif',
-                        scale: iconScale
-                    })
-                }),
+                //new ol.style.Style({
+                //    image: new ol.style.Icon({
+                //        anchor: [0.5, 0.5],
+                //        anchorXUnits: 'fraction',
+                //        anchorYUnits: 'fraction',
+                //        src: '/img/alarmGIF.gif',
+                //        scale: iconScale
+                //    })
+                //}),
             ];
         }
     });
@@ -357,7 +294,9 @@ function buildPopupHTML( name, id) { // Added default values for name and id
             <input type="hidden" id="MachineLocationId" name="MachineLocationId" value="${id}" />
 
             <p> <strong> Machine Code : </strong> ${name}</p>
+            <p> <strong> Ticket# : </strong> #0000000000 </p>
             <p> <strong> Error Code : </strong> Error Code (Error Name)</p>
+            <p> <strong> Error Details : </strong> Operators Input</p>
 
         </form>
 `;
