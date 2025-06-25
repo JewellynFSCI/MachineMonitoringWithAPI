@@ -129,7 +129,10 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
     const map = new ol.Map({
         target: 'map',
         layers: [imageLayer],
-        view: view
+        view: view,
+        controls: ol.control.defaults.defaults().extend([
+            new ol.control.FullScreen()
+        ])
     });
 
     view.fit(imageExtent);

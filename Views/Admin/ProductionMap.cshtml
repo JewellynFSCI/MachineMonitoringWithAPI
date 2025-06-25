@@ -21,11 +21,22 @@
 
 	<style>
 		#map {
-			width: 100%;
-			/* height: 95vh; */
 			height: 80vh;
+			width: 100%;
 			border: 1px solid #ccc;
 			display: block;
+		}
+
+			#map:fullscreen,
+			:-webkit-full-screen #map,
+			:-moz-full-screen #map,
+			:-ms-fullscreen #map {
+				height: 100% !important;
+				width: 100% !important;
+			}
+
+		.ol-control {
+			z-index: 9999;
 		}
 
 		.ol-popup {
@@ -80,78 +91,52 @@
 
 </head>
 <body class="hold-transition">
-	<div class="wrapper">
 
-		<!-- Navbar -->
-		<nav class="main-header navbar navbar-expand navbar-white navbar-light ml-0">
-			<ul class="navbar-nav ml-2">
-				<li class="nav-item">
-				<a asp-controller="Admin" asp-action="ProductionMap" class="navbar-brand">
-					<img src="@Url.Content("~/img/icon3.png")" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8;border: solid 1px dimgray; width:4%">
-						<span class="brand-text font-weight-strong" style="color:dimgray">Machine Monitoring</span>
-				</a>
-				</li>
-			</ul>
+	@await Html.PartialAsync("_PartialNavBarLogout")
 
-			<ul class="navbar-nav ml-auto">
-				<li class="nav-item">
-					<a class="nav-link" data-widget="fullscreen" href="#" role="button">
-						<i class="fas fa-expand-arrows-alt fa-lg"></i>
-					</a>
-				</li>
-				<!-- Profile Dropdown Menu -->
-				<li class="nav-item dropdown">
-					<a asp-controller="WinLoginAuth" asp-action="Win_Login"class="nav-link" >
-						LogIn <i class="fas fa-sign-in-alt ml-1"></i>
-					</a>
-				</li>
-			</ul>
-		</nav>
-		<!-- /.navbar -->
-	</div>
-
-		<section class="content">
-			<div class="container-fluid">
-				<div class="row">
-					<div class="col-12">
-						<div class="card mt-3">
-							<div class="card-body" style="margin-top:-0.5%">
-								<div class="row">
-									<div class="col-sm-6">
-										<div class="form-inline">
-											<label class=" mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
-											<select id="PlantNoSelect" name="PlantNoSelect" class="form-control w-100">
-												<option disabled selected>--Select Plant No--</option>
-												@foreach (var plant in Model.Plants)
-												{
-													<option id="PlantSelected" value="@plant.PlantNo">@plant.PlantName</option>
-												}
-											</select>
-										</div>
-									</div>
-
-									<div class="col-sm-6">
-										<div class="form-inline">
-											<label class="mr-2">Production Map</label>
-											<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control w-100">
-												<!-- Options are populated in jQuery -->
-											</select>
-
-										</div>
+	<section class="content" style="background-color: #e9ecef;">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-12">
+					<div class="card mt-3">
+						<div class="card-body" style="margin-top:-0.5%">
+							<div class="row">
+								<div class="col-sm-6">
+									<div class="form-inline">
+										<label class=" mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
+										<select id="PlantNoSelect" name="PlantNoSelect" class="form-control w-100">
+											<option disabled selected>--Select Plant No--</option>
+											@foreach (var plant in Model.Plants)
+											{
+												<option id="PlantSelected" value="@plant.PlantNo">@plant.PlantName</option>
+											}
+										</select>
 									</div>
 								</div>
 
-								<div class="mt-2">
-									<div id="map"></div>
-								</div>
+								<div class="col-sm-6">
+									<div class="form-inline">
+										<label class="mr-2">Production Map</label>
+										<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control w-100">
+											<!-- Options are populated in jQuery -->
+										</select>
 
+									</div>
+								</div>
 							</div>
+
+							<div class="mt-2">
+								<div id="map"></div>
+							</div>
+
 						</div>
 					</div>
 				</div>
 			</div>
+		</div>
 
-		</section>
+	</section>
+
 
 
 	<!-- jQuery -->
@@ -161,7 +146,6 @@
 	<script src="~/dist/js/adminlte.js"></script>
 	<script src="~/plugins/openlayers/ol.js"></script>	<!--OpenLayer JS-->
 	<script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
-
 	<script src="~/js/productionmap.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
 

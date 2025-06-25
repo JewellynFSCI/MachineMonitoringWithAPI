@@ -22,37 +22,44 @@
 	<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 
 </head>
-<body class="hold-transition login-page">
-	<div class="login-box w-25">
-		<div class="card card-outline">
-			<div class="card-header text-center">
-				<img src="~/img/icon3.png" alt="MachineLocation" height="100" width="100">
-				<h2>Machine Monitoring</h2>
-			</div>
-			<div class="card-body">
-				<p class="text-center">Please use your <i class="fab fa-windows ml-1"></i> Windows account to login.</p>
+<body class="hold-transition">
 
-				@using (Html.BeginForm("Login", "WinLoginAuth", FormMethod.Post))
-				{
-					@Html.ValidationSummary(true)
-					@Html.AntiForgeryToken()
-					<div class="form-group">
-						<input type="text" class="form-control" asp-for="UserName" placeholder="Username" required />
-					</div>
-					<div class="form-group">
-						<input type="password" class="form-control" asp-for="Password" placeholder="Password" required />
-					</div>
-					<div class="form-group">
-						<button type="submit" class="form-control btn-primary text-light">Login</button>
-						<span class="text-danger">
-							@ViewData["Message"]
-						</span>
-					</div>
-				}
+	@await Html.PartialAsync("_PartialNavBarLogout")
 
+	<div class="login-page">
+		<div class="login-box w-25">
+			<div class="card card-outline">
+				<div class="card-header text-center">
+					<img src="~/img/icon3.png" alt="MachineLocation" height="100" width="100">
+					<h2>Machine Monitoring</h2>
+				</div>
+				<div class="card-body">
+					<p class="text-center">Please use your <i class="fab fa-windows ml-1"></i> Windows account to login.</p>
+
+					@using (Html.BeginForm("Login", "WinLoginAuth", FormMethod.Post))
+					{
+						@Html.ValidationSummary(true)
+						@Html.AntiForgeryToken()
+						<div class="form-group">
+							<input type="text" class="form-control" asp-for="UserName" placeholder="Username" required />
+						</div>
+						<div class="form-group">
+							<input type="password" class="form-control" asp-for="Password" placeholder="Password" required />
+						</div>
+						<div class="form-group">
+							<button type="submit" class="form-control btn-primary text-light">Login</button>
+							<span class="text-danger">
+								@ViewData["Message"]
+							</span>
+						</div>
+					}
+
+				</div>
 			</div>
 		</div>
 	</div>
+
+	
 
 
 	<script src="~/plugins/jquery/jquery.min.js"></script>

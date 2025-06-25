@@ -366,7 +366,6 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
 
         // ✅ If clicked the same active feature again, do nothing (really do nothing)
         if (clickedFeature && clickedFeature === activeFeature) {
-
             return;
         }
 
