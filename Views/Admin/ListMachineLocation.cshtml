@@ -60,6 +60,20 @@
 			font-size: 25px;
 			color: dimgray;
 		}
+
+
+	/* Make Select2 element taller and wider */
+	#machineCode + .select2-container .select2-selection--single {
+		height: 38px;
+		box-sizing: border-box;
+		padding-left: 0px;
+	}
+
+
+	#machineCode + .select2-container .select2-selection__arrow {
+		height: 38px;
+	}
+
 </style>
 
 <section class="content">
@@ -109,8 +123,17 @@
 			</div>
 		</div>
 	</div>
-
 </section>
+
+<script>
+	const machineOptionsHTML = `
+		<option disabled selected>--Select Machine--</option>
+	@foreach (var machine in Model.Machines)
+	{
+		<text><option value="@machine.machineCode">@machine.machineCode</option></text>
+	}
+	`;
+</script>
 
 @section Scripts {
 	<script src="~/js/plotcoordinates.js"></script>

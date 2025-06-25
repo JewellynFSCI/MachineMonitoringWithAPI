@@ -4,6 +4,10 @@ using MySql.Data.MySqlClient;
 using Dapper;
 using MachineMonitoring.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using MachineMonitoring.Models.DTOs;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using System.Text;
 
 
 namespace MachineMonitoring.DataAccess.Repository
@@ -13,12 +17,14 @@ namespace MachineMonitoring.DataAccess.Repository
         private readonly IConfiguration _configuration;
         private readonly ILogger<AdminRepo> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string _mcCodes = "";
 
         public AdminRepo(IConfiguration configuration, ILogger<AdminRepo> logger, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
+            _mcCodes = _configuration.GetConnectionString("MachineCodes") ?? "";
         }
 
         private IDbConnection Connection => new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -170,7 +176,7 @@ namespace MachineMonitoring.DataAccess.Repository
                 {
                     var query = @"  UPDATE ProductionMaps SET IsDeleted = 1, UpdatedBy = @CreatedBy
                                     WHERE ProductionMapId = @ProductionMapId";
-                    var deleteExec = await connection.ExecuteAsync(query, new { model.ProductionMapId,model.CreatedBy });
+                    var deleteExec = await connection.ExecuteAsync(query, new { model.ProductionMapId, model.CreatedBy });
                     return deleteExec > 0;
                 }
             }
@@ -343,6 +349,29 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
+
+        #region 'GetMachineCodes using API'
+        public async Task<List<Machine>> GetMachineCodes()
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync(_mcCodes);
+                    string result = await response.Content.ReadAsStringAsync();
+
+                    var apiResponse = JsonConvert.DeserializeObject<APIResponse<List<Machine>>>(result);
+                    return apiResponse?.Data ?? new List<Machine>();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting machine codes");
+                throw;
+            }
+        }
+
+        #endregion
 
     }
 }

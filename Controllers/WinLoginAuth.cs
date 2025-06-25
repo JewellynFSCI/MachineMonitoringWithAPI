@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using MachineMonitoring.Models;
 using MachineMonitoring.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -65,7 +66,7 @@ namespace MachineMonitoring.Controllers
                         HttpContext.Session.SetString(_sessionDisplayName, accounts.DisplayName);
                         ViewBag.Session = accounts.Username;
 
-                        return Redirect(TempData["ReturnURL"] as string ?? "~/Admin/ListProductionMaps");
+                        return Redirect(TempData["ReturnURL"] as string ?? "~/Admin/ListMachineLocation");
                     }
                     else
                     {

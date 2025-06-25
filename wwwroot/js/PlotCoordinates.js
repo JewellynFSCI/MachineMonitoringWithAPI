@@ -2,7 +2,7 @@
 var coordinates = [];
 var ImgName = [];
 
-$(document).ready(function () {
+$(function () {
     GetProductionMap();
     GetImgNamefromDb();
 });
@@ -50,7 +50,6 @@ function GetProductionMap() {
         });
     });
 }
-
 //#endregion
 
 //#region 'Get Image Name from cache'
@@ -90,18 +89,22 @@ function buildPopupHTML(coord, name = '', id = '') { // Added default values for
                     <input type="text" class="form-control" id="Y" name="Y" value="${Math.round(coord[1])}" readonly>
                 </div>
             </div>
-            <div class="form-group">
-                <label for="MachineCode">Machine Code:</label><br />
-                <input type="text" class="form-control w-100" id="MachineCode" name="MachineCode" placeholder="Enter Machine Code. . ." value="${name || ''}" />
+            
+			<div class="form-group">
+                <label class="mr-2">Machine</label>
+                <select name="machineCode" id="machineCode" class="form-control select2 w-100">
+                    ${machineOptionsHTML}
+                </select>
             </div>
+
             <div class="row mt-10">
                 <div class="form-group">
                     ${id ? // If ID exists, it's an existing point, show delete and update (save)
-                        `<button type="button" class="btn btn-danger" id="btnDelete"> <i class="fas fa-trash"></i> DELETE</button>
+            `<button type="button" class="btn btn-danger" id="btnDelete"> <i class="fas fa-trash"></i> DELETE</button>
                         <button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> UPDATE</button>`
-                        : // If no ID, it's a new point, show only save
-                        `<button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> SAVE</button>`
-                    }
+            : // If no ID, it's a new point, show only save
+            `<button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> SAVE</button>`
+        }
                 </div>
             </div>
         </form>
@@ -119,6 +122,12 @@ function SaveToDB(moved) {
 
     formData.append('PlantNo', PlantNo);
     formData.append('ProductionMapId', ProductionMapId);
+
+    var MCLocId = formData.get("MachineLocationId");
+
+    if (moved == "moved" && (MCLocId === null || MCLocId === "")) {
+        return;
+    }
 
     $.ajax({
         url: '/Admin/SaveMcCoordinates',
@@ -147,6 +156,7 @@ function SaveToDB(moved) {
             });
         }
     });
+
 }
 //#endregion
 
@@ -256,7 +266,7 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 //#endregion
 
 //#region 'addPointLayer'
-function addPointLayer(map, pointSource) {   
+function addPointLayer(map, pointSource) {
     const pointLayer = new ol.layer.Vector({
         source: pointSource,
         style: function (feature, resolution) {
@@ -331,28 +341,44 @@ function setupPopup(map) {
 function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modifyInteraction) {
     let activeFeature = null;
     let tempPointFeature = null;
+    let activeCoordinates = null;
     const popupElement = popupOverlay.getElement();
+    
 
     map.on('singleclick', function (evt) {
         const clickedFeature = map.forEachFeatureAtPixel(evt.pixel, f => f);
 
-        // If clicked on the same feature again, just toggle the popup
+        if (clickedFeature) {
+            const coordinates = clickedFeature.getGeometry().getCoordinates();
+
+            const activeCoordinates = activeFeature
+                ? activeFeature.getGeometry().getCoordinates()
+                : null;
+
+            if (
+                activeCoordinates &&
+                coordinates[0] === activeCoordinates[0] &&
+                coordinates[1] === activeCoordinates[1]
+            ) {
+                return; // Same point clicked again — do nothing
+            }
+        }
+
+        // ✅ If clicked the same active feature again, do nothing (really do nothing)
         if (clickedFeature && clickedFeature === activeFeature) {
-            popupOverlay.setPosition(undefined);
-            modifyCollection.clear();
-            modifyInteraction.setActive(false);
-            activeFeature = null;
+
             return;
         }
 
-        // Remove temp point if clicked somewhere else
+        // ✅ Remove temp point if clicked somewhere else
         if (tempPointFeature && clickedFeature !== tempPointFeature) {
             pointSource.removeFeature(tempPointFeature);
             tempPointFeature = null;
         }
 
-        // If clicked on an existing feature (other than temp)
+
         if (clickedFeature) {
+            // ⬇️ Clicked a different point — update popup
             activeFeature = clickedFeature;
             tempPointFeature = null;
             modifyCollection.clear();
@@ -364,12 +390,17 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
             const id = activeFeature.get('machineLocationId') || '';
             popupElement.innerHTML = buildPopupHTML(coord, name, id);
             popupOverlay.setPosition(coord);
+            popupElement.innerHTML = buildPopupHTML(coord, name, id);
+            popupOverlay.setPosition(coord);
+
+            $('#machineCode').select2();
+            $('#machineCode').val(name).trigger('change');
 
             document.getElementById('X').value = Math.round(coord[0]);
             document.getElementById('Y').value = Math.round(coord[1]);
-            document.getElementById('MachineCode').value = name;
+            document.getElementById('machineCode').value = name;
         } else {
-            // Clicked on empty space — create new point
+            // ⬇️ Clicked on empty space — add new temporary point
             const coordinate = evt.coordinate;
             const newPointFeature = new ol.Feature(new ol.geom.Point(coordinate));
             tempPointFeature = newPointFeature;
@@ -380,17 +411,16 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
             modifyCollection.push(activeFeature);
             modifyInteraction.setActive(true);
 
-            popupElement.innerHTML = buildPopupHTML(coordinate);
+            popupElement.innerHTML = buildPopupHTML(coordinate); // no name/id = new point
             popupOverlay.setPosition(coordinate);
 
+            $('#machineCode').select2();
             document.getElementById('X').value = Math.round(coordinate[0]);
             document.getElementById('Y').value = Math.round(coordinate[1]);
         }
     });
 
     popupElement.addEventListener('click', function (e) {
-        if (!activeFeature) return;
-
         const target = e.target;
         const closer = popupElement.querySelector('.ol-popup-closer');
 
@@ -443,6 +473,5 @@ function setupModifyListener(modifyInteraction, popupOverlay) {
     });
 }
 //#endregion
- 
 
 

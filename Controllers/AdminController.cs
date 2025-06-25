@@ -7,6 +7,7 @@ using MachineMonitoring.Models.ViewModel;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Linq.Expressions;
+using System.Reflection.PortableExecutable;
 
 namespace MachineMonitoring.Controllers
 {
@@ -244,12 +245,12 @@ namespace MachineMonitoring.Controllers
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
-                    ProductionMaps = await _adminrepo.GetProductionMapList(model)
+                    ProductionMaps = await _adminrepo.GetProductionMapList(model),
+                    Machines = await _adminrepo.GetMachineCodes()
                 };
 
                 return View(viewModel);
             }
-
             catch (Exception ex)
             {
                 return StatusCode(500, "Internal server error: " + ex.Message);
@@ -271,7 +272,7 @@ namespace MachineMonitoring.Controllers
 
                 if (model.MachineCode == null)
                 {
-                    return BadRequest("Please select machine code");
+                    return BadRequest("Please select machine!");
                 }
 
                 var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
@@ -378,5 +379,6 @@ namespace MachineMonitoring.Controllers
             }
         }
         #endregion
+
     }
 }
