@@ -136,14 +136,23 @@ function SaveToDB(moved) {
         contentType: false,
         processData: false,
         success: function (response) {
-            if (moved == null) {
+            if (response.success) {
+                if (moved == null) {
+                    Swal.fire({
+                        title: 'Success',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        ShowImage();
+                    });
+                }
+            } else {
                 Swal.fire({
-                    title: 'Success',
-                    text: response,
-                    icon: 'success',
+                    title: 'Error',
+                    text: response.message,
+                    icon: 'error',
                     confirmButtonText: 'OK'
-                }).then(() => {
-                    ShowImage();
                 });
             }
         },

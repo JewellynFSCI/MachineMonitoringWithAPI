@@ -8,6 +8,7 @@ using MachineMonitoring.Models.DTOs;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace MachineMonitoring.DataAccess.Repository
@@ -34,29 +35,13 @@ namespace MachineMonitoring.DataAccess.Repository
         {
             try
             {
-                if (model.PlantNo == 0)
+                using (var connection = Connection)
                 {
-                    using (var connection = Connection)
-                    {
-                        var query = @"  SELECT ProductionMapId, ProductionMapName, ImgName, PlantName, PlantNo 
-                                        FROM vewprodmaplocation
-                                        WHERE IsDeleted = 0";
-                        var result = await connection.QueryAsync<ProductionMap>(query);
-                        return result.ToList();
-                    }
-                }
-                else
-                {
-                    using (var connection = Connection)
-                    {
-                        var query = @"  SELECT ProductionMapId, ProductionMapName, ImgName, PlantName,PlantNo 
-                                    FROM vewprodmaplocation
-                                    WHERE PlantNo = @PlantNo AND IsDeleted = 0";
-                        var result = await connection.QueryAsync<ProductionMap>(query, new { model.PlantNo });
-                        return result.ToList();
-                    }
-                }
 
+                    var result = await connection.QueryAsync<ProductionMap>("sp_SelectProdMapLocation", 
+                        new {p_PlantNo = model.PlantNo}, commandType: CommandType.StoredProcedure);
+                    return result.ToList();
+                }
             }
             catch (Exception ex)
             {
@@ -113,20 +98,15 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = @"  INSERT INTO ProductionMaps 
-                                    (ProductionMapName, ImgName, PlantNo, CreatedBy) 
-                                    VALUES (@ProductionName, @ImgName, @PlantNo, @CreatedBy)";
-
+                    var query = "sp_InsertProdMap";
                     var parameters = new
                     {
-                        ProductionName = model.ProductionMapName,
-                        ImgName = uniqueFileName,
-                        PlantNo = model.PlantNo,
-                        CreatedBy = model.CreatedBy
+                        p_ProductionName = model.ProductionMapName,
+                        p_ImgName = uniqueFileName,
+                        p_PlantNo = model.PlantNo,
+                        p_CreatedBy = model.CreatedBy
                     };
-
-                    var result = await connection.ExecuteAsync(query, parameters);
-
+                    var result = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
                     return result > 0;
                 }
             }
@@ -174,9 +154,15 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = @"  UPDATE ProductionMaps SET IsDeleted = 1, UpdatedBy = @CreatedBy
-                                    WHERE ProductionMapId = @ProductionMapId";
-                    var deleteExec = await connection.ExecuteAsync(query, new { model.ProductionMapId, model.CreatedBy });
+                    //var query = @"  UPDATE ProductionMaps SET IsDeleted = 1, UpdatedBy = @CreatedBy
+                    //                WHERE ProductionMapId = @ProductionMapId";
+                    var query = "sp_DisableProdMap";
+                    var parameters = new
+                    {
+                        p_ProductionMapId = model.ProductionMapId,
+                        p_UpdatedBy = model.CreatedBy
+                    };
+                    var deleteExec = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
                     return deleteExec > 0;
                 }
             }
@@ -188,22 +174,23 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-        #region 'UploadProdMapRepo'
+        #region 'UploadProdMapReplacedImg'
         public async Task<bool> UploadProdMapReplacedImg(ProductionMap model, string uniqueFileName)
         {
             try
             {
                 using (var connection = Connection)
                 {
-                    var query = @" UPDATE productionmaps SET ImgName = @ImgName, UpdatedBy = @UpdatedBy
-                                    WHERE ProductionMapId = @ProductionMapId";
+                    //var query = @" UPDATE productionmaps SET ImgName = @ImgName, UpdatedBy = @UpdatedBy
+                    //                WHERE ProductionMapId = @ProductionMapId";
+                    var query = "sp_UpdateProdMapImage";
                     var parameters = new
                     {
-                        ImgName = uniqueFileName,
-                        model.ProductionMapId,
-                        UpdatedBy = model.CreatedBy
+                        P_ImgName = uniqueFileName,
+                        p_ProductionMapId = model.ProductionMapId,
+                        p_UpdatedBy = model.CreatedBy
                     };
-                    var result = await connection.ExecuteAsync(query, parameters);
+                    var result = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
                     return result > 0;
                 }
             }
@@ -222,19 +209,20 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = @" UPDATE productionmaps SET 
-                                        ProductionMapName = @ProductionMapName,
-                                        PlantNo = @PlantNo,
-                                        UpdatedBy = @UpdatedBy
-                                   WHERE ProductionMapId = @ProductionMapId";
+                    //var query = @" UPDATE productionmaps SET 
+                    //                    ProductionMapName = @ProductionMapName,
+                    //                    PlantNo = @PlantNo,
+                    //                    UpdatedBy = @UpdatedBy
+                    //               WHERE ProductionMapId = @ProductionMapId";
+                    var query = "sp_UpdateProdMapDetails";
                     var parameters = new
                     {
-                        model.ProductionMapId,
-                        model.ProductionMapName,
-                        model.PlantNo,
-                        UpdatedBy = model.CreatedBy
+                        p_ProductionMapId = model.ProductionMapId,
+                        p_ProductionMapName = model.ProductionMapName,
+                        p_PlantNo = model.PlantNo,
+                        p_UpdatedBy = model.CreatedBy
                     };
-                    var result = await connection.ExecuteAsync(query, parameters);
+                    var result = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
                     return result > 0;
                 }
             }
@@ -247,56 +235,30 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'SaveMcCoordinatesRepo'
-        public async Task<bool> SaveMcCoordinatesRepo(MachineLocation model)
+        public async Task<APIResponse<DbResponse>> SaveMcCoordinatesRepo(MachineLocation model)
         {
             try
             {
-                if (model.MachineLocationId == 0 || model.MachineLocationId == null)
+                using (var connection = Connection)
                 {
-                    using (var connection = Connection)
+                    var query = "sp_InsertUpdateMachineLocationDetails";
+                    var parameters = new
                     {
-                        var query = @"  INSERT INTO machinelocations 
-                                    (MachineCode, PlantNo, ProductionMapId, X, Y, CreatedBy) 
-                                    VALUES (@MachineCode, @PlantNo, @ProductionMapId, @X, @Y, @CreatedBy)";
-
-                        var parameters = new
-                        {
-                            MachineCode = model.MachineCode,
-                            PlantNo = model.PlantNo,
-                            ProductionMapId = model.ProductionMapId,
-                            X = model.X,
-                            Y = model.Y,
-                            CreatedBy = model.CreatedBy
-                        };
-
-                        var result = await connection.ExecuteAsync(query, parameters);
-
-                        return result > 0;
-                    }
-                }
-                else
-                {
-                    using (var connection = Connection)
+                        p_MachineLocationId = model.MachineLocationId,
+                        p_MachineCode = model.MachineCode,
+                        p_PlantNo = model.PlantNo,
+                        p_ProductionMapId = model.ProductionMapId,
+                        p_X = model.X,
+                        p_Y = model.Y,
+                        p_CreatedBy = model.CreatedBy,
+                    };
+                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
+                    return new APIResponse<DbResponse>
                     {
-
-                        var queryupdate = @"UPDATE machinelocations SET
-                                                MachineCode = @MachineCode,
-                                                X = @X, Y = @Y,
-                                                UpdatedBy = @CreatedBy
-                                            WHERE MachineLocationId = @MachineLocationId";
-                        var parameters = new
-                        {
-                            MachineLocationId = model.MachineLocationId,
-                            MachineCode = model.MachineCode,
-                            X = model.X,
-                            Y = model.Y,
-                            CreatedBy = model.CreatedBy
-                        };
-
-                        var result = await connection.ExecuteAsync(queryupdate, parameters);
-
-                        return result > 0;
-                    }
+                        Data = result,
+                        Message = result?.Message ?? "No message",
+                        Success = result?.Success ?? false
+                    };
                 }
             }
             catch (Exception ex)
@@ -336,8 +298,13 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "DELETE FROM MachineLocations WHERE MachineLocationId = @MachineLocationId";
-                    var deleteExec = await connection.ExecuteAsync(query, new { model.MachineLocationId });
+                    //var query = "DELETE FROM MachineLocations WHERE MachineLocationId = @MachineLocationId";
+                    var query = "sp_DeleteMachineLocation";
+                    var parameters = new
+                    {
+                        p_MachineLocationId = model.MachineLocationId
+                    };
+                    var deleteExec = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
                     return deleteExec > 0;
                 }
             }

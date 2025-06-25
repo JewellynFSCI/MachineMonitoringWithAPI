@@ -14,5 +14,7 @@ namespace MachineMonitoring.Models.ViewModel
 
         public List<MachineLocation> MachineLocations { get; set; }
 
+        public List<DbResponse> GetDbResponse { get; set; }
+
     }
 }

@@ -104,7 +104,6 @@ namespace MachineMonitoring.Controllers
                 var fileName = Path.GetFileNameWithoutExtension(ImgFile.FileName);
                 var fileExtension = Path.GetExtension(ImgFile.FileName);
                 var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{fileExtension}";
-
                 var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
 
                 var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
@@ -278,13 +277,14 @@ namespace MachineMonitoring.Controllers
                 var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
                 model.CreatedBy = _sessionEmployeeName;
                 var saved = await _adminrepo.SaveMcCoordinatesRepo(model);
-                if (saved)
+
+                if (saved.Success)
                 {
-                    return Ok("Saved successfully.");
+                    return Ok(saved);
                 }
                 else
                 {
-                    return BadRequest("Error in saving..");
+                    return Ok(saved);
                 }
             }
             catch (Exception ex)
@@ -345,7 +345,7 @@ namespace MachineMonitoring.Controllers
 
                 var viewModel = new AdminVM
                 {
-                     Plants = await _adminrepo.GetPLantNoList()
+                    Plants = await _adminrepo.GetPLantNoList()
                 };
 
                 return View(viewModel);
