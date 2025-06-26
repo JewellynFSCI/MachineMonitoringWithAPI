@@ -140,7 +140,7 @@ function SaveToDB(moved) {
                 if (moved == null) {
                     Swal.fire({
                         title: 'Success',
-                        text: data.message,
+                        text: response.message,
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then(() => {
@@ -171,8 +171,9 @@ function SaveToDB(moved) {
 
 //#region 'Delete'
 function Delete(id) {
+    var mcName = $('#machineCode').val();
     Swal.fire({
-        title: 'Are you sure you want to delete Machine in this location?',
+        title: 'Are you sure you want to delete Machine '+ mcName +' in this location?',
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
@@ -352,6 +353,7 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
     let tempPointFeature = null;
     let activeCoordinates = null;
     const popupElement = popupOverlay.getElement();
+
     
 
     map.on('singleclick', function (evt) {
