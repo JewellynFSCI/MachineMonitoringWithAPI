@@ -380,5 +380,8 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
+
+        
+
     }
 }

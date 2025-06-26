@@ -4,6 +4,38 @@ $(function () {
     GetProductionMap();
     GetImgNamefromDb();
 
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/Notification")
+        .configureLogging(signalR.LogLevel.Information)
+        .withAutomaticReconnect([0, 0, 10000])  //10 seconds
+        .build();
+
+    async function start() {
+        try {
+            await connection.start();
+            console.log("SignalR Connected.");
+        } catch (err) {
+            console.log(err);
+            setTimeout(start, 5000);
+        }
+    };
+
+    connection.onclose(async () => {
+        await start();
+    });
+
+    // Start the connection.
+    start();
+
+    //Event Listener for connection made by ows to system
+    //connection.on("ReceivedAlert", (id) => {
+    //    console.log(id);
+    //});
+
+    connection.on("ReceivedAlert", function (ticket) {
+        console.log("Received Ticket Alert:", ticket);
+        //alert(`New ticket from ${ticket.MachineCode} - Problem: ${ticket.Problem}`);
+    });
 
 });
 
@@ -157,7 +189,6 @@ function addPointLayer(map, pointSource) {
             const radius = adjustedRadius * progress;
             const opacity = 1 - progress;
 
-            const iconScale = adjustedRadius / 600; // adjust the denominator for size tuning
 
             return [
                 // Pulse Circle
@@ -173,16 +204,6 @@ function addPointLayer(map, pointSource) {
                         })
                     })
                 }),
-                // Resizable GIF Icon
-                //new ol.style.Style({
-                //    image: new ol.style.Icon({
-                //        anchor: [0.5, 0.5],
-                //        anchorXUnits: 'fraction',
-                //        anchorYUnits: 'fraction',
-                //        src: '/img/alarmGIF.gif',
-                //        scale: iconScale
-                //    })
-                //}),
             ];
         }
     });
@@ -305,3 +326,10 @@ function buildPopupHTML( name, id) { // Added default values for name and id
 `;
 }
 //#endregion
+
+
+
+
+
+
+

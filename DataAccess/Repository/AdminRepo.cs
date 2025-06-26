@@ -154,8 +154,6 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    //var query = @"  UPDATE ProductionMaps SET IsDeleted = 1, UpdatedBy = @CreatedBy
-                    //                WHERE ProductionMapId = @ProductionMapId";
                     var query = "sp_DisableProdMap";
                     var parameters = new
                     {
@@ -181,8 +179,6 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    //var query = @" UPDATE productionmaps SET ImgName = @ImgName, UpdatedBy = @UpdatedBy
-                    //                WHERE ProductionMapId = @ProductionMapId";
                     var query = "sp_UpdateProdMapImage";
                     var parameters = new
                     {
@@ -209,11 +205,6 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    //var query = @" UPDATE productionmaps SET 
-                    //                    ProductionMapName = @ProductionMapName,
-                    //                    PlantNo = @PlantNo,
-                    //                    UpdatedBy = @UpdatedBy
-                    //               WHERE ProductionMapId = @ProductionMapId";
                     var query = "sp_UpdateProdMapDetails";
                     var parameters = new
                     {
@@ -264,7 +255,7 @@ namespace MachineMonitoring.DataAccess.Repository
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error saving to database.");
-                throw; // Let the controller handle the exception
+                throw;
             }
         }
         #endregion
@@ -298,7 +289,6 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    //var query = "DELETE FROM MachineLocations WHERE MachineLocationId = @MachineLocationId";
                     var query = "sp_DeleteMachineLocation";
                     var parameters = new
                     {
@@ -315,7 +305,6 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
         #endregion
-
 
         #region 'GetMachineCodes using API'
         public async Task<List<Machine>> GetMachineCodes()
