@@ -18,14 +18,6 @@ namespace MachineMonitoring.Controllers.API
             _hubContext = hubContext;
         }
 
-        // Send signal to clients
-        //[HttpPost("Signal/{id}")]
-        //public async Task<IActionResult> MachineMonitoringAlert(int id)
-        //{
-        //    await _hubContext.Clients.All.SendAsync("ReceivedAlert", id);
-        //    return Ok(new { success = true, id });
-        //}
-
         [HttpPost("Signal")]
         public async Task<IActionResult> MachineMonitoringAlert([FromBody] OwsTicketDetails model)
         {

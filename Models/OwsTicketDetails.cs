@@ -13,6 +13,6 @@ namespace MachineMonitoring.Models
         public DateTime? requestdate { get; set; }
         public string? requestor { get; set; }
         public string? mesuppport { get; set; }
-        //public string? ticketstatus { get; set; }
+        public string? status { get; set; }
     }
 }

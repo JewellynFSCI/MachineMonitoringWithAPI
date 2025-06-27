@@ -4,6 +4,7 @@ $(function () {
     GetProductionMap();
     GetImgNamefromDb();
 
+    //#region 'Connection for SignalR'
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/Notification")
         .configureLogging(signalR.LogLevel.Information)
@@ -23,18 +24,17 @@ $(function () {
     connection.onclose(async () => {
         await start();
     });
-
+    
     // Start the connection.
     start();
 
-    //Event Listener for connection made by ows to system
-    //connection.on("ReceivedAlert", (id) => {
-    //    console.log(id);
-    //});
+    //#endregion
 
+
+    //STAND-BY for every connection made by SignalR
     connection.on("ReceivedAlert", function (ticket) {
         console.log("Received Ticket Alert:", ticket);
-        //alert(`New ticket from ${ticket.MachineCode} - Problem: ${ticket.Problem}`);
+        ReceivedSignal(ticket);
     });
 
 });
@@ -327,7 +327,35 @@ function buildPopupHTML( name, id) { // Added default values for name and id
 }
 //#endregion
 
+//#region
+function ReceivedSignal(ticket) {
+    Swal.fire({
+        title: 'Error',
+        text: ticket.machinecode,
+        icon: 'error',
+        confirmButtonText: 'OK'
+    });
 
+    $.ajax({
+        url: '/Admin/ReceivedSignal',   //Insert or Update Ticket Details
+        type: 'POST',
+        data: ticket,
+        dataType: 'json',
+        success: function (data) {
+            
+        },
+        error: function () {
+            Swal.fire({
+                title: 'Error',
+                text: 'Please refresh the page.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+
+}
+//#endregion
 
 
 

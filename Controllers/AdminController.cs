@@ -381,7 +381,12 @@ namespace MachineMonitoring.Controllers
         #endregion
 
 
-        
+        [HttpPost]
+        public async Task<IActionResult> ReceivedSignal (OwsTicketDetails model)
+        {
+            //Insert ot Update Ticket Details
+            return Ok();
+        }
 
     }
 }
