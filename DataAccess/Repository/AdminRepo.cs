@@ -38,8 +38,8 @@ namespace MachineMonitoring.DataAccess.Repository
                 using (var connection = Connection)
                 {
 
-                    var result = await connection.QueryAsync<ProductionMap>("sp_SelectProdMapLocation", 
-                        new {p_PlantNo = model.PlantNo}, commandType: CommandType.StoredProcedure);
+                    var result = await connection.QueryAsync<ProductionMap>("sp_SelectProdMapLocation",
+                        new { p_PlantNo = model.PlantNo }, commandType: CommandType.StoredProcedure);
                     return result.ToList();
                 }
             }
@@ -327,6 +327,30 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
 
+        #endregion
+
+        #region 'GetMCStatus'
+        public async Task<string> GetMCStatus(OwsTicketDetails model)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_checkmachinestatus";
+                    var result = await connection.ExecuteScalarAsync<string>(
+                        query,
+                        new { p_machinecode = model.machinecode },
+                        commandType: CommandType.StoredProcedure
+                    );
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error!");
+                throw;
+            }
+        }
         #endregion
 
     }

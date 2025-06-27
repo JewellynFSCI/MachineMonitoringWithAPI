@@ -384,8 +384,17 @@ namespace MachineMonitoring.Controllers
         [HttpPost]
         public async Task<IActionResult> ReceivedSignal (OwsTicketDetails model)
         {
-            //Insert ot Update Ticket Details
-            return Ok();
+            //Check if Machine Status
+            var MCStatus = await _adminrepo.GetMCStatus(model);
+            if (MCStatus == "NG")
+            {
+                //send message to OWS
+                return Ok(new { success = false });
+            }
+
+            return Ok(new { success = true });
+
+            
         }
 
     }

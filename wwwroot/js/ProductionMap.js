@@ -329,20 +329,18 @@ function buildPopupHTML( name, id) { // Added default values for name and id
 
 //#region
 function ReceivedSignal(ticket) {
-    Swal.fire({
-        title: 'Error',
-        text: ticket.machinecode,
-        icon: 'error',
-        confirmButtonText: 'OK'
-    });
-
     $.ajax({
         url: '/Admin/ReceivedSignal',   //Insert or Update Ticket Details
         type: 'POST',
         data: ticket,
         dataType: 'json',
         success: function (data) {
-            
+            Swal.fire({
+                title: 'Success',
+                text: 'call ShowImage to update prod map',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
         },
         error: function () {
             Swal.fire({
