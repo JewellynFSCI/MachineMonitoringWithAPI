@@ -340,14 +340,8 @@ function ReceivedSignal(ticket) {
                 text: 'call ShowImage to update prod map',
                 icon: 'success',
                 confirmButtonText: 'OK'
-            });
-        },
-        error: function () {
-            Swal.fire({
-                title: 'Error',
-                text: 'Please refresh the page.',
-                icon: 'error',
-                confirmButtonText: 'OK'
+            }).then(() => {
+                ShowImage();
             });
         }
     });

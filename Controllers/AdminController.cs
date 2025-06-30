@@ -277,15 +277,7 @@ namespace MachineMonitoring.Controllers
                 var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
                 model.CreatedBy = _sessionEmployeeName;
                 var saved = await _adminrepo.SaveMcCoordinatesRepo(model);
-
-                if (saved.Success)
-                {
-                    return Ok(saved);
-                }
-                else
-                {
-                    return Ok(saved);
-                }
+                return Ok(saved);
             }
             catch (Exception ex)
             {
@@ -384,17 +376,13 @@ namespace MachineMonitoring.Controllers
         [HttpPost]
         public async Task<IActionResult> ReceivedSignal (OwsTicketDetails model)
         {
-            //Check if Machine Status
-            var MCStatus = await _adminrepo.GetMCStatus(model);
-            if (MCStatus == "NG")
+            //Save Signal to database
+            var SaveNewTicket = await _adminrepo.SaveSignal(model);
+            if (!SaveNewTicket.Success)
             {
-                //send message to OWS
-                return Ok(new { success = false });
+                return BadRequest(new { success = false});
             }
-
-            return Ok(new { success = true });
-
-            
+            return Ok(new { success = true});
         }
 
     }

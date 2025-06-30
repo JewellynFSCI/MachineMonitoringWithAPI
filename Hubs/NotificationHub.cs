@@ -5,11 +5,6 @@ namespace MachineMonitoring.Hubs
 {
     public class NotificationHub : Hub
     {
-        //public async Task SendAlert (int id)
-        //{
-        //    await Clients.All.SendAsync("ReceivedAlert", id);
-        //}
-
         public async Task SendAlert(OwsTicketDetails model)
         {
             await Clients.All.SendAsync("ReceivedAlert", model);

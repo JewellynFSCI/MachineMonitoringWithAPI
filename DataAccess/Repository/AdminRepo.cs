@@ -71,26 +71,6 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-        #region 'GetMachineRepo'
-        public async Task<List<Machine>> GetMachineRepo()
-        {
-            try
-            {
-                using (var connection = Connection)
-                {
-                    var query = "SELECT MachineCode, MachineName FROM machines";
-                    var result = await connection.QueryAsync<Machine>(query);
-                    return result.ToList();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving Machines");
-                return new List<Machine>();
-            }
-        }
-        #endregion
-
         #region 'UploadProdMapRepo'
         public async Task<bool> UploadProdMapRepo(ProductionMap model, string uniqueFileName)
         {
@@ -329,20 +309,39 @@ namespace MachineMonitoring.DataAccess.Repository
 
         #endregion
 
-        #region 'GetMCStatus'
-        public async Task<string> GetMCStatus(OwsTicketDetails model)
+        
+        #region 'SaveSignal'
+        public async Task<APIResponse<DbResponse>> SaveSignal(OwsTicketDetails model)
         {
             try
             {
                 using (var connection = Connection)
                 {
-                    var query = "sp_checkmachinestatus";
-                    var result = await connection.ExecuteScalarAsync<string>(
-                        query,
-                        new { p_machinecode = model.machinecode },
-                        commandType: CommandType.StoredProcedure
-                    );
-                    return result;
+                    var query = "sp_InsertUpdateTicket";
+                    var parameters = new
+                    {
+                        p_id = model.id,
+                        p_controlno = model.controlno,
+                        p_type = model.type,
+                        p_plantno = model.plantno,
+                        p_process = model.process,
+                        p_area = model.area,
+                        p_machinecode = model.machinecode,
+                        p_mc_error_buyoff_repair_date = model.mc_error_buyoff_repair_date,
+                        p_details = model.details,
+                        p_requestor = model.requestor,
+                        p_me_support = model.me_support,
+                        p_errorcode = model.errorcode,
+                        p_errorname = model.errorname,
+                        p_status = model.status
+                    };
+                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query,parameters,commandType: CommandType.StoredProcedure);
+                    return new APIResponse<DbResponse>
+                    {
+                        Data = result,
+                        Message = result?.Message ?? "No message",
+                        Success = result?.Success ?? false
+                    };
                 }
             }
             catch (Exception ex)
@@ -352,6 +351,7 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
         #endregion
+
 
     }
 }
