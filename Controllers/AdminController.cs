@@ -385,5 +385,14 @@ namespace MachineMonitoring.Controllers
             return Ok(new { success = true});
         }
 
+
+        #region 'GetMachineStatus'
+        [HttpGet]
+        public async Task<IActionResult> GetMachineStatus(MachineStatusDetails? model)
+        {
+            var mclist = await _adminrepo.GetMachineStatusRepo(model);
+            return Json(new { mclist });
+        }
+        #endregion
     }
 }

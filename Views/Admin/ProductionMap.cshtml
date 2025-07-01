@@ -35,20 +35,34 @@
 				width: 100% !important;
 			}
 
-		.ol-control {
-			z-index: 9999;
+		.form-group{
+			margin-bottom: 0.5rem;
 		}
+		label{
+			margin-bottom: -0.5rem;
+		}
+		.containerpopup{
+			min-width: 300px;
+			max-height: 300px;
+			overflow: auto;
+			scrollbar-width: none; /* Firefox */
+			-ms-overflow-style: none; /* IE and Edge */
+			background-color: lightgoldenrodyellow;
+		}
+
+			.containerpopup::-webkit-scrollbar {
+				display: none; /* Chrome, Safari */
+			}
 
 		.ol-popup {
 			position: absolute;
-			background-color: white;
+			background-color: lightgoldenrodyellow;
 			box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 			padding: 15px;
 			border-radius: 10px;
 			border: 1px solid #cccccc;
 			bottom: 12px;
 			left: -50px;
-			min-width: 300px;
 		}
 
 			.ol-popup:after, .ol-popup:before {
@@ -62,7 +76,7 @@
 			}
 
 			.ol-popup:after {
-				border-top-color: white;
+				border-top-color: lightgoldenrodyellow;
 				border-width: 10px;
 				left: 48px;
 				margin-left: -10px;
@@ -87,6 +101,7 @@
 				font-size: 25px;
 				color: dimgray;
 			}
+
 	</style>
 
 </head>

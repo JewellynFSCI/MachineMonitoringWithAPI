@@ -309,7 +309,6 @@ namespace MachineMonitoring.DataAccess.Repository
 
         #endregion
 
-        
         #region 'SaveSignal'
         public async Task<APIResponse<DbResponse>> SaveSignal(OwsTicketDetails model)
         {
@@ -352,6 +351,25 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
+        #region 'GetMachineStatusRepo'
+        public async Task<List<MachineStatusDetails>> GetMachineStatusRepo(MachineStatusDetails? model)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_SelectMachineStatus";
+                    var result = await connection.QueryAsync<MachineStatusDetails>(query, new { p_plantno = model.plantno, p_productionmapid = model.productionmapid }, commandType: CommandType.StoredProcedure);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving ProductionMap list");
+                return new List<MachineStatusDetails>();
+            }
+        }
+        #endregion
 
     }
 }

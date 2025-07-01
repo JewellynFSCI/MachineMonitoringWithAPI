@@ -24,7 +24,7 @@ $(function () {
     connection.onclose(async () => {
         await start();
     });
-    
+
     // Start the connection.
     start();
 
@@ -123,14 +123,14 @@ function ShowImage() {
 
         const map = initializeMap(imageUrl, imageExtent, imageWidth, imageHeight);
         const pointSource = new ol.source.Vector();
+        GetMachineStatus(map, pointSource);
         const pointLayer = addPointLayer(map, pointSource);
-        fetchAndPlotCoordinates(map, pointSource);
         const modifyCollection = new ol.Collection();
         const modifyInteraction = new ol.interaction.Modify({ features: modifyCollection });
         modifyInteraction.setActive(false);
         const popupOverlay = setupPopup(map);
         handleMapClick(map, pointSource, popupOverlay, modifyCollection);
-        
+
         window.map = map;
     };
     img.src = imageUrl;
@@ -179,38 +179,90 @@ function addPointLayer(map, pointSource) {
     const pointLayer = new ol.layer.Vector({
         source: pointSource,
         style: function (feature, resolution) {
-            const elapsed = new Date().getTime() - start;
-            const pulseDuration = 500;      //0.5 second
-            const progress = (elapsed % pulseDuration) / pulseDuration;
-
-            const baseSize = 30;
+            const status = feature.get('status'); // Get the status of each machine
+            const baseSize = 15;
             const adjustedRadius = baseSize / resolution;
 
-            const radius = adjustedRadius * progress;
-            const opacity = 1 - progress;
+            if (status === "Machine Downtime") {
+                const elapsed = new Date().getTime() - start;
+                const pulseDuration = 500;
+                const progress = (elapsed % pulseDuration) / pulseDuration;
+                const radius = adjustedRadius * progress;
+                const opacity = 1 - progress;
 
-
-            return [
-                // Pulse Circle
-                new ol.style.Style({
+                return new ol.style.Style({
                     image: new ol.style.Circle({
-                        radius: radius,
+                        radius: radius * 2,
                         stroke: new ol.style.Stroke({
-                            color: 'rgba(255, 0, 0, ' + opacity + ')',
+                            color: `rgba(255, 0, 0, ${opacity})`,   // red
                             width: 2
                         }),
                         fill: new ol.style.Fill({
-                            color: 'rgba(255, 0, 0, ' + opacity + ')'
+                            color: `rgba(255, 0, 0, ${opacity})`    // red
                         })
                     })
-                }),
-            ];
+                });
+            }
+
+            if (status === "GOOD") {
+                return new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: adjustedRadius,
+                        fill: new ol.style.Fill({
+                            color: 'green'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: 'white',
+                            width: 1
+                        })
+                    }),
+                    text: new ol.style.Text({
+                        text: 'DF',
+                        font: `bold ${adjustedRadius-3}px sans-serif`,
+                        fill: new ol.style.Fill({
+                            color: 'white'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: 'black',
+                            width: 1
+                        }),
+                        textAlign: 'center',
+                        textBaseline: 'middle',
+                        offsetY: 0
+                    })
+                });
+                //return new ol.style.Style({
+                //    image: new ol.style.Circle({
+                //        radius: adjustedRadius,
+                //        fill: new ol.style.Fill({
+                //            color: 'green'
+                //        }),
+                //        stroke: new ol.style.Stroke({
+                //            color: 'white',
+                //            width: 1
+                //        })
+                //    })
+                //});
+            }
+
+            // Default style for undefined or other statuses
+            //return new ol.style.Style({
+            //    image: new ol.style.Circle({
+            //        radius: adjustedRadius,
+            //        fill: new ol.style.Fill({
+            //            color: 'gray'
+            //        }),
+            //        stroke: new ol.style.Stroke({
+            //            color: '#999',
+            //            width: 1
+            //        })
+            //    })
+            //});
         }
     });
 
-
-    // Trigger re-rendering every frame (~60fps)
-    const animate = function () {
+    // Re-render every frame for animation
+    const animate = () => {
         pointLayer.changed();
         requestAnimationFrame(animate);
     };
@@ -221,13 +273,13 @@ function addPointLayer(map, pointSource) {
 }
 //#endregion
 
-//#region 'fetchAndPlotCoordinates' // FOR MODIFY
-function fetchAndPlotCoordinates(map, pointSource) {
+//#region 'GetMachineStatus'
+function GetMachineStatus(map, pointSource) {
     const PlantNo = $('#PlantNoSelect').val();
     const ProductionMapId = $('#ProductionMapIdSelect').val();
 
     $.ajax({
-        url: '/Admin/GetMCLocation',
+        url: '/Admin/GetMachineStatus',
         type: 'GET',
         data: { PlantNo, ProductionMapId },
         dataType: 'json',
@@ -236,7 +288,18 @@ function fetchAndPlotCoordinates(map, pointSource) {
                 data.mclist.forEach(function (item) {
                     const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
                     pointFeature.set('machineLocationId', item.machineLocationId);
-                    pointFeature.set('name', item.machineCode);
+                    pointFeature.set('machinecode', item.machinecode);
+                    pointFeature.set('controlno', item.controlno);
+                    pointFeature.set('status', item.status);
+                    pointFeature.set('type', item.type);
+                    pointFeature.set('process', item.process);
+                    pointFeature.set('area', item.area);
+                    pointFeature.set('mc_error_buyoff_repair_date', item.mc_error_buyoff_repair_date);
+                    pointFeature.set('details', item.details);
+                    pointFeature.set('requestor', item.requestor);
+                    pointFeature.set('me_support', item.me_support);
+                    pointFeature.set('errorcode', item.errorcode);
+                    pointFeature.set('errorname', item.errorname);
                     pointSource.addFeature(pointFeature);
                 });
             }
@@ -244,7 +307,7 @@ function fetchAndPlotCoordinates(map, pointSource) {
         error: function () {
             Swal.fire({
                 title: 'Error',
-                text: 'Failed to load machine locations.',
+                text: 'Please refresh page!',
                 icon: 'error',
                 confirmButtonText: 'OK'
             });
@@ -278,6 +341,13 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
     map.on('singleclick', function (evt) {
         const clickedFeature = map.forEachFeatureAtPixel(evt.pixel, f => f);
 
+        //close popup if click outside the popup
+        if (!clickedFeature) {
+            popupOverlay.setPosition(undefined);
+            activeFeature = null;
+            modifyCollection.clear();
+        }
+
         if (clickedFeature) {
             activeFeature = clickedFeature;
 
@@ -285,11 +355,24 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
             modifyCollection.push(activeFeature);
 
             const coord = activeFeature.getGeometry().getCoordinates();
-            const name = activeFeature.get('name');
-            const id = activeFeature.get('machineLocationId');
-            popupElement.innerHTML = buildPopupHTML(name, id);
+            const machinecode = activeFeature.get('machinecode');
+            const controlno = activeFeature.get('controlno');
+            const status = activeFeature.get('status');
+            const type = activeFeature.get('type');
+            const process = activeFeature.get('process');
+            const area = activeFeature.get('area');
+            const mc_error_buyoff_repair_date = activeFeature.get('mc_error_buyoff_repair_date');
+            const details = activeFeature.get('details');
+            const requestor = activeFeature.get('requestor');
+            const me_support = activeFeature.get('me_support');
+            const errorcode = activeFeature.get('errorcode');
+            const errorname = activeFeature.get('errorname');
+
+            popupElement.innerHTML = buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support, errorcode, errorname);
             popupOverlay.setPosition(coord);
         }
+
+        
     });
 
     popupElement.addEventListener('click', function (e) {
@@ -311,23 +394,67 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
 //#endregion
 
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML( name, id) { // Added default values for name and id
+function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support='', errorcode, errorname) {
     return `
+    <div class="containerpopup">
     <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
-        <form method="POST" id="popupForm">
-            <input type="hidden" id="MachineLocationId" name="MachineLocationId" value="${id}" />
-
-            <p> <strong> Machine Code : </strong> ${name}</p>
-            <p> <strong> Ticket# : </strong> #0000000000 </p>
-            <p> <strong> Error Code : </strong> Error Code (Error Name)</p>
-            <p> <strong> Error Details : </strong> Operators Input</p>
-
+        <form>
+            <div class="form-group">
+                <label> Machine Status: </label>
+                <input type="text" class="form-control" value="${status}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Control No: </label>
+                <input type="text" class="form-control" value="${controlno}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Machine Code: </label>
+                <input type="text" class="form-control" value="${machinecode}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Process: </label>
+                <input type="text" class="form-control" value="${process}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Area: </label>
+                <input type="text" class="form-control" value="${area}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Date: </label>
+                <input type="text" class="form-control" value="${mc_error_buyoff_repair_date}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Details: </label>
+                <textarea class="form-control" readonly>${details}</textarea>
+            </div>
+            <div class="form-group">
+                <label> Requestor: </label>
+                <input type="textarea" class="form-control" value="${requestor}" readonly>
+            </div>
+            ${ me_support ? 
+            `<div class="form-group">
+                <label> Maintenance Support: </label>
+                <input type="textarea" class="form-control" value="${me_support}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Maintenance Support: </label>
+                <input type="textarea" class="form-control" value="${errorcode}" readonly>
+            </div>
+            <div class="form-group">
+                <label> Maintenance Support: </label>
+                <input type="textarea" class="form-control" value="${errorname}" readonly>
+            </div>
+            `:
+            ``
+            }
         </form>
+    </div>
+
 `;
 }
 //#endregion
 
-//#region
+//#region 'RecievedSignal'
 function ReceivedSignal(ticket) {
     $.ajax({
         url: '/Admin/ReceivedSignal',   //Insert or Update Ticket Details

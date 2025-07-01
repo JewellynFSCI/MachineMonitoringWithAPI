@@ -22,5 +22,7 @@ namespace MachineMonitoring.Models
         public string? User {  get; set; }
         public string? CreatedBy { get; set; }
 
+        public int Status { get; set; }
+
     }
 }
