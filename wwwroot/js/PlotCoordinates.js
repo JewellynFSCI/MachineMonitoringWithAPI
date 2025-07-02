@@ -347,7 +347,7 @@ function setupPopup(map) {
 }
 //#endregion
 
-//#region 'hanldeMapClick'
+//#region 'handleMapClick'
 function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modifyInteraction) {
     let activeFeature = null;
     let tempPointFeature = null;

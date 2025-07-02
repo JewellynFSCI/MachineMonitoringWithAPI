@@ -7,7 +7,9 @@
         public int productionmapid { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
+        public int status_id { get; set; }
         public string? status { get; set; }
+        public string? hex_value { get; set; }
         public string? controlno { get; set; }
         public string? type { get; set; }
         public int plantno { get; set; }
@@ -19,6 +21,7 @@
         public string? me_support { get; set; }
         public string? errorcode { get; set; }
         public string? errorname { get; set; }
+        public DateTime completedDate { get; set; }
         
     }
 }

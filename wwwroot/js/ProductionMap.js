@@ -175,15 +175,24 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 //#region 'addPointLayer'
 function addPointLayer(map, pointSource) {
     let start = new Date().getTime(); // animation reference
+    const ONE_MINUTE = 60 * 1000;
+    const baseSize = 15;
+
+    // Set start time only once for each feature with status "DONE"
+    pointSource.getFeatures().forEach(feature => {
+        if (feature.get('status_id') === 3 || feature.get('status_id') === 8 ) {
+            feature.set('showCircleStartTime', new Date().getTime());
+        }
+    });
 
     const pointLayer = new ol.layer.Vector({
         source: pointSource,
         style: function (feature, resolution) {
-            const status = feature.get('status'); // Get the status of each machine
-            const baseSize = 15;
+            const status = feature.get('status_id');
+            const status_color = feature.get('hex_value');
             const adjustedRadius = baseSize / resolution;
 
-            if (status === "Machine Downtime") {
+            if (status === 1) {  //"Machine Downtime"
                 const elapsed = new Date().getTime() - start;
                 const pulseDuration = 500;
                 const progress = (elapsed % pulseDuration) / pulseDuration;
@@ -194,82 +203,84 @@ function addPointLayer(map, pointSource) {
                     image: new ol.style.Circle({
                         radius: radius * 2,
                         stroke: new ol.style.Stroke({
-                            color: `rgba(255, 0, 0, ${opacity})`,   // red
+                            color: hexToRgba(status_color, opacity),
                             width: 2
                         }),
                         fill: new ol.style.Fill({
-                            color: `rgba(255, 0, 0, ${opacity})`    // red
+                            color: hexToRgba(status_color, opacity)
                         })
                     })
                 });
-            }
+            } else if (status === 3 || status === 8) {     //"Done = 3"    "Cancelled = 8"
+                const completedDateStr = feature.get('completedDate'); // "2025-07-02T08:27:21"
+                const startTime = new Date(completedDateStr).getTime(); // Convert to timestamp
+                const now = new Date().getTime();
 
-            if (status === "GOOD") {
+                if (startTime && (now - startTime <= ONE_MINUTE)) {
+                    return new ol.style.Style({
+                        image: new ol.style.Circle({
+                            radius: adjustedRadius,
+                            fill: new ol.style.Fill({
+                                color: hexToRgba(status_color, 1)
+                            }),
+                            stroke: new ol.style.Stroke({
+                                color: 'white',
+                                width: 1
+                            })
+                        })
+                    });
+                }
+                return null; // Hide after 1 minute
+            } else {
                 return new ol.style.Style({
                     image: new ol.style.Circle({
                         radius: adjustedRadius,
                         fill: new ol.style.Fill({
-                            color: 'green'
+                            color: hexToRgba(status_color)
                         }),
                         stroke: new ol.style.Stroke({
                             color: 'white',
                             width: 1
                         })
-                    }),
-                    text: new ol.style.Text({
-                        text: 'DF',
-                        font: `bold ${adjustedRadius-3}px sans-serif`,
-                        fill: new ol.style.Fill({
-                            color: 'white'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: 'black',
-                            width: 1
-                        }),
-                        textAlign: 'center',
-                        textBaseline: 'middle',
-                        offsetY: 0
                     })
                 });
-                //return new ol.style.Style({
-                //    image: new ol.style.Circle({
-                //        radius: adjustedRadius,
-                //        fill: new ol.style.Fill({
-                //            color: 'green'
-                //        }),
-                //        stroke: new ol.style.Stroke({
-                //            color: 'white',
-                //            width: 1
-                //        })
-                //    })
-                //});
             }
-
-            // Default style for undefined or other statuses
-            //return new ol.style.Style({
-            //    image: new ol.style.Circle({
-            //        radius: adjustedRadius,
-            //        fill: new ol.style.Fill({
-            //            color: 'gray'
-            //        }),
-            //        stroke: new ol.style.Stroke({
-            //            color: '#999',
-            //            width: 1
-            //        })
-            //    })
-            //});
         }
     });
 
-    // Re-render every frame for animation
+    // 🔄 Re-render for animation (e.g. Machine Downtime)
     const animate = () => {
         pointLayer.changed();
         requestAnimationFrame(animate);
     };
     animate();
 
+    // ⏱️ Re-evaluate 'DONE' status every second to update styles
+    setInterval(() => {
+        pointSource.getFeatures().forEach(f => f.changed());
+    }, 1000);
+
     map.addLayer(pointLayer);
     return pointLayer;
+}
+//#endregion
+
+//#region hexToRgba
+function hexToRgba(hex, alpha = 1) {
+    let r = 0, g = 0, b = 0;
+
+    // Handle shorthand like "#f00"
+    if (hex.length === 4) {
+        r = parseInt(hex[1] + hex[1], 16);
+        g = parseInt(hex[2] + hex[2], 16);
+        b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+        r = parseInt(hex[1] + hex[2], 16);
+        g = parseInt(hex[3] + hex[4], 16);
+        b = parseInt(hex[5] + hex[6], 16);
+    }
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 //#endregion
 
@@ -290,7 +301,9 @@ function GetMachineStatus(map, pointSource) {
                     pointFeature.set('machineLocationId', item.machineLocationId);
                     pointFeature.set('machinecode', item.machinecode);
                     pointFeature.set('controlno', item.controlno);
+                    pointFeature.set('status_id', item.status_id);
                     pointFeature.set('status', item.status);
+                    pointFeature.set('hex_value', item.hex_value);
                     pointFeature.set('type', item.type);
                     pointFeature.set('process', item.process);
                     pointFeature.set('area', item.area);
@@ -300,6 +313,7 @@ function GetMachineStatus(map, pointSource) {
                     pointFeature.set('me_support', item.me_support);
                     pointFeature.set('errorcode', item.errorcode);
                     pointFeature.set('errorname', item.errorname);
+                    pointFeature.set('completedDate', item.completedDate);
                     pointSource.addFeature(pointFeature);
                 });
             }
@@ -393,60 +407,96 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
 
 //#endregion
 
+//#region Utility: Build Popup HTML Form (OLD)
+//function buildPopupHTML2(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support='', errorcode, errorname) {
+//    return `
+//    <div class="containerpopup">
+//    <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
+//        <form>
+//            <div class="form-group">
+//                <label> Machine Status: </label>
+//                <input type="text" class="form-control" value="${status}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Control No: </label>
+//                <input type="text" class="form-control" value="${controlno}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Machine Code: </label>
+//                <input type="text" class="form-control" value="${machinecode}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Process: </label>
+//                <input type="text" class="form-control" value="${process}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Area: </label>
+//                <input type="text" class="form-control" value="${area}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Date: </label>
+//                <input type="text" class="form-control" value="${mc_error_buyoff_repair_date}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Details: </label>
+//                <textarea class="form-control" readonly>${details}</textarea>
+//            </div>
+//            <div class="form-group">
+//                <label> Requestor: </label>
+//                <input type="textarea" class="form-control" value="${requestor}" readonly>
+//            </div>
+//            ${ me_support ? 
+//            `<div class="form-group">
+//                <label> Maintenance Support: </label>
+//                <input type="textarea" class="form-control" value="${me_support}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Maintenance Support: </label>
+//                <input type="textarea" class="form-control" value="${errorcode}" readonly>
+//            </div>
+//            <div class="form-group">
+//                <label> Maintenance Support: </label>
+//                <input type="textarea" class="form-control" value="${errorname}" readonly>
+//            </div>
+//            `:
+//            ``
+//            }
+//        </form>
+//    </div>
+//`;
+//}
+//#endregion
+
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support='', errorcode, errorname) {
+function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support = '', errorcode, errorname) {
+    const isoDate = mc_error_buyoff_repair_date;
+    const dateObj = new Date(isoDate);
+
+    // Example: Convert to local string
+    const datetime = dateObj.toLocaleString();
     return `
     <div class="containerpopup">
     <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
         <form>
-            <div class="form-group">
-                <label> Machine Status: </label>
-                <input type="text" class="form-control" value="${status}" readonly>
-            </div>
-            <div class="form-group">
-                <label> Control No: </label>
-                <input type="text" class="form-control" value="${controlno}" readonly>
-            </div>
-            <div class="form-group">
-                <label> Machine Code: </label>
-                <input type="text" class="form-control" value="${machinecode}" readonly>
-            </div>
-            <div class="form-group">
-                <label> Process: </label>
-                <input type="text" class="form-control" value="${process}" readonly>
-            </div>
-            <div class="form-group">
-                <label> Area: </label>
-                <input type="text" class="form-control" value="${area}" readonly>
-            </div>
-            <div class="form-group">
-                <label> Date: </label>
-                <input type="text" class="form-control" value="${mc_error_buyoff_repair_date}" readonly>
-            </div>
+            <p> <strong> Machine Status:</strong> ${status} </p>
+            <p> <strong> Control No:</strong> ${controlno} </p>
+            <p> <strong> Machine Code:</strong> ${machinecode} </p>
+            <p> <strong> Process:</strong> ${process} </p>
+            <p> <strong> Area:</strong> ${area} </p>
+            <p> <strong> Date/Time:</strong> ${datetime} </p>
             <div class="form-group">
                 <label> Details: </label>
                 <textarea class="form-control" readonly>${details}</textarea>
             </div>
-            <div class="form-group">
-                <label> Requestor: </label>
-                <input type="textarea" class="form-control" value="${requestor}" readonly>
-            </div>
-            ${ me_support ? 
-            `<div class="form-group">
-                <label> Maintenance Support: </label>
-                <input type="textarea" class="form-control" value="${me_support}" readonly>
-            </div>
-            <div class="form-group">
-                <label> Maintenance Support: </label>
-                <input type="textarea" class="form-control" value="${errorcode}" readonly>
-            </div>
-            <div class="form-group">
-                <label> Maintenance Support: </label>
-                <input type="textarea" class="form-control" value="${errorname}" readonly>
-            </div>
+            <p> <strong> Requestor:</strong> ${requestor} </p>
+            ${ me_support ?
+            `
+                <p> <strong> Maintenance Support:</strong> ${me_support} </p>
+                <p> <strong> Error Code:</strong> ${errorcode} </p>
+                <p> <strong> Error Name:</strong> ${errorname} </p>
             `:
             ``
-            }
+        }
         </form>
     </div>
 
@@ -462,17 +512,9 @@ function ReceivedSignal(ticket) {
         data: ticket,
         dataType: 'json',
         success: function (data) {
-            Swal.fire({
-                title: 'Success',
-                text: 'call ShowImage to update prod map',
-                icon: 'success',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                ShowImage();
-            });
+            ShowImage();
         }
     });
-
 }
 //#endregion
 

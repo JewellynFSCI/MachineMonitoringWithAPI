@@ -372,7 +372,7 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-
+        #region 'ReceivedSignal'
         [HttpPost]
         public async Task<IActionResult> ReceivedSignal (OwsTicketDetails model)
         {
@@ -380,11 +380,11 @@ namespace MachineMonitoring.Controllers
             var SaveNewTicket = await _adminrepo.SaveSignal(model);
             if (!SaveNewTicket.Success)
             {
-                return BadRequest(new { success = false});
+                return BadRequest(new { success = false });
             }
             return Ok(new { success = true});
         }
-
+        #endregion
 
         #region 'GetMachineStatus'
         [HttpGet]
