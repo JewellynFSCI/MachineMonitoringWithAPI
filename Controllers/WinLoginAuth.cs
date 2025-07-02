@@ -15,7 +15,7 @@ namespace MachineMonitoring.Controllers
         private const string _sessionEmployeeNumber = "_EmployeeNumber";
         private const string _sessionDisplayName = "_DisplayName";
         private const string _memberOfAcc = "";
-        private const string _memberOfAdmin = "app.planvsactual.admin";
+        private const string _memberOfAdmin = "app.machinedowntimemonitoring.admin";
         private readonly string _ldapUrl = "";
 
         public WinLoginAuth(IConfiguration configuration)

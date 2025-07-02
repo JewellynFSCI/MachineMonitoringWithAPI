@@ -9,6 +9,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net.Http;
 
 
 namespace MachineMonitoring.DataAccess.Repository
@@ -19,6 +20,7 @@ namespace MachineMonitoring.DataAccess.Repository
         private readonly ILogger<AdminRepo> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _mcCodes = "";
+        private readonly string _sendDataToOws = "";
 
         public AdminRepo(IConfiguration configuration, ILogger<AdminRepo> logger, IHttpContextAccessor httpContextAccessor)
         {
@@ -26,6 +28,7 @@ namespace MachineMonitoring.DataAccess.Repository
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
             _mcCodes = _configuration.GetConnectionString("MachineCodes") ?? "";
+            _sendDataToOws = _configuration.GetConnectionString("SendDataToOws") ?? "";
         }
 
         private IDbConnection Connection => new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -350,6 +353,34 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
         #endregion
+
+
+        public async Task<IActionResult?> SendDataToOws(int id, string message)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var data = new
+                    {
+                        id = id,
+                        message = message
+                    };
+
+                    var json = JsonConvert.SerializeObject(data);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await client.PostAsync(_sendDataToOws, content);
+                    //return (IActionResult)response;
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending data to ows");
+                throw;
+            }
+        }
 
         #region 'GetMachineStatusRepo'
         public async Task<List<MachineStatusDetails>> GetMachineStatusRepo(MachineStatusDetails? model)

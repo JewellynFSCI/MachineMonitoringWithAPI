@@ -5,6 +5,11 @@ var ImgName = [];
 $(function () {
     GetProductionMap();
     GetImgNamefromDb();
+
+    const existingPopup = document.querySelector('.ol-popup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
 });
 
 //#region 'Get List of Production Map'
@@ -144,16 +149,21 @@ function SaveToDB(moved) {
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        ShowImage();
+                        window.popupOverlay?.setPosition(undefined);
+                        UpdateMachinePoints();
                     });
                 }
             } else {
-                Swal.fire({
-                    title: 'Error',
-                    text: response.message,
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+                if (response.message === "No data updated!") {
+                    return null;
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
             }
         },
         error: function (xhr) {
@@ -193,7 +203,8 @@ function Delete(id) {
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        ShowImage(); // Re-render the map after deletion
+                        window.popupOverlay?.setPosition(undefined);
+                        UpdateMachinePoints();
                     });
                 },
                 error: function (xhr, status, error) {
@@ -210,7 +221,7 @@ function Delete(id) {
 }
 //#endregion
 
-//#region 'ShowImage'
+//#region 'ShowImage()'
 function ShowImage() {
     const imageUrl = '/img/productionmap/' + ImgName;
 
@@ -218,6 +229,7 @@ function ShowImage() {
         window.map.setTarget(null);
         window.map = null;
     }
+
     $('#map').empty();
 
     const img = new Image();
@@ -226,20 +238,121 @@ function ShowImage() {
         const imageHeight = img.naturalHeight;
         const imageExtent = [0, 0, imageWidth, imageHeight];
 
-        const map = initializeMap(imageUrl, imageExtent, imageWidth, imageHeight);
-        const pointSource = new ol.source.Vector();
-        const pointLayer = addPointLayer(map, pointSource);
-        fetchAndPlotCoordinates(map, pointSource);
-        const modifyCollection = new ol.Collection();
-        const modifyInteraction = new ol.interaction.Modify({ features: modifyCollection });
-        modifyInteraction.setActive(false);
-        map.addInteraction(modifyInteraction);
-        const popupOverlay = setupPopup(map);
-        handleMapClick(map, pointSource, popupOverlay, modifyCollection, modifyInteraction);
-        setupModifyListener(modifyInteraction, popupOverlay);
-        window.map = map;
+        ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight);
+        UpdateMachinePoints(); // ⬅️ load points after image is ready
     };
     img.src = imageUrl;
+}
+//#endregion
+
+//#region 'ShowImageBase'
+function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
+    const imageLayer = new ol.layer.Image({
+        source: new ol.source.ImageStatic({
+            url: imageUrl,
+            imageExtent: imageExtent,
+            projection: 'PIXELS'
+        }),
+        imageSmoothing: false
+    });
+
+    const view = new ol.View({
+        projection: new ol.proj.Projection({
+            code: 'PIXELS',
+            units: 'pixels',
+            extent: imageExtent
+        }),
+        center: [imageWidth / 2, imageHeight / 2],
+        zoom: 1,
+        maxZoom: 5
+    });
+
+    const map = new ol.Map({
+        target: 'map',
+        layers: [imageLayer],
+        view: view
+    });
+
+    const pointSource = new ol.source.Vector();
+    window.pointSource = pointSource;
+
+    const pointLayer = addPointLayer(map, pointSource);
+    window.pointLayer = pointLayer;
+
+    const modifyCollection = new ol.Collection();
+    const modifyInteraction = new ol.interaction.Modify({ features: modifyCollection });
+    modifyInteraction.setActive(false);
+    map.addInteraction(modifyInteraction);
+
+    window.modifyCollection = modifyCollection;
+    window.modifyInteraction = modifyInteraction;
+
+    const popupOverlay = setupPopup(map);
+    handleMapClick(map, pointSource, popupOverlay, modifyCollection, modifyInteraction);
+    setupModifyListener(modifyInteraction, popupOverlay);
+
+    window.map = map;
+}
+//#endregion
+
+//#region 'UpdateMachinePoints'
+function UpdateMachinePoints() {
+    const PlantNo = $('#PlantNoSelect').val();
+    const ProductionMapId = $('#ProductionMapIdSelect').val();
+
+    if (!window.pointSource) return;
+    window.pointSource.clear();
+
+    // 🧹 Close popup
+    if (window.popupOverlay) {
+        window.popupOverlay.setPosition(undefined);
+    }
+
+    // 🧹 Clear modify interaction
+    if (window.modifyCollection) {
+        window.modifyCollection.clear();
+    }
+    if (window.modifyInteraction) {
+        window.modifyInteraction.setActive(false);
+    }
+
+    // 🧹 Remove active and temp points
+    if (window.activeFeature && window.pointSource.hasFeature(window.activeFeature)) {
+        window.pointSource.removeFeature(window.activeFeature);
+    }
+    if (window.tempPointFeature && window.pointSource.hasFeature(window.tempPointFeature)) {
+        window.pointSource.removeFeature(window.tempPointFeature);
+    }
+
+    // 🧹 Clear references
+    window.activeFeature = null;
+    window.tempPointFeature = null;
+
+    // 🔁 Reload features from DB
+    $.ajax({
+        url: '/Admin/GetMCLocation',
+        type: 'GET',
+        data: { PlantNo, ProductionMapId },
+        dataType: 'json',
+        success: function (data) {
+            if (data.mclist && Array.isArray(data.mclist)) {
+                data.mclist.forEach(function (item) {
+                    const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
+                    pointFeature.set('machineLocationId', item.machineLocationId);
+                    pointFeature.set('name', item.machineCode);
+                    window.pointSource.addFeature(pointFeature);
+                });
+            }
+        },
+        error: function () {
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to update machine locations.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
 }
 //#endregion
 
@@ -281,7 +394,7 @@ function addPointLayer(map, pointSource) {
         source: pointSource,
         style: function (feature, resolution) {
             // Desired size in map units (e.g., 10 pixels at base resolution)
-            const baseSize = 8;
+            const baseSize = 5;
             const adjustedRadius = baseSize / resolution;
 
             return new ol.style.Style({
@@ -298,38 +411,6 @@ function addPointLayer(map, pointSource) {
 }
 //#endregion
 
-//#region 'fetchAndPlotCoordinates'
-function fetchAndPlotCoordinates(map, pointSource) {
-    const PlantNo = $('#PlantNoSelect').val();
-    const ProductionMapId = $('#ProductionMapIdSelect').val();
-
-    $.ajax({
-        url: '/Admin/GetMCLocation',
-        type: 'GET',
-        data: { PlantNo, ProductionMapId },
-        dataType: 'json',
-        success: function (data) {
-            if (data.mclist && Array.isArray(data.mclist)) {
-                data.mclist.forEach(function (item) {
-                    const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
-                    pointFeature.set('machineLocationId', item.machineLocationId);
-                    pointFeature.set('name', item.machineCode);
-                    pointSource.addFeature(pointFeature);
-                });
-            }
-        },
-        error: function () {
-            Swal.fire({
-                title: 'Error',
-                text: 'Failed to load machine locations.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        }
-    });
-}
-//#endregion
-
 //#region 'setupPopup'
 function setupPopup(map) {
     const popupElement = document.createElement('div');
@@ -343,6 +424,10 @@ function setupPopup(map) {
         stopEvent: true
     });
     map.addOverlay(popupOverlay);
+
+    // ✅ Make it globally accessible
+    window.popupOverlay = popupOverlay;
+
     return popupOverlay;
 }
 //#endregion
@@ -353,8 +438,6 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
     let tempPointFeature = null;
     let activeCoordinates = null;
     const popupElement = popupOverlay.getElement();
-
-    
 
     map.on('singleclick', function (evt) {
         const clickedFeature = map.forEachFeatureAtPixel(evt.pixel, f => f);
@@ -391,6 +474,8 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
             // ⬇️ Clicked a different point — update popup
             activeFeature = clickedFeature;
             tempPointFeature = null;
+            window.activeFeature = activeFeature;
+            window.tempPointFeature = tempPointFeature;
             modifyCollection.clear();
             modifyCollection.push(activeFeature);
             modifyInteraction.setActive(true);

@@ -8,6 +8,7 @@ using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
+using MachineMonitoring.Models.DTOs;
 
 namespace MachineMonitoring.Controllers
 {
@@ -380,6 +381,10 @@ namespace MachineMonitoring.Controllers
             var SaveNewTicket = await _adminrepo.SaveSignal(model);
             if (!SaveNewTicket.Success)
             {
+                //send data to ows (ID and Message)
+                //var id = model.id;
+                //var message = SaveNewTicket.Message;
+                //await _adminrepo.SendDataToOws(id,message);
                 return BadRequest(new { success = false });
             }
             return Ok(new { success = true});
@@ -394,5 +399,7 @@ namespace MachineMonitoring.Controllers
             return Json(new { mclist });
         }
         #endregion
+
+
     }
 }
