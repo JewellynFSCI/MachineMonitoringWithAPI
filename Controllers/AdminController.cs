@@ -419,6 +419,69 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
+        #region 'StatusColor - View'
+        [HttpGet]
+        public async Task<IActionResult> StatusColor(MCStatusColor model)
+        {
+            try
+            {
+                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+                if (_sessionEmployeeNUmber == null)
+                {
+                    return RedirectToAction("Logout", "WinLoginAuth");
+                }
+
+                var viewModel = new AdminVM
+                {
+                    mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
+                };
+                return View(viewModel);
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        #endregion
+
+        #region 'SaveMachineStatusColor'
+        [HttpPost]
+        public async Task<IActionResult> SaveMachineStatusColor(MCStatusColor model)
+        {
+            try
+            {
+                var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
+                if (_sessionEmployeeName == null)
+                {
+                    return RedirectToAction("Logout", "WinLoginAuth");
+                }
+
+                
+                model.currentuser = _sessionEmployeeName;
+                var saved = await _adminrepo.SaveMachineStatusColorRepo(model);
+                if (!saved.Success)
+                {
+                    return BadRequest(new {success = false, message = saved.Message});
+                }
+                return Ok(saved);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error." + ex.Message);
+            }
+        }
+        #endregion
+
+        public async Task<IActionResult> RefreshStatusColorTable()
+        {
+            var model = new AdminVM
+            {
+                mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
+            };
+            return PartialView("_PartialStatusColorTable", model);
+        }
+
 
     }
 }

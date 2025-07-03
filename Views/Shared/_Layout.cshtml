@@ -16,6 +16,8 @@
 	<link href="~/plugins/select2/css/select2.min.css" rel="stylesheet" />
 	<link href="~/plugins/openlayers/ol.css" rel="stylesheet" />
 	<link href="~/css/datatables.min.css" rel="stylesheet" />
+	<link href="~/plugins/bootstrap/bootstrap-colorpicker/css/bootstrap-colorpicker.css" rel="stylesheet" />
+	
 	<link rel="stylesheet" href="~/MachineMonitoring.styles.css" asp-append-version="true" />
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -107,6 +109,15 @@
 								</p>
 							</a>
 						</li>
+
+						<li class="nav-item">
+							<a asp-controller="Admin" asp-action="StatusColor" class="nav-link">
+								<i class="fas fa-palette mr-2"></i>
+								<p>
+									Machine Status Color
+								</p>
+							</a>
+						</li>
 					</ul>
 				</nav>
 			</div>
@@ -140,7 +151,10 @@
 
 	<!--OpenLayer JS-->
 	<script src="~/plugins/openlayers/ol.js"></script>
+
 	<script src="~/plugins/select2/js/select2.min.js"></script>
+	<script src="~/plugins/bootstrap/bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script>
+	<script src="~/plugins/bootstrap/ntc.js"></script>
 
 	<script src="~/lib/datatables.min.js"></script>
 	<script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>

@@ -1,0 +1,31 @@
+﻿@model MachineMonitoring.Models.ViewModel.AdminVM
+
+@if (Model.mcStatusColor != null && Model.mcStatusColor.Any())
+{
+	foreach (var item in Model.mcStatusColor)
+	{
+		<tr>
+			<td><span class="status_id">@item.status_id</span></td>
+			<td><span class="status_details">@item.status_details</span></td>
+			<td><span class="colorName status_color"></span></td>
+			<td>
+				<div class="color-box">
+					<input type="color" class="colorPicker" value="@item.hex_value">
+					<span class="colorCode hex_value">@item.hex_value</span>
+				</div>
+			</td>
+			<td>
+				<button class="btn btn-success update-btn d-none" onclick="Update(this)">
+					<i class="fas fa-edit mr-2"></i>
+					Save Changes
+				</button>
+			</td>
+		</tr>
+	}
+}
+else
+{
+	<tr>
+		<td colspan="5" class="text-center text-muted">No status colors defined.</td>
+	</tr>
+}

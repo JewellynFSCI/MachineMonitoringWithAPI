@@ -402,5 +402,56 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
+        #region 'GetPLantNoList'
+        public async Task<List<MCStatusColor>> GetMCStatusColorsRepo()
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "SELECT status_id, status_details, status_color, hex_value FROM status";
+                    var result = await connection.QueryAsync<MCStatusColor>(query);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data.");
+                return new List<MCStatusColor>();
+            }
+        }
+        #endregion
+
+        #region 'SaveMachineStatusColorRepo'
+        public async Task<APIResponse<DbResponse>> SaveMachineStatusColorRepo(MCStatusColor model)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_UpdateStatusColor";
+                    var parameters = new
+                    {
+                        p_status_id = model.status_id,
+                        p_status_color = model.status_color,
+                        p_hex_value = model.hex_value,
+                    };
+                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
+                    return new APIResponse<DbResponse>
+                    {
+                        Data = result,
+                        Message = result?.Message ?? "No message",
+                        Success = result?.Success ?? false
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving to database.");
+                throw;
+            }
+        }
+        #endregion
+
     }
 }
