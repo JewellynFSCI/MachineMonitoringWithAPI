@@ -2,6 +2,7 @@
     initializeColorPickers();
 });
 
+//#region 'initializeColorPickers'
 function initializeColorPickers() {
     $('.colorPicker').each(function () {
         const $picker = $(this);
@@ -30,7 +31,10 @@ function initializeColorPickers() {
         });
     });
 }
+//#endregion
 
+
+//#region 'updateColor'
 function updateColor(hex, $row) {
     const match = ntc.name(hex);  // get color name using ntc.js library
     const $colorName = $row.find('.status_color');
@@ -39,7 +43,9 @@ function updateColor(hex, $row) {
     $colorName.text(match[1]);
     $hexDisplay.text(hex);
 }
+//#endregion
 
+//#region 'Update'
 function Update(btn) {
     const $row = $(btn).closest('tr');
 
@@ -72,12 +78,14 @@ function Update(btn) {
         }
     });
 }
+//#endregion
 
-
+//#region 'refreshTable'
 function refreshTable() {
     $.get("/Admin/RefreshStatusColorTable", function (html) {
         $("#tblBody").html(html);
         initializeColorPickers();
     });
 }
+//#endregion
 
