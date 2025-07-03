@@ -252,25 +252,27 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
             url: imageUrl,
             imageExtent: imageExtent,
             projection: 'PIXELS'
-        }),
-        imageSmoothing: false
+        })
     });
 
     const view = new ol.View({
         projection: new ol.proj.Projection({
             code: 'PIXELS',
             units: 'pixels',
-            extent: imageExtent
+            extent: [0, 0, imageWidth, imageHeight]
         }),
         center: [imageWidth / 2, imageHeight / 2],
-        zoom: 1,
+        zoom: 2,
         maxZoom: 5
     });
 
     const map = new ol.Map({
         target: 'map',
         layers: [imageLayer],
-        view: view
+        view: view,
+        controls: ol.control.defaults.defaults().extend([
+            new ol.control.FullScreen()
+        ])
     });
 
     const pointSource = new ol.source.Vector();
@@ -353,38 +355,6 @@ function UpdateMachinePoints() {
             });
         }
     });
-}
-//#endregion
-
-//#region 'InitializedMap'
-function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
-    const imageLayer = new ol.layer.Image({
-        source: new ol.source.ImageStatic({
-            url: imageUrl,
-            imageExtent: imageExtent,
-            projection: 'PIXELS'
-        })
-    });
-
-    const view = new ol.View({
-        projection: new ol.proj.Projection({
-            code: 'PIXELS',
-            units: 'pixels',
-            extent: imageExtent
-        }),
-        center: [imageWidth / 2, imageHeight / 2],
-        zoom: 1,
-        maxZoom: 5
-    });
-
-    const map = new ol.Map({
-        target: 'map',
-        layers: [imageLayer],
-        view: view
-    });
-
-    view.fit(imageExtent);
-    return map;
 }
 //#endregion
 

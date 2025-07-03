@@ -176,7 +176,7 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 function addPointLayer(map, pointSource) {
     let start = new Date().getTime(); // animation reference
     const ONE_MINUTE = 60 * 1000;
-    const baseSize = 15;
+    const baseSize = 10;
 
     // Set start time only once for each feature with status "DONE"
     pointSource.getFeatures().forEach(feature => {
@@ -405,66 +405,6 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
     });
 }
 
-//#endregion
-
-//#region Utility: Build Popup HTML Form (OLD)
-//function buildPopupHTML2(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support='', errorcode, errorname) {
-//    return `
-//    <div class="containerpopup">
-//    <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
-//        <form>
-//            <div class="form-group">
-//                <label> Machine Status: </label>
-//                <input type="text" class="form-control" value="${status}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Control No: </label>
-//                <input type="text" class="form-control" value="${controlno}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Machine Code: </label>
-//                <input type="text" class="form-control" value="${machinecode}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Process: </label>
-//                <input type="text" class="form-control" value="${process}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Area: </label>
-//                <input type="text" class="form-control" value="${area}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Date: </label>
-//                <input type="text" class="form-control" value="${mc_error_buyoff_repair_date}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Details: </label>
-//                <textarea class="form-control" readonly>${details}</textarea>
-//            </div>
-//            <div class="form-group">
-//                <label> Requestor: </label>
-//                <input type="textarea" class="form-control" value="${requestor}" readonly>
-//            </div>
-//            ${ me_support ? 
-//            `<div class="form-group">
-//                <label> Maintenance Support: </label>
-//                <input type="textarea" class="form-control" value="${me_support}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Maintenance Support: </label>
-//                <input type="textarea" class="form-control" value="${errorcode}" readonly>
-//            </div>
-//            <div class="form-group">
-//                <label> Maintenance Support: </label>
-//                <input type="textarea" class="form-control" value="${errorname}" readonly>
-//            </div>
-//            `:
-//            ``
-//            }
-//        </form>
-//    </div>
-//`;
-//}
 //#endregion
 
 //#region Utility: Build Popup HTML Form
