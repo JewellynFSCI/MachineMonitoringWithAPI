@@ -309,7 +309,6 @@ namespace MachineMonitoring.DataAccess.Repository
                 throw;
             }
         }
-
         #endregion
 
         #region 'SaveSignal'
@@ -354,7 +353,7 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-
+        #region 'SendDataToOws'
         public async Task<IActionResult?> SendDataToOws(int id, string message)
         {
             try
@@ -381,6 +380,7 @@ namespace MachineMonitoring.DataAccess.Repository
                 throw;
             }
         }
+        #endregion
 
         #region 'GetMachineStatusRepo'
         public async Task<List<MachineStatusDetails>> GetMachineStatusRepo(MachineStatusDetails? model)

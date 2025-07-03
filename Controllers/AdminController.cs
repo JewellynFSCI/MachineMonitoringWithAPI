@@ -246,7 +246,6 @@ namespace MachineMonitoring.Controllers
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
                     ProductionMaps = await _adminrepo.GetProductionMapList(model),
-                    Machines = await _adminrepo.GetMachineCodes()
                 };
 
                 return View(viewModel);
@@ -254,6 +253,26 @@ namespace MachineMonitoring.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        #endregion
+
+        #region 'GetMachineCodesByPlant'
+        [HttpGet]
+        public async Task<IActionResult> GetMachineCodesByPlant(int plantNo)
+        {
+            try
+            {
+                var allMachines = await _adminrepo.GetMachineCodes(); // call your existing API function
+                var filteredMachines = allMachines
+                    .Where(mc => mc.plantNo == plantNo)
+                    .ToList();
+
+                return Json(new { success = true, machines = filteredMachines });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error fetching machine codes: " + ex.Message);
             }
         }
         #endregion

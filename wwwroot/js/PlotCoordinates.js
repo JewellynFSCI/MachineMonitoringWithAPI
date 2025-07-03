@@ -19,6 +19,8 @@ function GetProductionMap() {
         var dropdownProdMapName = $("#ProductionMapIdSelect");
         dropdownProdMapName.empty();
 
+        loadMachineOptions(SelectedPlantNo);
+
         // Reset the map container safely
         if (window.map instanceof ol.Map) {
             window.map.setTarget(null); // Detach map from DOM
@@ -539,4 +541,29 @@ function setupModifyListener(modifyInteraction, popupOverlay) {
 }
 //#endregion
 
+//#region 'loadMachineOptions by PlantNo'
+function loadMachineOptions(plantNo) {
+    $.ajax({
+        url: '/Admin/GetMachineCodesByPlant',
+        type: 'GET',
+        data: { plantNo: plantNo },
+        success: function (response) {
+            if (response.success && response.machines.length > 0) {
+                const options = response.machines.map(mc =>
+                    `<option value="${mc.machineCode}">${mc.machineCode}</option>`
+                );
 
+                window.machineOptionsHTML = `
+                    <option disabled selected>--Select Machine--</option>
+                    ${options.join("")}
+                `;
+            } else {
+                window.machineOptionsHTML = `<option disabled selected>--No machines available--</option>`;
+            }
+        },
+        error: function () {
+            window.machineOptionsHTML = `<option disabled selected>--Failed to load machines--</option>`;
+        }
+    });
+}
+//#endregion

@@ -130,13 +130,7 @@
 </section>
 
 <script>
-	const machineOptionsHTML = `
-		<option disabled selected>--Select Machine--</option>
-	@foreach (var machine in Model.Machines)
-	{
-		<text><option value="@machine.machineCode">@machine.machineCode</option></text>
-	}
-	`;
+	window.machineOptionsHTML = `<option disabled selected>--Select Machine--</option>`;
 </script>
 
 @section Scripts {
