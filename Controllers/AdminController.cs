@@ -473,6 +473,7 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
+        #region 'RefreshStatusColorTable'
         public async Task<IActionResult> RefreshStatusColorTable()
         {
             var model = new AdminVM
@@ -481,6 +482,7 @@ namespace MachineMonitoring.Controllers
             };
             return PartialView("_PartialStatusColorTable", model);
         }
+        #endregion
 
 
     }

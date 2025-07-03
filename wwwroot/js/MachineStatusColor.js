@@ -33,7 +33,6 @@ function initializeColorPickers() {
 }
 //#endregion
 
-
 //#region 'updateColor'
 function updateColor(hex, $row) {
     const match = ntc.name(hex);  // get color name using ntc.js library
