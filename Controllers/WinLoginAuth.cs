@@ -66,7 +66,7 @@ namespace MachineMonitoring.Controllers
                         HttpContext.Session.SetString(_sessionDisplayName, accounts.DisplayName);
                         ViewBag.Session = accounts.Username;
 
-                        return Redirect(TempData["ReturnURL"] as string ?? "~/Admin/ListMachineLocation");
+                        return Redirect(TempData["ReturnURL"] as string ?? "~/Admin/ListProductionMaps");
                     }
                     else
                     {

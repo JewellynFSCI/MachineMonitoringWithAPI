@@ -176,7 +176,7 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 function addPointLayer(map, pointSource) {
     let start = new Date().getTime(); // animation reference
     const ONE_MINUTE = 60 * 1000;
-    const baseSize = 10;
+    const baseSize = 6;
 
     // Set start time only once for each feature with status "DONE"
     pointSource.getFeatures().forEach(feature => {
@@ -201,7 +201,7 @@ function addPointLayer(map, pointSource) {
 
                 return new ol.style.Style({
                     image: new ol.style.Circle({
-                        radius: radius * 2,
+                        radius: radius * 3,
                         stroke: new ol.style.Stroke({
                             color: hexToRgba(status_color, opacity),
                             width: 2

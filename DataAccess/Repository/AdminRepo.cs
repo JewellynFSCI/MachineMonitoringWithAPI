@@ -370,7 +370,6 @@ namespace MachineMonitoring.DataAccess.Repository
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                     var response = await client.PostAsync(_sendDataToOws, content);
-                    //return (IActionResult)response;
                     return null;
                 }
             }

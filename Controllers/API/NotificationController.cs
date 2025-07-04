@@ -24,14 +24,15 @@ namespace MachineMonitoring.Controllers.API
         [HttpPost("Signal")]
         public async Task<IActionResult> MachineMonitoringAlert([FromBody] OwsTicketDetails model)
         {
+            model.mc_error_buyoff_repair_date = model.date.ToDateTime(model.time);
 
             var SaveNewTicket = await _adminrepo.SaveSignal(model);
             if (!SaveNewTicket.Success)
             {
                 //send data to ows(ID and Message)
-                //var id = model.id;
-                //var cancellationReason = SaveNewTicket.Message;
-                //await _adminrepo.SendDataToOws(id, cancellationReason);
+                var id = model.id;
+                var cancellationReason = SaveNewTicket.Message;
+                await _adminrepo.SendDataToOws(id, cancellationReason);
                 return BadRequest(new { success = false, message = SaveNewTicket.Message });
             }
 

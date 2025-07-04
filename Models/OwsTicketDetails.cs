@@ -11,6 +11,8 @@ namespace MachineMonitoring.Models
         public string? process {  get; set; }
         public string? area { get; set; }
         public string? machinecode { get; set; }
+        public DateOnly date { get; set; }
+        public TimeOnly time { get; set; }
         public DateTime mc_error_buyoff_repair_date { get; set; }
         public string? details { get; set; }
         public string? requestor { get; set; }
