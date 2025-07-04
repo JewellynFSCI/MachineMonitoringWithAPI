@@ -34,7 +34,7 @@ $(function () {
     //STAND-BY for every connection made by SignalR
     connection.on("ReceivedAlert", function (ticket) {
         console.log("Received Ticket Alert:", ticket);
-        ReceivedSignal(ticket);
+        ShowImage();
     });
 
 });
@@ -443,21 +443,6 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 `;
 }
 //#endregion
-
-//#region 'RecievedSignal'
-function ReceivedSignal(ticket) {
-    $.ajax({
-        url: '/Admin/ReceivedSignal',   //Insert or Update Ticket Details
-        type: 'POST',
-        data: ticket,
-        dataType: 'json',
-        success: function (data) {
-            ShowImage();
-        }
-    });
-}
-//#endregion
-
 
 
 

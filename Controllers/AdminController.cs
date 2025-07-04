@@ -153,11 +153,10 @@ namespace MachineMonitoring.Controllers
                 {
                     return BadRequest("Failed to delete record.");
                 }
-
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error: " + ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
         #endregion
@@ -389,24 +388,6 @@ namespace MachineMonitoring.Controllers
             {
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
-        }
-        #endregion
-
-        #region 'ReceivedSignal'
-        [HttpPost]
-        public async Task<IActionResult> ReceivedSignal (OwsTicketDetails model)
-        {
-            //Save Signal to database
-            var SaveNewTicket = await _adminrepo.SaveSignal(model);
-            if (!SaveNewTicket.Success)
-            {
-                //send data to ows (ID and Message)
-                //var id = model.id;
-                //var message = SaveNewTicket.Message;
-                //await _adminrepo.SendDataToOws(id,message);
-                return BadRequest(new { success = false });
-            }
-            return Ok(new { success = true});
         }
         #endregion
 
