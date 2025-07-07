@@ -22,6 +22,7 @@
         public string? errorcode { get; set; }
         public string? errorname { get; set; }
         public DateTime completedDate { get; set; }
-        
+        public DateTime addDate { get; set; }
+
     }
 }

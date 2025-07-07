@@ -1,0 +1,136 @@
+﻿#map {
+    height: 80vh;
+    width: 100%;
+    border: 1px solid #ccc;
+    display: block;
+}
+
+    #map:fullscreen,
+    :-webkit-full-screen #map,
+    :-moz-full-screen #map,
+    :-ms-fullscreen #map {
+        height: 100% !important;
+        width: 100% !important;
+    }
+
+.form-group {
+    margin-bottom: 0.5rem;
+}
+
+label {
+    margin-bottom: -0.5rem;
+}
+
+p {
+    margin-bottom: -2%;
+    font-size: 15px;
+}
+
+#machine-cards {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 15px;
+}
+
+
+    #machine-cards .card {
+        flex: 0 0 auto;
+        height: 100%;
+        max-width: 100%;
+        border: 1px solid black;
+        margin: 0;
+        padding: 5px 0px 10px 10px;
+        color: white;
+    }
+
+    #machine-cards .card-body {
+        padding: 0 !important;
+    }
+    
+
+.containerpopup {
+    min-width: 300px;
+    max-height: 200px;
+    overflow: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    background-color: #FFFFFF;
+}
+
+    .containerpopup::-webkit-scrollbar {
+        display: none; /* Chrome, Safari */
+    }
+
+.ol-popup {
+    position: absolute;
+    background-color: #FFFFFF;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #393E46;
+    bottom: 12px;
+    left: -50px;
+}
+
+    .ol-popup:after, .ol-popup:before {
+        top: 100%;
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+
+    .ol-popup:after {
+        border-top-color: #FFFFFF;
+        border-width: 10px;
+        left: 48px;
+        margin-left: -10px;
+    }
+
+    .ol-popup:before {
+        border-top-color: #393E46;
+        border-width: 13px;
+        left: 48px;
+        margin-left: -13px;
+    }
+
+.ol-popup-closer {
+    text-decoration: none;
+    position: absolute;
+    top: 2px;
+    right: 8px;
+    cursor: pointer;
+}
+
+    .ol-popup-closer i {
+        font-size: 25px;
+        color: dimgray;
+    }
+
+#legend-container {
+    display: flex;
+    flex-wrap: wrap; /* Optional: allow wrapping on small screens */
+    gap: 1rem; /* Space between items */
+    align-items: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+}
+
+.circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    border: 1px solid #333;
+}
+
+.labelcolor {
+    font-size: 14px;
+}

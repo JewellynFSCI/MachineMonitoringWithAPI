@@ -1,4 +1,4 @@
-﻿<div class="wrapper">
+﻿@* <div class="wrapper">
 	<!-- Navbar -->
 	<nav class="main-header navbar navbar-expand navbar-white navbar-light ml-0">
 		<ul class="navbar-nav ml-2">
@@ -19,7 +19,65 @@
 			<!-- Profile Dropdown Menu -->
 			<li class="nav-item dropdown">
 				<a asp-controller="WinLoginAuth" asp-action="Win_Login" class="nav-link">
-					LogIn <i class="fas fa-sign-in-alt ml-1"></i>
+					<i class="fas fa-sign-in-alt ml-1"> LogIn </i>
+				</a>
+			</li>
+		</ul>
+	</nav>
+	<!-- /.navbar -->
+</div> *@
+
+
+@{
+	var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+	var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<div class="wrapper">
+	<!-- Navbar -->
+	<nav class="main-header navbar navbar-expand navbar-white navbar-light ml-0">
+		<ul class="navbar-nav ml-2">
+			<li class="nav-item">
+				<a asp-controller="Admin" asp-action="ProductionMap" class="navbar-brand">
+					<img src="@Url.Content("~/img/icon3.png")" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8;border: solid 1px dimgray; width:4%">
+					<span class="brand-text font-weight-strong" style="color:dimgray">Machine Downtime Monitoring</span>
+				</a>
+			</li>
+		</ul>
+
+
+		@if (currentController == "Admin" && currentAction == "ProductionMap")
+		{
+			<ul class="navbar-nav" style="width:45%;">
+				<li class="nav-item w-100">
+					<select id="PlantNoSelect" name="PlantNoSelect" class="form-control">
+						<option disabled selected>--Select Plant No--</option>
+						@foreach (var plant in Model.Plants)
+						{
+							<option id="PlantSelected" value="@plant.PlantNo">@plant.PlantName</option>
+						}
+					</select>
+				</li>
+
+				<li class="nav-item ml-2 w-100">
+					<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control">
+						<!-- Options are populated in jQuery -->
+					</select>
+				</li>
+
+			</ul>
+		}
+
+		<ul class="navbar-nav ml-auto">
+			<li class="nav-item">
+				<a class="nav-link" data-widget="fullscreen" href="#" role="button">
+					<i class="fas fa-expand-arrows-alt fa-lg"></i>
+				</a>
+			</li>
+			<!-- Profile Dropdown Menu -->
+			<li class="nav-item dropdown">
+				<a asp-controller="WinLoginAuth" asp-action="Win_Login" class="nav-link">
+					<i class="fas fa-sign-in-alt ml-1"> LogIn </i>
 				</a>
 			</li>
 		</ul>

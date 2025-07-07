@@ -1,6 +1,7 @@
 ﻿var productionMaps = [];
 var coordinates = [];
 var ImgName = [];
+var activeFeature = null;
 
 $(function () {
     GetProductionMap();
@@ -152,6 +153,7 @@ function SaveToDB(moved) {
                         confirmButtonText: 'OK'
                     }).then(() => {
                         window.popupOverlay?.setPosition(undefined);
+                        activeFeature = null;
                         UpdateMachinePoints();
                     });
                 }
@@ -406,7 +408,7 @@ function setupPopup(map) {
 
 //#region 'handleMapClick'
 function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modifyInteraction) {
-    let activeFeature = null;
+    activeFeature = null;
     let tempPointFeature = null;
     let activeCoordinates = null;
     const popupElement = popupOverlay.getElement();

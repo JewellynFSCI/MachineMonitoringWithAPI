@@ -378,9 +378,9 @@ namespace MachineMonitoring.Controllers
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
-                    ProductionMaps = await _adminrepo.GetProductionMapList(model)
+                    ProductionMaps = await _adminrepo.GetProductionMapList(model),
+                    mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
                 };
-
                 return View(viewModel);
             }
 

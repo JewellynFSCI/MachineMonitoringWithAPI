@@ -289,6 +289,16 @@ function GetMachineStatus(map, pointSource) {
     const PlantNo = $('#PlantNoSelect').val();
     const ProductionMapId = $('#ProductionMapIdSelect').val();
 
+    // Get the container element
+    const container = document.getElementById("machine-cards");
+    if (!container) {
+        console.warn("machine-cards container not found in DOM.");
+        return;
+    }
+
+    // Clear previous content
+    container.innerHTML = "";
+
     $.ajax({
         url: '/Admin/GetMachineStatus',
         type: 'GET',
@@ -296,6 +306,9 @@ function GetMachineStatus(map, pointSource) {
         dataType: 'json',
         success: function (data) {
             if (data.mclist && Array.isArray(data.mclist)) {
+                // 1. Sort the list by addDate (newest first)
+                //data.mclist.sort((a, b) => new Date(b.addDate) - new Date(a.addDate));
+
                 data.mclist.forEach(function (item) {
                     const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
                     pointFeature.set('machineLocationId', item.machineLocationId);
@@ -315,7 +328,29 @@ function GetMachineStatus(map, pointSource) {
                     pointFeature.set('errorname', item.errorname);
                     pointFeature.set('completedDate', item.completedDate);
                     pointSource.addFeature(pointFeature);
+
+
+                    if (item.status !== "Done" && item.status !== "Cancelled") {
+                        const timeAgo = formatTimeAgo(item.addDate); // format the time before using
+
+                        // Create the card HTML
+                        const cardHtml = `
+                            <div class="col-md-1">
+                                <div class="card" style="background-color: ${item.hex_value} ">
+                                    <div class="card-body">
+                                        <p><strong>${item.machinecode}</strong> </p>
+                                        <p><i class="time-ago" data-adddate="${item.addDate}">${timeAgo}</i></p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Append the card to the container
+                        container.insertAdjacentHTML("beforeend", cardHtml);
+                    }
                 });
+                //update every minute
+                setInterval(updateTimestamps, 60000);
             }
         },
         error: function () {
@@ -327,6 +362,37 @@ function GetMachineStatus(map, pointSource) {
             });
         }
     });
+}
+//#endregion
+
+//#region 'updateTimestamps'
+function updateTimestamps() {
+    const elements = document.querySelectorAll('.time-ago');
+    elements.forEach(el => {
+        const timestamp = el.getAttribute('data-adddate');
+        if (timestamp) {
+            el.textContent = formatTimeAgo(timestamp);
+        }
+    });
+}
+//#endregion
+
+//#region 'formatTimeAgo'
+function formatTimeAgo(timestamp) {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diff = Math.floor((now - time) / 1000);
+
+    if (isNaN(diff)) return ''; // if invalid timestamp
+
+    if (diff < 60) return `${diff}s ago`;
+    const mins = Math.floor(diff / 60);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    if (hrs < 24) return remMins === 0 ? `${hrs}h ago` : `${hrs}h ${remMins}m ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
 }
 //#endregion
 

@@ -17,96 +17,8 @@
 
 	<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
 	<link href="~/plugins/openlayers/ol.css" rel="stylesheet" />
-
-
-	<style>
-		#map {
-			height: 80vh;
-			width: 100%;
-			border: 1px solid #ccc;
-			display: block;
-		}
-
-			#map:fullscreen,
-			:-webkit-full-screen #map,
-			:-moz-full-screen #map,
-			:-ms-fullscreen #map {
-				height: 100% !important;
-				width: 100% !important;
-			}
-
-		.form-group{
-			margin-bottom: 0.5rem;
-		}
-		label{
-			margin-bottom: -0.5rem;
-		}
-
-		p{
-			margin-bottom: -1%
-		}
-		.containerpopup{
-			min-width: 300px;
-			max-height: 200px;
-			overflow: auto;
-			scrollbar-width: none; /* Firefox */
-			-ms-overflow-style: none; /* IE and Edge */
-			background-color: #FFFFFF;
-		}
-
-			.containerpopup::-webkit-scrollbar {
-				display: none; /* Chrome, Safari */
-			}
-
-		.ol-popup {
-			position: absolute;
-			background-color: #FFFFFF;
-			box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-			padding: 15px;
-			border-radius: 10px;
-			border: 2px solid #393E46;
-			bottom: 12px;
-			left: -50px;
-		}
-
-			.ol-popup:after, .ol-popup:before {
-				top: 100%;
-				border: solid transparent;
-				content: " ";
-				height: 0;
-				width: 0;
-				position: absolute;
-				pointer-events: none;
-			}
-
-			.ol-popup:after {
-				border-top-color: #FFFFFF;
-				border-width: 10px;
-				left: 48px;
-				margin-left: -10px;
-			}
-
-			.ol-popup:before {
-				border-top-color: #393E46;
-				border-width: 13px;
-				left: 48px;
-				margin-left: -13px;
-			}
-
-		.ol-popup-closer {
-			text-decoration: none;
-			position: absolute;
-			top: 2px;
-			right: 8px;
-			cursor: pointer;
-		}
-
-			.ol-popup-closer i {
-				font-size: 25px;
-				color: dimgray;
-			}
-
-	</style>
+	
+	<link href="~/css/prodmap.css" rel="stylesheet" />
 
 </head>
 <body class="hold-transition">
@@ -117,34 +29,25 @@
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-12">
-					<div class="card mt-3">
+					<div class="card mt-2">
 						<div class="card-body" style="margin-top:-0.5%">
-							<div class="row">
-								<div class="col-sm-6">
-									<div class="form-inline">
-										<label class=" mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
-										<select id="PlantNoSelect" name="PlantNoSelect" class="form-control w-100">
-											<option disabled selected>--Select Plant No--</option>
-											@foreach (var plant in Model.Plants)
-											{
-												<option id="PlantSelected" value="@plant.PlantNo">@plant.PlantName</option>
-											}
-										</select>
-									</div>
-								</div>
 
-								<div class="col-sm-6">
-									<div class="form-inline">
-										<label class="mr-2">Production Map</label>
-										<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control w-100">
-											<!-- Options are populated in jQuery -->
-										</select>
-
-									</div>
+							<div class="row mb-2 ml-1">
+								<span class="labelcolor mr-3">LEGENDS:   </span>
+								<div id="legend-container">
+									@foreach (var item in Model.mcStatusColor)
+									{
+										<div class="legend-item mr-3">
+											<span class="circle" style="background-color: @item.hex_value;"></span>
+											<span class="labelcolor"> @item.status_details</span>
+										</div>
+									}
 								</div>
 							</div>
 
-							<div class="mt-2">
+							<div id="machine-cards" class="row"></div>
+
+							<div class="mt-1">
 								<div id="map"></div>
 							</div>
 

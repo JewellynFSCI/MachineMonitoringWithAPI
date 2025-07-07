@@ -434,6 +434,7 @@ namespace MachineMonitoring.DataAccess.Repository
                         p_status_id = model.status_id,
                         p_status_color = model.status_color,
                         p_hex_value = model.hex_value,
+                        p_user = model.currentuser
                     };
                     var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
                     return new APIResponse<DbResponse>
