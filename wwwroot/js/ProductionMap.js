@@ -297,7 +297,9 @@ function GetMachineStatus(map, pointSource) {
     }
 
     // Clear previous content
-    container.innerHTML = "";
+    container.innerHTML = ""; 
+
+    const featureMap = {};
 
     $.ajax({
         url: '/Admin/GetMachineStatus',
@@ -327,19 +329,21 @@ function GetMachineStatus(map, pointSource) {
                     pointFeature.set('errorcode', item.errorcode);
                     pointFeature.set('errorname', item.errorname);
                     pointFeature.set('completedDate', item.completedDate);
+                    pointFeature.set('addDate', item.addDate);
                     pointSource.addFeature(pointFeature);
 
+                    featureMap[item.machinecode] = pointFeature;
 
                     if (item.status !== "Done" && item.status !== "Cancelled") {
-                        const timeAgo = formatTimeAgo(item.addDate); // format the time before using
+                        const timeAgo = formatTimeAgo(item.mc_error_buyoff_repair_date); // format the time before using
 
                         // Create the card HTML
                         const cardHtml = `
                             <div class="col-md-1">
-                                <div class="card" style="background-color: ${item.hex_value} ">
+                                <div class="card machine-card" data-machinecode="${item.machinecode}" style="background-color: ${item.hex_value}">
                                     <div class="card-body">
                                         <p><strong>${item.machinecode}</strong> </p>
-                                        <p><i class="time-ago" data-adddate="${item.addDate}">${timeAgo}</i></p>
+                                        <p><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
                                     </div>
                                 </div>
                             </div>
@@ -349,6 +353,54 @@ function GetMachineStatus(map, pointSource) {
                         container.insertAdjacentHTML("beforeend", cardHtml);
                     }
                 });
+
+                // 🧠 Add click handler to cards
+                container.querySelectorAll('.machine-card').forEach(card => {
+                    card.addEventListener('click', function () {
+                        const machinecode = this.getAttribute('data-machinecode');
+                        const feature = featureMap[machinecode]; // 👈 this is the only way to access it
+
+                        if (feature) {
+                            const coord = feature.getGeometry().getCoordinates();
+                            const popupOverlay = map.getOverlays().item(0);
+                            const popupElement = popupOverlay.getElement();
+
+                            const popupHtml = buildPopupHTML(
+                                feature.get('machinecode'),
+                                feature.get('controlno'),
+                                feature.get('status'),
+                                feature.get('type'),
+                                feature.get('process'),
+                                feature.get('area'),
+                                feature.get('mc_error_buyoff_repair_date'),
+                                feature.get('details'),
+                                feature.get('requestor'),
+                                feature.get('me_support'),
+                                feature.get('errorcode'),
+                                feature.get('errorname')
+                            );
+
+                            popupElement.innerHTML = popupHtml;
+                            popupOverlay.setPosition(coord);
+                            map.getView().animate({ center: coord, duration: 500 });
+
+                            // ✅ Add close button behavior
+                            const closer = popupElement.querySelector(".ol-popup-closer");
+                            if (closer) {
+                                closer.onclick = function (evt) {
+                                    evt.preventDefault();
+                                    popupOverlay.setPosition(undefined);
+                                    closer.blur();
+                                    return false;
+                                };
+                            }
+                        } else {
+                            console.warn(`Feature for machinecode ${machinecode} not found.`);
+                        }
+                    });
+                });
+
+
                 //update every minute
                 setInterval(updateTimestamps, 60000);
             }
@@ -385,14 +437,14 @@ function formatTimeAgo(timestamp) {
 
     if (isNaN(diff)) return ''; // if invalid timestamp
 
-    if (diff < 60) return `${diff}s ago`;
+    if (diff < 60) return `${diff}secs ago`;
     const mins = Math.floor(diff / 60);
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 60) return `${mins}mins ago`;
     const hrs = Math.floor(mins / 60);
     const remMins = mins % 60;
     if (hrs < 24) return remMins === 0 ? `${hrs}h ago` : `${hrs}h ${remMins}m ago`;
     const days = Math.floor(hrs / 24);
-    return `${days}d ago`;
+    return `${days}days ago`;
 }
 //#endregion
 
@@ -448,6 +500,7 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
             const errorcode = activeFeature.get('errorcode');
             const errorname = activeFeature.get('errorname');
 
+
             popupElement.innerHTML = buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support, errorcode, errorname);
             popupOverlay.setPosition(coord);
         }
@@ -478,38 +531,55 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
     const isoDate = mc_error_buyoff_repair_date;
     const dateObj = new Date(isoDate);
 
+    const timeAgo = formatTimeAgo(mc_error_buyoff_repair_date);
+
     // Example: Convert to local string
     const datetime = dateObj.toLocaleString();
     return `
     <div class="containerpopup">
-    <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
-        <form>
-            <p> <strong> Machine Status:</strong> ${status} </p>
-            <p> <strong> Control No:</strong> ${controlno} </p>
-            <p> <strong> Machine Code:</strong> ${machinecode} </p>
-            <p> <strong> Process:</strong> ${process} </p>
-            <p> <strong> Area:</strong> ${area} </p>
-            <p> <strong> Date/Time:</strong> ${datetime} </p>
-            <div class="form-group">
-                <label> Details: </label>
-                <textarea class="form-control" readonly>${details}</textarea>
+        <div class="card" style="box-shadow:none;">
+            <div class="card-header">
+                <h4 class="card-title"> <strong> <i> ${status} </i></strong></h4>
+                <div class="card-tools">
+                    <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
+                </div>
             </div>
-            <p> <strong> Requestor:</strong> ${requestor} </p>
-            ${ me_support ?
-            `
-                <p> <strong> Maintenance Support:</strong> ${me_support} </p>
-                <p> <strong> Error Code:</strong> ${errorcode} </p>
-                <p> <strong> Error Name:</strong> ${errorname} </p>
-            `:
-            ``
-        }
-        </form>
+            <div class="card-body pop-up-body">
+                <div>
+                    <h5 class="text-center"> <strong> ${controlno} </strong> </h5>
+                </div>
+                <div class="row justify-content-between text-center">
+                    <div>
+                        <p style="font-size: 20px; color: blue;"> <i> <strong> ${timeAgo} </strong> </i> </p>
+                        <p> <i>${datetime}</i> </p>
+                        <p>${requestor}</p>
+                    </div>
+                    <div>
+                        <p style="font-size: 20px;"> ${machinecode} </p>
+                        <p> <i> ${process} </i> </p>
+                        <p> <i> ${area} </i> </p>
+                    </div>
+                </div>
+
+                <hr />
+                <div style="margin-top:-3%">
+                    <p>${details}</p>
+                </div>
+
+                ${ me_support ?
+                    `
+                    <hr />
+                    <div style="margin-top:-3%">
+                        <p>${me_support}</p>
+                        <p>${errorcode} - ${errorname}</p>
+                    </div>
+                    `
+                    : ``}
+            </div>
+        </div>
     </div>
 
 `;
 }
 //#endregion
-
-
-
 
