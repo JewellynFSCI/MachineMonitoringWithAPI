@@ -67,14 +67,16 @@
 
 
 	/* Make Select2 element taller and wider */
-	#machineCode + .select2-container .select2-selection--single {
+	#machineCode + .select2-container .select2-selection--single,
+	.select2-container .select2-selection--single {
 		height: 38px;
 		box-sizing: border-box;
 		padding-left: 0px;
 	}
 
 
-	#machineCode + .select2-container .select2-selection__arrow {
+	#machineCode + .select2-container .select2-selection__arrow,
+	.select2-container .select2-selection__arrow {
 		height: 38px;
 	}
 
@@ -94,7 +96,7 @@
 
 					<div class="card-body" style="margin-top:-0.5%">
 						<div class="row">
-							<div class="col-sm-6">
+							<div class="col-sm-4">
 								<div class="form-inline">
 									<label class=" mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
 									<select id="PlantNoSelect" name="PlantNoSelect" class="form-control w-100">
@@ -107,15 +109,26 @@
 								</div>
 							</div>
 
-							<div class="col-sm-6">
+							<div class="col-sm-4">
 								<div class="form-inline">
-									<label class="mr-2">Production Map</label>
+									<label class="mr-2"><i class="fas fa-map mr-1"></i> Production Map</label>
 									<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control w-100">
 										<!-- Options are populated in jQuery -->
 									</select>
 
 								</div>
 							</div>
+
+							<div class="col-sm-4">
+								<div class="form-inline form-group">
+									<label class="mr-2"><i class="fas fa-search-location mr-1"></i> Locate Machine</label>
+									<select name="MCLocator" id="MCLocator" class="form-control select2 w-100">
+										<!-- Options are populated in jQuery -->
+									</select>
+								</div>
+							</div>
+
+
 						</div>
 
 						<div class="mt-4">

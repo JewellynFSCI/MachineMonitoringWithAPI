@@ -6,6 +6,8 @@ var activeFeature = null;
 $(function () {
     GetProductionMap();
     GetImgNamefromDb();
+    SearchBarMachine();
+    LocateMC();
 
     const existingPopup = document.querySelector('.ol-popup');
     if (existingPopup) {
@@ -19,6 +21,8 @@ function GetProductionMap() {
         var SelectedPlantNo = $(this).val();
         var dropdownProdMapName = $("#ProductionMapIdSelect");
         dropdownProdMapName.empty();
+        var dropdownMCLocator = $("#MCLocator");
+        dropdownMCLocator.empty();
 
         loadMachineOptions(SelectedPlantNo);
 
@@ -88,18 +92,18 @@ function buildPopupHTML(coord, name = '', id = '') { // Added default values for
         <form method="POST" id="popupForm">
             <input type="hidden" id="MachineLocationId" name="MachineLocationId" value="${id || ''}" />
             <div class="row">
-                <div class="form-group col-sm-6">
+                <div class="form-group col-sm-6" hidden>
                     <label for="X"> <i class="fas fa-arrows-alt-h"></i> X Coordinate</label>
                     <input type="text" class="form-control" id="X" name="X" value="${Math.round(coord[0])}" readonly>
                 </div>
-                <div class="form-group col-sm-6">
+                <div class="form-group col-sm-6" hidden>
                     <label for="Y"> <i class="fas fa-arrows-alt-v"></i> Y Coordinate</label>
                     <input type="text" class="form-control" id="Y" name="Y" value="${Math.round(coord[1])}" readonly>
                 </div>
             </div>
             
 			<div class="form-group">
-                <label class="mr-2">Machine</label>
+                <label class="mr-2"> <i class="fas fa-memory mr-1"></i> Machine</label>
                 <select name="machineCode" id="machineCode" class="form-control select2 w-100">
                     ${machineOptionsHTML}
                 </select>
@@ -468,8 +472,6 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
             const id = activeFeature.get('machineLocationId') || '';
             popupElement.innerHTML = buildPopupHTML(coord, name, id);
             popupOverlay.setPosition(coord);
-            popupElement.innerHTML = buildPopupHTML(coord, name, id);
-            popupOverlay.setPosition(coord);
 
             $('#machineCode').select2();
             $('#machineCode').val(name).trigger('change');
@@ -574,6 +576,100 @@ function loadMachineOptions(plantNo) {
         },
         error: function () {
             window.machineOptionsHTML = `<option disabled selected>--Failed to load machines--</option>`;
+        }
+    });
+}
+//#endregion
+
+//#region 'Get MachineLocation'
+function SearchBarMachine() {
+    $("#ProductionMapIdSelect").on("change", function () {
+        var SelectedProdMapId = $(this).val();
+        var dropdownMCLocator = $("#MCLocator");
+        dropdownMCLocator.empty();
+
+        const PlantNo = $('#PlantNoSelect').val();
+
+        $.ajax({
+            url: '/Admin/GetMCLocation',
+            type: 'GET',
+            data: { PlantNo, ProductionMapId :SelectedProdMapId },
+            contentType: 'application/json',
+            success: function (response) {
+                if (response.mclist.length > 0) {
+                    // Add default disabled option
+                    dropdownMCLocator.append("<option value='' disabled selected><--Locate Machine Code--></option>");
+
+                    // Loop through the response
+                    $.each(response.mclist, function (index, item) {
+                        dropdownMCLocator.append(
+                            $('<option></option>').val(item.machineCode).text(item.machineCode)
+                        );
+                    });
+                } else {
+                    dropdownMCLocator.append("<option value='' disabled selected><--No machines available--></option>");
+                }
+            },
+            error: function (xhr, status, error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: xhr.responseText || "Failed to load dropdown.",
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+}
+//#endregion
+
+//#region 'Locate'
+function LocateMC() {
+    $("#MCLocator").on("change", function () {
+        const selectedMachineCode = $(this).val();
+        if (!selectedMachineCode || !window.pointSource || !window.popupOverlay) return;
+
+        const features = window.pointSource.getFeatures();
+        const targetFeature = features.find(f => f.get('name') === selectedMachineCode);
+
+        if (targetFeature) {
+            const coord = targetFeature.getGeometry().getCoordinates();
+            const name = targetFeature.get('name');
+            const id = targetFeature.get('machineLocationId');
+
+            // Update popup content
+            const popupElement = window.popupOverlay.getElement();
+            popupElement.innerHTML = buildPopupHTML(coord, name, id);
+            window.popupOverlay.setPosition(coord);
+
+            // Activate feature for modification
+            window.modifyCollection.clear();
+            window.modifyCollection.push(targetFeature);
+            window.modifyInteraction.setActive(true);
+
+            // Update global state
+            window.activeFeature = targetFeature;
+
+            // Focus map to location (pan)
+            window.map.getView().animate({
+                center: coord,
+                duration: 500
+            });
+
+            // Initialize select2 and set value
+            $('#machineCode').select2();
+            $('#machineCode').val(name).trigger('change');
+
+            // Set coordinate inputs
+            document.getElementById('X').value = Math.round(coord[0]);
+            document.getElementById('Y').value = Math.round(coord[1]);
+        } else {
+            Swal.fire({
+                title: 'Not Found',
+                text: 'Machine location not found on the map.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
         }
     });
 }
