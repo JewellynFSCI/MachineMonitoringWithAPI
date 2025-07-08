@@ -22,8 +22,22 @@ label {
 }
 
 p {
-    margin-bottom: -2%;
-    font-size: 15px;
+    margin-bottom: -1%;
+    font-size: 14px;
+}
+
+h3 {
+    font-size: 20px;
+    font-style: italic;
+}
+
+h4 {
+    padding-left: -10px;
+    font-size: 20px;
+    margin-top: 1%;
+}
+h5 {
+    font-weight: 700;
 }
 
 #machine-cards {
@@ -47,14 +61,18 @@ p {
     #machine-cards .card-body {
         padding: 0 !important;
     }
-    
+
 
 .containerpopup {
-    min-width: 400px;
-    max-height: 300px;
+    min-width: 450px;
+    max-height: 250px;
     background-color: white;
-
+    overflow-x: auto;
+    scrollbar-width: none;
 }
+    .containerpopup::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
 
 .ol-popup {
     position: absolute;
@@ -137,10 +155,9 @@ p {
     margin-top:-2%;
     max-height:40px;
 }
-
-h3{
-    font-size: 20px;
-    font-style: italic;
+hr {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 .pop-up-body{
@@ -151,5 +168,4 @@ h3{
 .card-footer{
     background-color: whitesmoke;
     margin: 0;
-    
 }

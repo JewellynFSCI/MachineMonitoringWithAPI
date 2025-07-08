@@ -21,6 +21,7 @@ namespace MachineMonitoring.DataAccess.Repository
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _mcCodes = "";
         private readonly string _sendDataToOws = "";
+        private readonly string _getEmployeeDetails = "";
 
         public AdminRepo(IConfiguration configuration, ILogger<AdminRepo> logger, IHttpContextAccessor httpContextAccessor)
         {
@@ -29,6 +30,7 @@ namespace MachineMonitoring.DataAccess.Repository
             _httpContextAccessor = httpContextAccessor;
             _mcCodes = _configuration.GetConnectionString("MachineCodes") ?? "";
             _sendDataToOws = _configuration.GetConnectionString("SendDataToOws") ?? "";
+            _getEmployeeDetails = _configuration.GetConnectionString("GetEmployeeDetails") ?? "";
         }
 
         private IDbConnection Connection => new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -336,7 +338,7 @@ namespace MachineMonitoring.DataAccess.Repository
                         p_errorname = model.errorname,
                         p_status = model.status
                     };
-                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query,parameters,commandType: CommandType.StoredProcedure);
+                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
                     return new APIResponse<DbResponse>
                     {
                         Data = result,
@@ -453,5 +455,32 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
+        #region 'GetEmployeeName'
+        [HttpGet]
+        public async Task<string?> GetEmployeeName(string requestor)
+        {
+            using (var client = new HttpClient())
+            {
+                var content = new StringContent(
+                    JsonConvert.SerializeObject(new { employeeNumber = requestor }),
+                    Encoding.UTF8,
+                    "application/json");
+
+                var response = await client.PostAsync(_getEmployeeDetails, content);
+                string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(requestor, response.StatusCode);
+                    return null;
+                }
+
+                var result = JsonConvert.DeserializeObject<APIResponse<EmployeeName>>(json);
+                return result?.Data?.employeeName;
+
+
+            }
+        }
+        #endregion
     }
 }

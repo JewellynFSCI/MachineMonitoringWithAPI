@@ -251,6 +251,14 @@ function ShowImage() {
 
 //#region 'ShowImageBase'
 function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
+    const padding = 700;
+    const paddedExtent = [
+        imageExtent[0] - padding, // minX - padding
+        imageExtent[1] - padding, // minY - padding
+        imageExtent[2] + padding, // maxX + padding
+        imageExtent[3] + padding  // maxY + padding
+    ];
+
     const imageLayer = new ol.layer.Image({
         source: new ol.source.ImageStatic({
             url: imageUrl,
@@ -263,11 +271,12 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
         projection: new ol.proj.Projection({
             code: 'PIXELS',
             units: 'pixels',
-            extent: [0, 0, imageWidth, imageHeight]
+            extent: paddedExtent
         }),
         center: [imageWidth / 2, imageHeight / 2],
         zoom: 2,
-        maxZoom: 5
+        maxZoom: 5,
+        extent: paddedExtent
     });
 
     const map = new ol.Map({

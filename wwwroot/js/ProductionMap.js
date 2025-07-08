@@ -139,6 +139,15 @@ function ShowImage() {
 
 //#region 'InitializedMap'
 function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
+    const padding = 700;
+    const paddedExtent = [
+        imageExtent[0] - padding, // minX - padding
+        imageExtent[1] - padding, // minY - padding
+        imageExtent[2] + padding, // maxX + padding
+        imageExtent[3] + padding  // maxY + padding
+    ];
+
+
     const imageLayer = new ol.layer.Image({
         source: new ol.source.ImageStatic({
             url: imageUrl,
@@ -151,11 +160,12 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
         projection: new ol.proj.Projection({
             code: 'PIXELS',
             units: 'pixels',
-            extent: imageExtent
+            extent: paddedExtent
         }),
         center: [imageWidth / 2, imageHeight / 2],
         zoom: 1,
-        maxZoom: 5
+        maxZoom: 5,
+        extent: paddedExtent // <-- LIMIT PANNING TO IMAGE BOUNDS
     });
 
     const map = new ol.Map({
@@ -536,50 +546,53 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
     // Example: Convert to local string
     const datetime = dateObj.toLocaleString();
     return `
-    <div class="containerpopup">
-        <div class="card" style="box-shadow:none;">
-            <div class="card-header">
-                <h4 class="card-title"> <strong> <i> ${status} </i></strong></h4>
-                <div class="card-tools">
-                    <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
+            <div class="containerpopup">
+                <div class="card" style="box-shadow: none;">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="card-title" style="margin-left: -8px;">
+                            ControlNo: <strong><i>${controlno}</i></strong>
+                        </h4>
+                        <a href="#" class="ol-popup-closer" id="popupCloser">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+
+                    <div class="card-body pop-up-body">
+                        <div class="row mb-1">
+                            <div class="col">
+                                <h5 style="color: blue;">
+                                    <i>${timeAgo}</i>
+                                </h5>
+                                <p><i>${datetime}</i></p>
+                                <p><i>${requestor}</i></p>
+                            </div>
+                            <div class="text-right col">
+                                <h5>
+                                    ${machinecode}
+                                </h5>
+                                <p><i>${process}</i></p>
+                                <p><i>${area}</i></p>
+                            </div>
+                        </div>
+
+                        <hr />
+                        <div class="mb-1">
+                            <p"><strong>Details:</strong></p>
+                            <p>${details}</p>
+                        </div>
+
+                        ${me_support ? `
+                            <hr />
+                            <div class="mb-1">
+                                <p"><strong>Maintenance Personnel:</strong></p>
+                                <p>${me_support}</p>
+                                <p>${errorcode} - ${errorname}</p>
+                            </div>
+                        ` : ``}
+                    </div>
                 </div>
             </div>
-            <div class="card-body pop-up-body">
-                <div>
-                    <h5 class="text-center"> <strong> ${controlno} </strong> </h5>
-                </div>
-                <div class="row justify-content-between text-center">
-                    <div>
-                        <p style="font-size: 20px; color: blue;"> <i> <strong> ${timeAgo} </strong> </i> </p>
-                        <p> <i>${datetime}</i> </p>
-                        <p>${requestor}</p>
-                    </div>
-                    <div>
-                        <p style="font-size: 20px;"> ${machinecode} </p>
-                        <p> <i> ${process} </i> </p>
-                        <p> <i> ${area} </i> </p>
-                    </div>
-                </div>
-
-                <hr />
-                <div style="margin-top:-3%">
-                    <p>${details}</p>
-                </div>
-
-                ${ me_support ?
-                    `
-                    <hr />
-                    <div style="margin-top:-3%">
-                        <p>${me_support}</p>
-                        <p>${errorcode} - ${errorname}</p>
-                    </div>
-                    `
-                    : ``}
-            </div>
-        </div>
-    </div>
-
-`;
+            `;
 }
 //#endregion
 
