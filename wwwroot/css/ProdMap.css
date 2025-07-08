@@ -23,7 +23,7 @@ label {
 
 p {
     margin-bottom: -1%;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 h3 {
@@ -165,7 +165,7 @@ hr {
     padding: 5px 15px 15px 15px;
 }
 
-.card-footer{
-    background-color: whitesmoke;
-    margin: 0;
+.card-header{
+    padding: 4%;
 }
+

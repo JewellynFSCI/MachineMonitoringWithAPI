@@ -548,10 +548,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
     return `
             <div class="containerpopup">
                 <div class="card" style="box-shadow: none;">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title" style="margin-left: -8px;">
-                            ControlNo: <strong><i>${controlno}</i></strong>
-                        </h4>
+                    <div class="card-header">
                         <a href="#" class="ol-popup-closer" id="popupCloser">
                             <i class="fas fa-times"></i>
                         </a>
@@ -577,14 +574,15 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 
                         <hr />
                         <div class="mb-1">
-                            <p"><strong>Details:</strong></p>
+                            <p><strong>ControlNo: </strong> ${controlno}</p>
+                            <p><strong>Details:</strong></p>
                             <p>${details}</p>
                         </div>
 
                         ${me_support ? `
                             <hr />
                             <div class="mb-1">
-                                <p"><strong>Maintenance Personnel:</strong></p>
+                                <p><strong>Maintenance Personnel:</strong></p>
                                 <p>${me_support}</p>
                                 <p>${errorcode} - ${errorname}</p>
                             </div>
