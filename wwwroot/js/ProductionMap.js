@@ -31,11 +31,27 @@ $(function () {
     //#endregion
 
 
-    //STAND-BY for every connection made by SignalR
+    //#region 'STAND-BY for every connection made by SignalR/OWS'
     connection.on("ReceivedAlert", function (ticket) {
         console.log("Received Ticket Alert:", ticket);
-        ShowImage();
+
+        if (ticket.success) {
+            if (window.map && window.map instanceof ol.Map) {
+                const pointLayer = window.map.getLayers().getArray().find(layer => layer instanceof ol.layer.Vector);
+                const pointSource = pointLayer?.getSource();
+
+                if (pointSource) {
+                    pointSource.clear(); // remove old features
+
+                    // Re-fetch and re-add new features
+                    GetMachineStatus(window.map, pointSource);
+                } else {
+                    console.warn("Point source not found. Unable to replot.");
+                }
+            }
+        }
     });
+    //#endregion
 
 });
 
@@ -134,6 +150,7 @@ function ShowImage() {
         window.map = map;
     };
     img.src = imageUrl;
+
 }
 //#endregion
 
@@ -344,19 +361,19 @@ function GetMachineStatus(map, pointSource) {
 
                     featureMap[item.machinecode] = pointFeature;
 
-                    if (item.status !== "Done" && item.status !== "Cancelled") {
+                    if (item.status !== "Completed" && item.status !== "Cancelled") {
                         const timeAgo = formatTimeAgo(item.mc_error_buyoff_repair_date); // format the time before using
 
                         // Create the card HTML
                         const cardHtml = `
-                            <div class="col-md-1">
+                            
                                 <div class="card machine-card" data-machinecode="${item.machinecode}" style="background-color: ${item.hex_value}">
                                     <div class="card-body">
                                         <p><strong>${item.machinecode}</strong> </p>
                                         <p><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
                                     </div>
                                 </div>
-                            </div>
+                            
                         `;
 
                         // Append the card to the container

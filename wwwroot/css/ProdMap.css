@@ -36,6 +36,7 @@ h4 {
     font-size: 20px;
     margin-top: 1%;
 }
+
 h5 {
     font-weight: 700;
 }
@@ -44,32 +45,34 @@ h5 {
     display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding-bottom: 15px;
+    padding: 0;
+    gap: 0.5%; /* optional spacing between cards */
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
 }
-
 
     #machine-cards .card {
-        flex: 0 0 auto;
-        height: 100%;
-        max-width: 100%;
+        flex: 0 0 auto; /* Fixed width */
+        min-width: 180px;
+        max-height: 70px;
         border: 1px solid black;
-        margin: 0;
-        padding: 5px 0px 10px 10px;
+        padding: 0;
         color: white;
+        box-sizing: border-box;
+        margin: 0 0 10px 0;
     }
 
-    #machine-cards .card-body {
-        padding: 0 !important;
+    #machine-cards .card-body{
+        padding: 10px;
     }
 
+    .containerpopup {
+        width: 400px;
+        max-height: 350px;
+        background-color: white;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
 
-.containerpopup {
-    min-width: 450px;
-    max-height: 250px;
-    background-color: white;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
     .containerpopup::-webkit-scrollbar {
         display: none; /* Chrome, Safari, Opera */
     }
@@ -147,25 +150,25 @@ h5 {
     font-size: 14px;
 }
 
-.p-popup{
+.p-popup {
     font-size: 13px;
 }
 
-.card-header{
-    margin-top:-2%;
-    max-height:40px;
+.card-header {
+    margin-top: -2%;
+    max-height: 40px;
 }
+
 hr {
     margin-top: 1rem;
     margin-bottom: 0.5rem;
 }
 
-.pop-up-body{
+.pop-up-body {
     margin: 0;
     padding: 5px 15px 15px 15px;
 }
 
-.card-header{
+.card-header {
     padding: 4%;
 }
-

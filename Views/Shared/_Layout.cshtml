@@ -45,21 +45,12 @@
 						<i class="fas fa-expand-arrows-alt fa-lg"></i>
 					</a>
 				</li>
-				<!-- Profile Dropdown Menu -->
-				<li class="nav-item dropdown">
-					<a class="nav-link" data-toggle="dropdown" href="#">
-						<i class="fas fa-user-circle fa-lg"></i>
+				<li class="nav-item">
+					<a asp-controller="WinLoginAuth" asp-action="Logout" class="nav-link">
+						<i class="nav-icon fas fa-sign-out-alt fa-lg mr-1"></i> Logout </i>
 					</a>
-					<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-						<a asp-controller="Admin" asp-action="Profile" class="dropdown-item">
-							<i class="fas fa-user-circle fa-lg mr-3"></i> Profile
-						</a>
-						<div class="dropdown-divider"></div>
-						<a asp-controller="WinLoginAuth" asp-action="Logout" class="dropdown-item dropdown-footer">
-							<i class="nav-icon fas fa-sign-out-alt fa-lg mr-1"></i> Logout
-						</a>
-					</div>
 				</li>
+
 			</ul>
 		</nav>
 		<!-- /.navbar -->
