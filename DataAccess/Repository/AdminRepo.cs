@@ -356,7 +356,7 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'SendDataToOws'
-        public async Task<IActionResult?> SendDataToOws(int id, string message)
+        public async Task<IActionResult?> SendDataToOws(int id, string cancellationReason)
         {
             try
             {
@@ -365,7 +365,7 @@ namespace MachineMonitoring.DataAccess.Repository
                     var data = new
                     {
                         id = id,
-                        message = message
+                        cancellationReason = cancellationReason
                     };
 
                     var json = JsonConvert.SerializeObject(data);
