@@ -52,26 +52,31 @@ h5 {
 
     #machine-cards .card {
         flex: 0 0 auto; /* Fixed width */
-        min-width: 180px;
+        min-width: 200px;
         max-height: 70px;
         border: 1px solid black;
         padding: 0;
-        color: white;
         box-sizing: border-box;
         margin: 0 0 10px 0;
     }
 
-    #machine-cards .card-body{
-        padding: 10px;
+    #machine-cards .card-body {
+        padding: 0px 0px 0px 7.5px;
+        box-shadow: 0px 5px 4px rgba(0,0,0,0.2);
     }
 
-    .containerpopup {
-        width: 400px;
-        max-height: 350px;
-        background-color: white;
-        overflow-x: auto;
-        scrollbar-width: none;
+    #machine-cards .cardcontent{
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
+
+.containerpopup {
+    width: 400px;
+    max-height: 350px;
+    background-color: white;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
 
     .containerpopup::-webkit-scrollbar {
         display: none; /* Chrome, Safari, Opera */
@@ -115,7 +120,7 @@ h5 {
 .ol-popup-closer {
     text-decoration: none;
     position: absolute;
-    top: 8px;
+    top: 5px;
     right: 8px;
     cursor: pointer;
 }

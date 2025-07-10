@@ -367,10 +367,15 @@ function GetMachineStatus(map, pointSource) {
                         // Create the card HTML
                         const cardHtml = `
                             
-                                <div class="card machine-card" data-machinecode="${item.machinecode}" style="background-color: ${item.hex_value}">
-                                    <div class="card-body">
-                                        <p><strong>${item.machinecode}</strong> </p>
-                                        <p><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
+                                <div class="card rounded machine-card" data-machinecode="${item.machinecode}">
+                                    <div class="card-body rounded">
+                                        <div class="row">
+                                            <div class="col-md-2 rounded" style="background-color: ${item.hex_value};"></div>
+                                            <div class="col-md-10 cardcontent">
+                                                <p><strong>${item.machinecode}</strong> </p>
+                                                <p><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             
