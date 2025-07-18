@@ -81,7 +81,7 @@ function OpenAddModal() {
     $('#ProductionMapId').val("");
     $('#ProductionMapName').val("");
     $('#ImgFile').val("");
-    $('#fileNote').text("");
+    $('#fileNote').text("(Accept only .jpeg and .png format)");
     $('#ImgFile').val('');
     $('.custom-file-label').text('Upload File');
     $('#ImgContainer').hide();
@@ -98,7 +98,7 @@ function EditProdMapModal(productionMapId, productionMapName, plantName, imgName
     $('#ProductionMapId').val(productionMapId);
     $('#ProductionMapName').val(productionMapName);
     $('#ImgFile').val("");
-    $('#fileNote').text("(if want to replace)");
+    $('#fileNote').text("(To replace. Accept only .jpeg and .png format)");
     $('#ImgContainer').show();
     $('#ImgContainer img').attr('src', '/img/productionmap/' + imgName, 'alt', imgName);
     $('#ImgName').val(imgName);

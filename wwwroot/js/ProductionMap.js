@@ -156,12 +156,12 @@ function ShowImage() {
 
 //#region 'InitializedMap'
 function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
-    const padding = 700;
+    const padding = 500;
     const paddedExtent = [
         imageExtent[0] - padding, // minX - padding
-        imageExtent[1] - padding, // minY - padding
+        imageExtent[1] , // minY - padding
         imageExtent[2] + padding, // maxX + padding
-        imageExtent[3] + padding  // maxY + padding
+        imageExtent[3] // maxY + padding
     ];
 
 
@@ -188,10 +188,7 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
     const map = new ol.Map({
         target: 'map',
         layers: [imageLayer],
-        view: view,
-        controls: ol.control.defaults.defaults().extend([
-            new ol.control.FullScreen()
-        ])
+        view: view
     });
 
     view.fit(imageExtent);
@@ -336,7 +333,7 @@ function GetMachineStatus(map, pointSource) {
         success: function (data) {
             if (data.mclist && Array.isArray(data.mclist)) {
                 // 1. Sort the list by addDate (newest first)
-                //data.mclist.sort((a, b) => new Date(b.addDate) - new Date(a.addDate));
+                data.mclist.sort((a, b) => new Date(b.addDate) - new Date(a.addDate));
 
                 data.mclist.forEach(function (item) {
                     const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
@@ -413,8 +410,10 @@ function GetMachineStatus(map, pointSource) {
                             );
 
                             popupElement.innerHTML = popupHtml;
+                            //popupOverlay.setPosition(coord);
+                            popupOverlay.setDynamicPosition(coord);
                             popupOverlay.setPosition(coord);
-                            map.getView().animate({ center: coord, duration: 500 });
+                            map.getView().animate({ center: coord, duration: 0 });
 
                             // ✅ Add close button behavior
                             const closer = popupElement.querySelector(".ol-popup-closer");
@@ -483,16 +482,39 @@ function formatTimeAgo(timestamp) {
 //#region 'setupPopup'
 function setupPopup(map) {
     const popupElement = document.createElement('div');
-    popupElement.className = 'ol-popup';
+    popupElement.className = 'ol-popup arrow-bottom'; // default arrow pointing down
     document.body.appendChild(popupElement);
 
     const popupOverlay = new ol.Overlay({
         element: popupElement,
-        offset: [0, -15],
+        offset: [0, -10],
         positioning: 'bottom-center',
         stopEvent: true
     });
     map.addOverlay(popupOverlay);
+
+    // ✅ Dynamically adjust popup position and arrow direction
+    popupOverlay.setDynamicPosition = function (coordinate) {
+        const pixel = map.getPixelFromCoordinate(coordinate);
+        const thresholdY = 200;
+
+        if (pixel[1] < thresholdY) {
+            // Near top, push popup below point
+            popupOverlay.setOffset([0, 255]);
+            popupOverlay.setPositioning('top-center');
+
+            popupElement.classList.remove('arrow-bottom');
+            popupElement.classList.add('arrow-top');
+        } else {
+            // Default: popup above point
+            popupOverlay.setOffset([0, -5]);
+            popupOverlay.setPositioning('bottom-center');
+
+            popupElement.classList.remove('arrow-top');
+            popupElement.classList.add('arrow-bottom');
+        }
+    };
+
     return popupOverlay;
 }
 //#endregion
@@ -534,10 +556,20 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
 
 
             popupElement.innerHTML = buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support, errorcode, errorname);
+            //popupOverlay.setPosition(coord);
+            popupOverlay.setDynamicPosition(coord);
             popupOverlay.setPosition(coord);
         }
 
-        
+
+    });
+
+    map.on('pointermove', function (evt) {
+        const hit = map.hasFeatureAtPixel(evt.pixel, {
+            layerFilter: layer => layer === map.getLayers().getArray().find(l => l instanceof ol.layer.Vector)
+        });
+
+        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
     });
 
     popupElement.addEventListener('click', function (e) {
@@ -555,7 +587,6 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
         }
     });
 }
-
 //#endregion
 
 //#region Utility: Build Popup HTML Form
@@ -597,8 +628,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
                         <hr />
                         <div class="mb-1">
                             <p><strong>ControlNo: </strong> ${controlno}</p>
-                            <p><strong>Details:</strong></p>
-                            <p>${details}</p>
+                            <p><strong>Details:</strong> ${details}</p>
                         </div>
 
                         ${me_support ? `
@@ -615,4 +645,3 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
             `;
 }
 //#endregion
-

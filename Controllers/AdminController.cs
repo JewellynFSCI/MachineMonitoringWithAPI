@@ -9,6 +9,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
 using MachineMonitoring.Models.DTOs;
+using Mysqlx;
 
 namespace MachineMonitoring.Controllers
 {
@@ -86,8 +87,7 @@ namespace MachineMonitoring.Controllers
 
                 if (!allowedExtensions.Contains(extension))
                 {
-                    ModelState.AddModelError("", "Unsupported file type.");
-                    return View(model);
+                    return BadRequest("File format must be .jpeg and .png only.");
                 }
 
                 if (!ModelState.IsValid)
@@ -195,8 +195,7 @@ namespace MachineMonitoring.Controllers
                     var extension = Path.GetExtension(ImgFile.FileName).ToLower();
                     if (!allowedExtensions.Contains(extension))
                     {
-                        ModelState.AddModelError("", "Unsupported file type.");
-                        return View(model);
+                        return BadRequest("File format must be .jpeg and .png only.");
                     }
                     var fileName = Path.GetFileNameWithoutExtension(ImgFile.FileName);
                     var fileExtension = Path.GetExtension(ImgFile.FileName);
