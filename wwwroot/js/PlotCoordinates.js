@@ -255,12 +255,12 @@ function ShowImage() {
 
 //#region 'ShowImageBase'
 function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
-    const padding = 100;
+    const padding = 600;
     const paddedExtent = [
         imageExtent[0] - padding, // minX - padding
-        imageExtent[1] - padding, // minY - padding
+        imageExtent[1] - (padding/2), // minY - padding
         imageExtent[2] + padding, // maxX + padding
-        imageExtent[3] + padding  // maxY + padding
+        imageExtent[3] + (padding/2)// maxY + padding
     ];
 
     const imageLayer = new ol.layer.Image({
@@ -287,10 +287,6 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
         target: 'map',
         layers: [imageLayer],
         view: view
-        //,
-        //controls: ol.control.defaults.defaults().extend([
-        //    new ol.control.FullScreen()
-        //])
     });
 
     const pointSource = new ol.source.Vector();

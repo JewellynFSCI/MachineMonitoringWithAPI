@@ -97,29 +97,6 @@ h5 {
     left: -50px;
 }
 
-    /*.ol-popup:after, .ol-popup:before {
-        top: 100%;
-        border: solid transparent;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-    }
-
-    .ol-popup:after {
-        border-top-color: #FFFFFF;
-        border-width: 10px;
-        left: 48px;
-        margin-left: -10px;
-    }
-
-    .ol-popup:before {
-        border-top-color: #393E46;
-        border-width: 13px;
-        left: 48px;
-        margin-left: -13px;
-    }*/
     .ol-popup::after,
     .ol-popup::before {
         position: absolute;

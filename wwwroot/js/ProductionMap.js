@@ -156,10 +156,10 @@ function ShowImage() {
 
 //#region 'InitializedMap'
 function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
-    const padding = 500;
+    const padding = 600;
     const paddedExtent = [
         imageExtent[0] - padding, // minX - padding
-        imageExtent[1] , // minY - padding
+        imageExtent[1], // minY - padding
         imageExtent[2] + padding, // maxX + padding
         imageExtent[3] // maxY + padding
     ];
@@ -191,7 +191,7 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
         view: view
     });
 
-    view.fit(imageExtent);
+    view.fit(paddedExtent);
     return map;
 }
 //#endregion
@@ -204,7 +204,7 @@ function addPointLayer(map, pointSource) {
 
     // Set start time only once for each feature with status "DONE"
     pointSource.getFeatures().forEach(feature => {
-        if (feature.get('status_id') === 3 || feature.get('status_id') === 8 ) {
+        if (feature.get('status_id') === 3 || feature.get('status_id') === 8) {
             feature.set('showCircleStartTime', new Date().getTime());
         }
     });
@@ -321,7 +321,7 @@ function GetMachineStatus(map, pointSource) {
     }
 
     // Clear previous content
-    container.innerHTML = ""; 
+    container.innerHTML = "";
 
     const featureMap = {};
 
