@@ -2,11 +2,10 @@
 {
     public class AutoTicketModel
     {
-        public string? device_macaddress {  get; set; }
-        public string? machine_code { get; set; }
-        public string? plantno { get; set; }
-        public string? process { get;  set;}
-        public string? area { get; set; }
+        public string? MachineCode { get; set; }
+        public int PlantNo { get; set; }
+        public string? Process { get;  set;}
+        public string? Area { get; set; }
     }
 
     public class FormField
@@ -20,5 +19,11 @@
         public int workflowId { get; set; }
         public string requestorId { get; set; }
         public List<FormField> formData { get; set; }
+    }
+
+    public class OwsDetails
+    {
+        public int workflowId { get; set; }
+        public string? requestorId { get; set; }
     }
 }

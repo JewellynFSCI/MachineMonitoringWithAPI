@@ -22,6 +22,7 @@ namespace MachineMonitoring.DataAccess.Repository
         private readonly string _mcCodes = "";
         private readonly string _sendDataToOws = "";
         private readonly string _getEmployeeDetails = "";
+        private readonly string _createTicket = "";
 
         public AdminRepo(IConfiguration configuration, ILogger<AdminRepo> logger, IHttpContextAccessor httpContextAccessor)
         {
@@ -31,6 +32,7 @@ namespace MachineMonitoring.DataAccess.Repository
             _mcCodes = _configuration.GetConnectionString("MachineCodes") ?? "";
             _sendDataToOws = _configuration.GetConnectionString("SendDataToOws") ?? "";
             _getEmployeeDetails = _configuration.GetConnectionString("GetEmployeeDetails") ?? "";
+            _createTicket = _configuration.GetConnectionString("CreateOwsTicket") ?? "";
         }
 
         private IDbConnection Connection => new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -479,6 +481,129 @@ namespace MachineMonitoring.DataAccess.Repository
                 return result?.Data?.employeeName;
 
 
+            }
+        }
+        #endregion
+
+
+        #region 'GetOwsDetails'
+        public async Task<List<OwsDetails>> GetOwsDetails()
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "SELECT workflowId, requestorId from ows_details where IsActive = 1";
+
+                    var result = await connection.QueryAsync<OwsDetails>(query);
+
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
+            }
+        }
+        #endregion
+
+        #region 'GetMachineDetails'
+        public async Task<List<AutoTicketModel>> GetMachineDetails(string machineCode)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "SELECT MachineCode, PlantNo, Process, Area FROM machineLocations WHERE MachineCode = @MCCode";
+
+                    var result = await connection.QueryAsync<AutoTicketModel>(query, new { MCCOde = machineCode });
+
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
+            }
+        }
+        #endregion
+
+        #region 'ValidateMachineCode'
+        public async Task<APIResponse<DbResponse>> ValidateMachineCode(string machineCode)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_checkmachinestatus";
+                    var parameters = new
+                    {
+                        p_machinecode = machineCode
+                    };
+                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
+                    return new APIResponse<DbResponse>
+                    {
+                        Data = result,
+                        Message = result?.Message ?? "No message",
+                        Success = result?.Success ?? false
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
+            }
+        }
+        #endregion
+
+
+        #region 'Send Ticket to OWS'
+        public async Task<string> CreateOWSTicketAPI(AutoTicketModel model, OwsDetails ows)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    DateTime currentDateTime = DateTime.Now;
+                    var dateOnly = currentDateTime.Date;
+                    var timeOnly = currentDateTime.TimeOfDay;
+
+                    // Create the request object
+                    var request = new WorkflowRequest
+                    {
+                        workflowId = ows.workflowId,
+                        requestorId = ows.requestorId,
+                        formData = new List<FormField>
+                        {
+                            new FormField { name = "plantNo", value = "Plant " + model.PlantNo.ToString() },
+                            new FormField { name = "machineStatus", value = "Machine Downtime" },
+                            new FormField { name = "process", value = model.Process },
+                            new FormField { name = "area", value = model.Area },
+                            new FormField { name = "machineNumber", value = model.MachineCode},
+                            new FormField { name = "mcErrorTimeStart", value = timeOnly.ToString(@"hh\:mm\:ss")},
+                            new FormField { name = "mcErrorDateStart", value = dateOnly.ToString("yyyy-MM-dd")},
+                            new FormField { name = "detailsOfError", value = "Machine Downtime."}
+
+                        }
+                    };
+
+                    var json = JsonConvert.SerializeObject(request);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await client.PostAsync(_createTicket, content);
+                    if (response.IsSuccessStatusCode)
+                        return "Ticket successfully created.";
+                    else
+                        return $"Failed to create ticket. Status: {(int)response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending ticket");
+                return $"Exception: {ex.Message}";
             }
         }
         #endregion
