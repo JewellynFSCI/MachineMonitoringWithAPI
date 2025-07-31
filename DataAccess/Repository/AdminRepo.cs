@@ -114,14 +114,14 @@ namespace MachineMonitoring.DataAccess.Repository
                 {
                     if (model.ProductionMapId == 0 || model.ProductionMapId == null)
                     {
-                        var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname";
-                        var result = await connection.ExecuteScalarAsync<int>(query, new { model.ProductionMapName });
+                        var query = "sp_CheckProdMapAll";
+                        var result = await connection.ExecuteScalarAsync<int>(query, new { p_productionmapname = model.ProductionMapName }, commandType: CommandType.StoredProcedure);
                         return result;
                     }
                     else
                     {
-                        var query = "SELECT COUNT(*) FROM productionmaps WHERE productionmapname = @productionmapname AND ProductionMapId != @ProductionMapId";
-                        var result = await connection.ExecuteScalarAsync<int>(query, new { model.ProductionMapName, model.ProductionMapId });
+                        var query = "sp_CheckProdMap_id";
+                        var result = await connection.ExecuteScalarAsync<int>(query, new { p_productionmapname = model.ProductionMapName, p_productionmapid = model.ProductionMapId }, commandType: CommandType.StoredProcedure);
                         return result;
                     }
                 }
