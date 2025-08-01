@@ -1,5 +1,6 @@
 ﻿$(document).ready(function () {
     GetProductionMaps();
+    Search();
 });
 
 //#region 'GetProductionMaps'
@@ -15,7 +16,7 @@ function GetProductionMaps() {
                 data: locationList.locationList,
                 destroy: true, // allows re-initialization
                 paging: false, // disables pagination
-                //searching: false, // disables the search bar
+                searching: false, // disables the search bar
                 info: false, // disables the "Showing x to y of z entries" text
                 lengthChange: false, // disables the entries dropdown
                 columns: [
@@ -274,3 +275,14 @@ function EditData() {
 
 }
 //#endregion
+
+function Search() {
+    $('#searchInput').on('input', function () {
+        const query = $(this).val().toLowerCase();
+
+        $('#tblData tbody tr').each(function () {
+            const rowText = $(this).text().toLowerCase();
+            $(this).toggle(rowText.indexOf(query) !== -1);
+        });
+    });
+}
