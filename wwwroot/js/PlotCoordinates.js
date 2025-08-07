@@ -4,6 +4,8 @@ var ImgName = [];
 var activeFeature = null;
 
 $(function () {
+    $("#PlantNoSelect").val(null);
+
     GetProductionMap();
     GetImgNamefromDb();
     SearchBarMachine();
@@ -289,6 +291,39 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
         view: view
     });
 
+    // Add zoom percentage display inside the map div
+    let zoomInfo = document.getElementById('zoom-info');
+    if (!zoomInfo) {
+        zoomInfo = document.createElement('div');
+        zoomInfo.id = 'zoom-info';
+
+        // Style the zoom info box (position absolute inside #map)
+        zoomInfo.style.position = 'absolute';
+        zoomInfo.style.top = '10px';
+        zoomInfo.style.left = '40px';
+        zoomInfo.style.padding = '6px 10px';
+        zoomInfo.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+        zoomInfo.style.border = '1px solid #ccc';
+        zoomInfo.style.fontFamily = 'sans-serif';
+        zoomInfo.style.fontSize = '14px';
+        zoomInfo.style.zIndex = 1000;
+        zoomInfo.style.pointerEvents = 'none';
+
+        document.getElementById('map').appendChild(zoomInfo);
+    }
+
+    const minZoom = view.getMinZoom();
+    const maxZoom = view.getMaxZoom();
+
+    function updateZoomPercentage() {
+        const currentZoom = view.getZoom();
+        const percentage = ((currentZoom - minZoom) / (maxZoom - minZoom)) * 100;
+        zoomInfo.innerText = `Zoom: ${percentage.toFixed(0)}%`;
+    }
+
+    view.on('change:resolution', updateZoomPercentage);
+    updateZoomPercentage();
+
     const pointSource = new ol.source.Vector();
     window.pointSource = pointSource;
 
@@ -308,6 +343,8 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
     setupModifyListener(modifyInteraction, popupOverlay);
 
     window.map = map;
+
+    
 }
 //#endregion
 
