@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Text;
 using MachineMonitoring.Models.ViewModel;
 using MySqlX.XDevAPI.Common;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace MachineMonitoring.Controllers
 {
@@ -27,59 +28,75 @@ namespace MachineMonitoring.Controllers
             _adminvm = adminvm;
         }
 
-        [Route("AutoTicket/AutoTicket/{machineCode}")]
-        public async Task<IActionResult> AutoTicket(string machineCode)
+        
+        [HttpGet]
+        [Route("AutoTicket/TicketToOWS/{machineCode}")]
+        public async Task<IActionResult> TicketToOWS(string machineCode)
         {
             try
             {
-                ViewBag.Result = TempData["Result"];
-                ViewBag.Message = TempData["Message"];
-
-                // Validate only if not already successful
-                if (ViewBag.Result?.ToString() != "True")
+                //Check if ticket exists
+                var ticketExists = await _adminrepo.CheckMachineTicket(machineCode);
+                if (!ticketExists.Success)      // Ticket exists with this machine code
                 {
-                    var validation = await _adminrepo.ValidateMachineCode(machineCode);
-                    if (!validation.Success)
+                    //Get ticket details
+                    var viewModel = new AdminVM
                     {
-                        SetViewBagError(validation.Message);
-                        return View();
-                    }
+                        OwsTicketDetails = await _adminrepo.GetTicketDetails(machineCode)
+                    };
+                    ViewBag.Result = "NG";
+                    ViewBag.Message = $"This machine: {machineCode}  has a task that has not been completed yet";
+                    return View(viewModel);
                 }
 
-                var machineDetails = await _adminrepo.GetMachineDetails(machineCode);
-                if (machineDetails?.Any() != true)
+
+                //Check if machine code has location
+                var mcLoc = await _adminrepo.ValidateMachineCode(machineCode);
+                if (!mcLoc.Success)     //Machine code has no location in the system
                 {
-                    SetViewBagError($"This machine: {machineCode} is not registered to the system!");
-                    return View();
+                    var viewModel = new AdminVM
+                    {
+                        OwsTicketDetails = new List<OwsTicketDetails>()
+                    };
+                    ViewBag.Result = "NG";
+                    ViewBag.Message = mcLoc.Message;
+                    return View(viewModel);
                 }
 
-                return View(machineDetails.First());
+                //Get Machine Details
+                var machinedetails = new AdminVM
+                {
+                    autoTicketModels = await _adminrepo.GetMachineDetails(machineCode)
+                };
+                ViewBag.Result = "OK";
+                ViewBag.Message = null;
+                return View(machinedetails);
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error loading AutoTicket view");
                 return StatusCode(500, "Internal Server Error");
             }
+
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateOWSTicket(AutoTicketModel model)
+        public async Task<IActionResult> SendTicketToOws(AutoTicketModel model)
         {
             try
             {
+                //Get OWS account to be use
                 var owsDetails = await _adminrepo.GetOwsDetails();
                 var ows = owsDetails.FirstOrDefault();
-
-                var validation = await _adminrepo.ValidateMachineCode(model.MachineCode);
-                if (!validation.Success)
-                    return RedirectWithError(validation.Message, model.MachineCode);
 
                 var response = await _adminrepo.CreateOWSTicketAPI(model, ows);
                 if (response.Contains("successfully", StringComparison.OrdinalIgnoreCase))
                 {
-                    TempData["Result"] = "True";
-                    TempData["Message"] = response;
-                    return RedirectToAction("AutoTicket", new { machineCode = model.MachineCode });
+                    var result = "Success";
+                    var message = "Request already sent!";
+                    var machinecode = model.MachineCode;
+                    return RedirectToAction("TicketSent",new { machinecode, result, message });
                 }
 
                 return StatusCode(500, response);
@@ -87,23 +104,28 @@ namespace MachineMonitoring.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending OWS ticket");
-                ViewBag.Message = $"An error occurred: {ex.Message}";
-                return View("AutoTicket", model);
+                var result = "Failed";
+                var message = $"An error occurred: {ex.Message}";
+                var machinecode = model.MachineCode;
+                return RedirectToAction("TicketSent", new { machinecode, result, message });
             }
         }
 
-        //Helper method to reduce duplication
-        private void SetViewBagError(string message)
+        public IActionResult TicketSent(string machinecode, string result, string message)
         {
-            ViewBag.Result = "False";
-            ViewBag.Message = message;
-        }
+            var ticket = new TicketResponse
+            {
+                MachineCode = machinecode,
+                Result = result,
+                Message = message
+            };
 
-        private IActionResult RedirectWithError(string message, string machineCode)
-        {
-            TempData["Result"] = "False";
-            TempData["Message"] = message;
-            return RedirectToAction("AutoTicket", new { machineCode });
+            var viewmodel = new AdminVM
+            {
+                ticketResponses = new List<TicketResponse> { ticket }
+            };
+
+            return View(viewmodel);
         }
 
     }

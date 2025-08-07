@@ -485,7 +485,6 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-
         #region 'GetOwsDetails'
         public async Task<List<OwsDetails>> GetOwsDetails()
         {
@@ -559,7 +558,6 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-
         #region 'Send Ticket to OWS'
         public async Task<string> CreateOWSTicketAPI(AutoTicketModel model, OwsDetails ows)
         {
@@ -604,6 +602,63 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 _logger.LogError(ex, "Error sending ticket");
                 return $"Exception: {ex.Message}";
+            }
+        }
+        #endregion
+
+        #region 'GetTicketDetails'
+        public async Task<List<OwsTicketDetails>> GetTicketDetails(string machineCode)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_getTicketDetails";
+                    var parameters = new
+                    {
+                        p_machinecode = machineCode
+                    };
+                    
+                    var result = await connection.QueryAsync<OwsTicketDetails>(query, parameters, commandType: CommandType.StoredProcedure);
+
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
+            }
+        }
+        #endregion
+
+
+
+        #region 'CheckMachineTicket'
+        public async Task<APIResponse<DbResponse>> CheckMachineTicket(string machineCode)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_Select_machine_ticket";
+                    var parameters = new
+                    {
+                        p_machinecode = machineCode
+                    };
+                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
+                    return new APIResponse<DbResponse>
+                    {
+                        Data = result,
+                        Message = result?.Message ?? "No message",
+                        Success = result?.Success ?? false
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
             }
         }
         #endregion

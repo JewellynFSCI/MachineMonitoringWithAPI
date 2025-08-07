@@ -19,6 +19,8 @@ namespace MachineMonitoring.Models.ViewModel
         public List<MCStatusColor> mcStatusColor { get; set; }
         public List<AutoTicketModel> autoTicketModels { get; set; }
         public List<OwsDetails> owsDetails { get; set; }
+        public List<OwsTicketDetails> OwsTicketDetails { get; set; }
+        public List<TicketResponse> ticketResponses { get; set; }
 
     }
 }

@@ -26,4 +26,11 @@
         public int workflowId { get; set; }
         public string? requestorId { get; set; }
     }
+
+    public class TicketResponse
+    {
+        public string? MachineCode {get; set; }
+        public string? Result { get; set; }
+        public string? Message { get; set; }
+    }
 }

@@ -20,5 +20,6 @@ namespace MachineMonitoring.Models
         public string? errorcode { get; set; }
         public string? errorname { get; set; }
         public int status { get; set; }
+        public string? ticket_status { get; set; }
     }
 }
