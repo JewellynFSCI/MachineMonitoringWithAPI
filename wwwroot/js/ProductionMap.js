@@ -1,6 +1,8 @@
 ﻿var ImgName = [];
 
 $(function () {
+    $("#PlantNoSelect").val(null);
+
     GetProductionMap();
     GetImgNamefromDb();
 
@@ -596,6 +598,11 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 
     const timeAgo = formatTimeAgo(mc_error_buyoff_repair_date);
 
+
+    if (requestor === " (sapphire2)") {
+        var requestorToOws = "";
+    }
+
     // Example: Convert to local string
     const datetime = dateObj.toLocaleString();
     return `
@@ -614,7 +621,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
                                     <i>${timeAgo}</i>
                                 </h5>
                                 <p><i>${datetime}</i></p>
-                                <p><i>${requestor}</i></p>
+                                <p><i>${requestorToOws}</i></p>
                             </div>
                             <div class="text-right col">
                                 <h5>
