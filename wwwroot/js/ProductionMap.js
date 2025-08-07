@@ -5,6 +5,7 @@ $(function () {
 
     GetProductionMap();
     GetImgNamefromDb();
+    Legend();
 
     //#region 'Connection for SignalR'
     const connection = new signalR.HubConnectionBuilder()
@@ -366,7 +367,7 @@ function GetMachineStatus(map, pointSource) {
                         // Create the card HTML
                         const cardHtml = `
                             
-                                <div class="card rounded machine-card" data-machinecode="${item.machinecode}">
+                                <div class="card rounded machine-card" data-machinecode="${item.machinecode}" data-status="${item.status}">
                                     <div class="card-body rounded">
                                         <div class="row">
                                             <div class="col-md-2 rounded" style="background-color: ${item.hex_value};"></div>
@@ -652,3 +653,27 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
             `;
 }
 //#endregion
+
+//#region
+function Legend() {
+    // Filter by legend click
+    $('.legend-item').on('click', function () {
+        const selectedStatus = $(this).data('status');
+
+        $('.legend-item').removeClass('selected');
+        $(this).addClass('selected');
+
+        if (!selectedStatus) {
+            // "Show All" clicked
+            $('.machine-card').show();
+            return;
+        }
+
+        $('.machine-card').each(function () {
+            const cardStatus = $(this).data('status');
+            $(this).toggle(cardStatus === selectedStatus);
+        });
+    });
+}
+//#endregion
+

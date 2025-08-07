@@ -150,13 +150,20 @@ h5 {
     display: flex;
     flex-wrap: wrap; /* Optional: allow wrapping on small screens */
     gap: 1rem; /* Space between items */
-    align-items: center;
+    /*align-items: center;*/
 }
 
 .legend-item {
     display: flex;
     align-items: center;
+    cursor: pointer;
 }
+
+.legend-item.selected {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 
 .circle {
     width: 20px;
