@@ -151,6 +151,28 @@ function ShowImage() {
         handleMapClick(map, pointSource, popupOverlay, modifyCollection);
 
         window.map = map;
+
+        let zoomInfo = document.getElementById('zoom-info');
+        if (!zoomInfo) {
+            zoomInfo = document.createElement('div');
+            zoomInfo.id = 'zoom-info';
+            zoomInfo.innerText = 'Zoom: 100%'; // Default text
+            document.getElementById('map').appendChild(zoomInfo);
+        }
+
+        const view = map.getView();
+        const minZoom = view.getMinZoom();
+        const maxZoom = view.getMaxZoom();
+
+        function updateZoomPercentage() {
+            const currentZoom = view.getZoom();
+            const percentage = ((currentZoom - minZoom) / (maxZoom - minZoom)) * 100;
+            document.getElementById('zoom-info').innerText = `Zoom: ${percentage.toFixed(0)}%`;
+        }
+
+        view.on('change:resolution', updateZoomPercentage);
+        updateZoomPercentage(); // Set initial value
+
     };
     img.src = imageUrl;
 
