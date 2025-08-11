@@ -634,8 +634,6 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-
-
         #region 'CheckMachineTicket'
         public async Task<APIResponse<DbResponse>> CheckMachineTicket(string machineCode)
         {
