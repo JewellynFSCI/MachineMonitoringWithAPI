@@ -153,55 +153,65 @@ function SaveToDB(moved) {
         return;
     }
 
-    $.ajax({
-        url: '/Admin/SaveMcCoordinates',
-        type: 'POST',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function (response) {
-            if (response.success) {
-                if (moved == null) {
-                    Swal.fire({
-                        title: 'Success',
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.popupOverlay?.setPosition(undefined);
-                        activeFeature = null;
-                        UpdateMachinePoints();
-                    });
-                }
-            } else {
-                if (response.message === "No data updated!") {
-                    //return null;
-                    Swal.fire({
-                        title: 'Error',
-                        text: response.message,
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+    var process = formData.get("Process");
+    var area = formData.get("Area");
+    if (!process || !area) {
+        Swal.fire({
+            title: 'Error',
+            text: 'Please enter process or area.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    } else {
+        $.ajax({
+            url: '/Admin/SaveMcCoordinates',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (response) {
+                if (response.success) {
+                    if (moved == null) {
+                        Swal.fire({
+                            title: 'Success',
+                            text: response.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.popupOverlay?.setPosition(undefined);
+                            activeFeature = null;
+                            UpdateMachinePoints();
+                        });
+                    }
                 } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: response.message,
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+                    if (response.message === "No data updated!") {
+                        //return null;
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.message,
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    }
                 }
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    title: 'Error',
+                    text: xhr.responseText,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
             }
-        },
-        error: function (xhr) {
-            Swal.fire({
-                title: 'Error',
-                text: xhr.responseText,
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        }
-    });
-
+        });
+    }
 }
 //#endregion
 
