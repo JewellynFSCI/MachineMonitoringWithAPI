@@ -308,7 +308,8 @@ namespace MachineMonitoring.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMCLocation(MachineLocation? model)
         {
-            var mclist = await _adminrepo.GetMCLocationRepo(model);
+            var getmclist = await _adminrepo.GetMCLocationRepo(model);
+            var mclist = getmclist.OrderBy(x => x.MachineCode).ToList();
             return Json(new { mclist });
         }
         #endregion

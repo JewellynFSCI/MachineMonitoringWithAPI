@@ -40,12 +40,13 @@
 									<h4 class="mr-2 mt-0" style="align-items:normal;">Legends:</h4>
 									@foreach (var item in Model.mcStatusColor)
 									{
-										<div class="card rounded p-1">
+										<button type="button" class="card rounded p-1 border-0 bg-transparent" style="cursor: pointer;">
 											<div class="legend-item mr-3" data-status="@item.status_details">
 												<span class="circle" style="background-color: @item.hex_value;"></span>
-												<span class="labelcolor"> @item.status_details</span>
+												<span class="labelcolor">@item.status_details</span>
 											</div>
-										</div>
+										</button>
+
 									}
 									<div class="card rounded p-1">
 									<div class="legend-item mr-3" id="clear-filter">

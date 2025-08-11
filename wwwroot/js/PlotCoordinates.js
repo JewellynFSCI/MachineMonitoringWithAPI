@@ -88,7 +88,7 @@ function GetImgNamefromDb() {
 //#endregion
 
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML(coord, name = '', id = '') { // Added default values for name and id
+function buildPopupHTML(coord, name = '', id = '', process = '', area = '') { // Added default values for name and id
     return `
     <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
         <form method="POST" id="popupForm">
@@ -104,21 +104,31 @@ function buildPopupHTML(coord, name = '', id = '') { // Added default values for
                 </div>
             </div>
             
-			<div class="form-group">
-                <label class="mr-2"> <i class="fas fa-memory mr-1"></i> Machine</label>
+			<div class="form-group" style="margin-bottom: -0.5%">
+                <label class="mr-2" style="margin-bottom: -0.5%"> <i class="fas fa-memory mr-1"></i> Machine</label>
                 <select name="machineCode" id="machineCode" class="form-control select2 w-100">
                     ${machineOptionsHTML}
                 </select>
             </div>
 
-            <div class="row mt-10">
+            <div class="form-group" style="margin-bottom: -0.5%">
+                <label for="Process" style="margin-bottom: -0.5%"> <i class="fa fa-cog mr-1"></i> Process</label>
+                <input type="text" class="form-control" id="Process" name="Process" value="${process || ''}">
+            </div>
+            
+            <div class="form-group">
+                <label for="Area" style="margin-bottom: -0.5%"> <i class="fas fa-map-pin mr-1"></i> Area </label>
+                <input type="text" class="form-control" id="Area" name="Area" value="${area || ''}">
+            </div>
+          
+            <div class="row mt-10" style="margin-bottom: -7%">
                 <div class="form-group">
                     ${id ? // If ID exists, it's an existing point, show delete and update (save)
-            `<button type="button" class="btn btn-danger" id="btnDelete"> <i class="fas fa-trash"></i> DELETE</button>
-                        <button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> UPDATE</button>`
-            : // If no ID, it's a new point, show only save
-            `<button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> SAVE</button>`
-        }
+                        `<button type="button" class="btn btn-danger" id="btnDelete"> <i class="fas fa-trash"></i> DELETE</button>
+                                    <button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> UPDATE</button>`
+                        : // If no ID, it's a new point, show only save
+                        `<button type="button" class="btn btn-success" id="btnSave"> <i class="fas fa-save"></i> SAVE</button>`
+                    }
                 </div>
             </div>
         </form>
@@ -165,7 +175,13 @@ function SaveToDB(moved) {
                 }
             } else {
                 if (response.message === "No data updated!") {
-                    return null;
+                    //return null;
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
                 } else {
                     Swal.fire({
                         title: 'Error',
@@ -193,7 +209,7 @@ function SaveToDB(moved) {
 function Delete(id) {
     var mcName = $('#machineCode').val();
     Swal.fire({
-        title: 'Are you sure you want to delete Machine '+ mcName +' in this location?',
+        title: 'Are you sure you want to delete Machine ' + mcName + ' in this location?',
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
@@ -260,9 +276,9 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
     const padding = 600;
     const paddedExtent = [
         imageExtent[0] - padding, // minX - padding
-        imageExtent[1] - (padding/2), // minY - padding
+        imageExtent[1] - (padding / 2), // minY - padding
         imageExtent[2] + padding, // maxX + padding
-        imageExtent[3] + (padding/2)// maxY + padding
+        imageExtent[3] + (padding / 2)// maxY + padding
     ];
 
     const imageLayer = new ol.layer.Image({
@@ -344,7 +360,7 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
 
     window.map = map;
 
-    
+
 }
 //#endregion
 
@@ -393,6 +409,8 @@ function UpdateMachinePoints() {
                     const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
                     pointFeature.set('machineLocationId', item.machineLocationId);
                     pointFeature.set('name', item.machineCode);
+                    pointFeature.set('process', item.process);
+                    pointFeature.set('area', item.area);
                     window.pointSource.addFeature(pointFeature);
                 });
             }
@@ -504,7 +522,9 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
             const coord = activeFeature.getGeometry().getCoordinates();
             const name = activeFeature.get('name') || '';
             const id = activeFeature.get('machineLocationId') || '';
-            popupElement.innerHTML = buildPopupHTML(coord, name, id);
+            const process = activeFeature.get('process') || '';
+            const area = activeFeature.get('area') || '';
+            popupElement.innerHTML = buildPopupHTML(coord, name, id, process, area);
             popupOverlay.setPosition(coord);
 
             $('#machineCode').select2();
@@ -627,7 +647,7 @@ function SearchBarMachine() {
         $.ajax({
             url: '/Admin/GetMCLocation',
             type: 'GET',
-            data: { PlantNo, ProductionMapId :SelectedProdMapId },
+            data: { PlantNo, ProductionMapId: SelectedProdMapId },
             contentType: 'application/json',
             success: function (response) {
                 if (response.mclist.length > 0) {
@@ -670,10 +690,12 @@ function LocateMC() {
             const coord = targetFeature.getGeometry().getCoordinates();
             const name = targetFeature.get('name');
             const id = targetFeature.get('machineLocationId');
+            const process = targetFeature.get('process');
+            const area = targetFeature.get('area');
 
             // Update popup content
             const popupElement = window.popupOverlay.getElement();
-            popupElement.innerHTML = buildPopupHTML(coord, name, id);
+            popupElement.innerHTML = buildPopupHTML(coord, name, id, process, area);
             window.popupOverlay.setPosition(coord);
 
             // Activate feature for modification

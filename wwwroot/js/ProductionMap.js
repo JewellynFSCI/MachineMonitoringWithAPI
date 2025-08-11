@@ -64,6 +64,7 @@ function GetProductionMap() {
         var SelectedPlantNo = $(this).val();
         var dropdownProdMapName = $("#ProductionMapIdSelect");
         dropdownProdMapName.empty();
+        $('.legend-item').removeClass('selected');
 
         // Reset the map container safely
         if (window.map instanceof ol.Map) {
@@ -117,6 +118,7 @@ function GetImgNamefromDb() {
         if (GetImgName && GetImgName.imgName) {
             ImgName = GetImgName.imgName;
             ShowImage();
+            $('.legend-item').removeClass('selected');
         } else {
             $('#map').html('<p>No image retrieved.</p>');
         }
@@ -175,7 +177,6 @@ function ShowImage() {
 
     };
     img.src = imageUrl;
-
 }
 //#endregion
 
@@ -682,6 +683,7 @@ function Legend() {
     $('.legend-item').on('click', function () {
         const selectedStatus = $(this).data('status');
 
+        // highlight selected legend
         $('.legend-item').removeClass('selected');
         $(this).addClass('selected');
 
@@ -691,6 +693,7 @@ function Legend() {
             return;
         }
 
+        // show only matching cards
         $('.machine-card').each(function () {
             const cardStatus = $(this).data('status');
             $(this).toggle(cardStatus === selectedStatus);

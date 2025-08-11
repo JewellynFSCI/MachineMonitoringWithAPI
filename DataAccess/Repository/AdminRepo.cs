@@ -219,7 +219,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "sp_InsertUpdateMachineLocationDetails";
+                    var query = "sp_InsertUpdateMachineLocationDetails_v2";
                     var parameters = new
                     {
                         p_MachineLocationId = model.MachineLocationId,
@@ -229,6 +229,8 @@ namespace MachineMonitoring.DataAccess.Repository
                         p_X = model.X,
                         p_Y = model.Y,
                         p_CreatedBy = model.CreatedBy,
+                        p_Process = model.Process,
+                        p_Area = model.Area
                     };
                     var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
                     return new APIResponse<DbResponse>
@@ -254,7 +256,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = @"  SELECT MachineLocationId, MachineCode, PlantNo, ProductionMapId, X, Y
+                    var query = @"  SELECT MachineLocationId, MachineCode, PlantNo, ProductionMapId, Process, Area, X, Y
                                         FROM machinelocations
                                         WHERE PlantNo = @PlantNo and ProductionMapId = @ProductionMapId";
                     var result = await connection.QueryAsync<MachineLocation>(query, new { model.PlantNo, model.ProductionMapId });

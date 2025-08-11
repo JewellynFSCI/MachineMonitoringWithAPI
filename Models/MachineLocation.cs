@@ -24,5 +24,9 @@ namespace MachineMonitoring.Models
 
         public int Status { get; set; }
 
+        public string? Process {  get; set; }
+
+        public string? Area { get; set; } 
+
     }
 }

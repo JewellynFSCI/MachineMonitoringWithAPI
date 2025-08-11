@@ -54,13 +54,10 @@ namespace MachineMonitoring.Controllers
                 var mcLoc = await _adminrepo.ValidateMachineCode(machineCode);
                 if (!mcLoc.Success)     //Machine code has no location in the system
                 {
-                    var viewModel = new AdminVM
-                    {
-                        OwsTicketDetails = new List<OwsTicketDetails>()
-                    };
-                    ViewBag.Result = "NG";
-                    ViewBag.Message = mcLoc.Message;
-                    return View(viewModel);
+                    var result = "Failed";
+                    var message = mcLoc.Message;
+                    var machinecode = machineCode;
+                    return RedirectToAction("TicketSent", new { machinecode, result, message });
                 }
 
                 //Get Machine Details
