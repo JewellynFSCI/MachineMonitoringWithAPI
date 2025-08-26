@@ -65,6 +65,7 @@ function GetProductionMap() {
         var dropdownProdMapName = $("#ProductionMapIdSelect");
         dropdownProdMapName.empty();
         $('.legend-item').removeClass('selected');
+        $("#machine-cards").empty();
 
         // Reset the map container safely
         if (window.map instanceof ol.Map) {
@@ -677,7 +678,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 }
 //#endregion
 
-//#region
+//#region Legend
 function Legend() {
     // Filter by legend click
     $('.legend-item').on('click', function () {
