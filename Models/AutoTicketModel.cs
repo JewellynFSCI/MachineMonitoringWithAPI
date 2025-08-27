@@ -6,6 +6,7 @@
         public int PlantNo { get; set; }
         public string? Process { get;  set;}
         public string? Area { get; set; }
+        public string? detailsOfError { get; set; }
     }
 
     public class FormField
@@ -32,5 +33,11 @@
         public string? MachineCode {get; set; }
         public string? Result { get; set; }
         public string? Message { get; set; }
+    }
+
+    public class DowntimeDetails
+    {
+        public int downtimeID { get; set; }
+        public string? downtimeDetails { get; set; }
     }
 }

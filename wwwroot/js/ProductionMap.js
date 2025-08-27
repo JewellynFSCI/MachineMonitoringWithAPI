@@ -626,6 +626,8 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 
     if (requestor === " (sapphire2)") {
         var requestorToOws = "";
+    } else{
+        var requestorToOws = requestor;
     }
 
     // Example: Convert to local string
@@ -660,7 +662,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
                         <hr />
                         <div class="mb-1">
                             <p><strong>ControlNo: </strong> ${controlno}</p>
-                            <p><strong>Details:</strong> ${details}</p>
+                            <p><strong>Details of error:</strong> ${details}</p>
                         </div>
 
                         ${me_support ? `
@@ -668,7 +670,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
                             <div class="mb-1">
                                 <p><strong>Maintenance Personnel:</strong></p>
                                 <p>${me_support}</p>
-                                <p>${errorcode} - ${errorname}</p>
+                                <p>${errorname}</p>
                             </div>
                         ` : ``}
                     </div>

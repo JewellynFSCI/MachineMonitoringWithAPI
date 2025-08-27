@@ -21,6 +21,7 @@ namespace MachineMonitoring.Models.ViewModel
         public List<OwsDetails> owsDetails { get; set; }
         public List<OwsTicketDetails> OwsTicketDetails { get; set; }
         public List<TicketResponse> ticketResponses { get; set; }
+        public List<DowntimeDetails> downtimeDetails { get; set; }
 
     }
 }

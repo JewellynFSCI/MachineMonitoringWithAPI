@@ -44,6 +44,7 @@ namespace MachineMonitoring.Controllers
                     {
                         OwsTicketDetails = await _adminrepo.GetTicketDetails(machineCode)
                     };
+
                     ViewBag.Result = "NG";
                     ViewBag.Message = $"This machine: {machineCode}  has a task that has not been completed yet";
                     return View(viewModel);
@@ -63,7 +64,8 @@ namespace MachineMonitoring.Controllers
                 //Get Machine Details
                 var machinedetails = new AdminVM
                 {
-                    autoTicketModels = await _adminrepo.GetMachineDetails(machineCode)
+                    autoTicketModels = await _adminrepo.GetMachineDetails(machineCode),
+                    downtimeDetails = await _adminrepo.GetDowntimeDetails()
                 };
                 ViewBag.Result = "OK";
                 ViewBag.Message = null;

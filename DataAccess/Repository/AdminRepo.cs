@@ -585,7 +585,7 @@ namespace MachineMonitoring.DataAccess.Repository
                             new FormField { name = "machineNumber", value = model.MachineCode},
                             new FormField { name = "mcErrorTimeStart", value = timeOnly.ToString(@"hh\:mm\:ss")},
                             new FormField { name = "mcErrorDateStart", value = dateOnly.ToString("yyyy-MM-dd")},
-                            new FormField { name = "detailsOfError", value = "Machine Downtime."}
+                            new FormField { name = "detailsOfError", value = model.detailsOfError}
 
                         }
                     };
@@ -662,5 +662,29 @@ namespace MachineMonitoring.DataAccess.Repository
             }
         }
         #endregion
+
+
+        #region 'GetDowntimeDetails'
+        public async Task<List<DowntimeDetails>> GetDowntimeDetails()
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "SELECT downtimeID, downtimeDetails from downtime_details where IsActive = 1";
+
+                    var result = await connection.QueryAsync<DowntimeDetails>(query);
+
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
+            }
+        }
+        #endregion
+
     }
 }

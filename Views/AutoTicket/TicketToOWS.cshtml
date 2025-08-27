@@ -3,7 +3,7 @@
 @{
 	var autoticket = Model.autoTicketModels?.FirstOrDefault();
 	var ticket = Model.OwsTicketDetails?.FirstOrDefault();
-
+	var radioDetails = Model.downtimeDetails;
 }
 
 @{
@@ -117,8 +117,26 @@
 							<input type="text" class="form-control" id="Area" name="Area"
 								   value="@(autoticket?.Area)" readonly />
 						</div>
+
+						<!-- Error Of Details Radio Button -->
+						<div class="form-group">
+							<label for="detailsOfError">Details of Error</label>
+							@foreach (var item in radioDetails)
+							{
+								<div>
+									<input type="radio" name="detailsOfError" value="@item.downtimeDetails" id="opt_@item.downtimeDetails" />
+									<label for="opt_@item.downtimeDetails" style="font-weight: 500;">@item.downtimeDetails</label>
+								</div>
+							}
+						</div>
+
+
+
+
+
 					</div>
 
+					<!-- Call Button -->
 					<div class="card-footer d-flex justify-content-end">
 						<button type="submit" id="saveButton" class="caution-button w-100">
 							Call  <i class="fas fa-bell ml-2"></i> Maintenance

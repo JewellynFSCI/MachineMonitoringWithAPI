@@ -88,7 +88,7 @@ h5 {
 
 .containerpopup {
     width: 400px;
-    max-height: 220px;
+    max-height: 260px;
     background-color: white;
     overflow-x: auto;
     scrollbar-width: none;
