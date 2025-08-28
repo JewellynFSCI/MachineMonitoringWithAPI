@@ -60,12 +60,14 @@ namespace MachineMonitoring.Controllers
                     var machinecode = machineCode;
                     return RedirectToAction("TicketSent", new { machinecode, result, message });
                 }
+                var MachineDetails= await _adminrepo.GetMachineDetails(machineCode);
+                var process = MachineDetails[0].Process;
 
                 //Get Machine Details
                 var machinedetails = new AdminVM
                 {
-                    autoTicketModels = await _adminrepo.GetMachineDetails(machineCode),
-                    downtimeDetails = await _adminrepo.GetDowntimeDetails()
+                    autoTicketModels = MachineDetails,
+                    downtimeDetails = await _adminrepo.GetDowntimeDetails(process)
                 };
                 ViewBag.Result = "OK";
                 ViewBag.Message = null;

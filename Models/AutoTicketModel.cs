@@ -7,6 +7,7 @@
         public string? Process { get;  set;}
         public string? Area { get; set; }
         public string? detailsOfError { get; set; }
+        public string? OtherDetails { get; set; }
     }
 
     public class FormField
@@ -37,7 +38,7 @@
 
     public class DowntimeDetails
     {
-        public int downtimeID { get; set; }
+        public int ID { get; set; }
         public string? downtimeDetails { get; set; }
     }
 }

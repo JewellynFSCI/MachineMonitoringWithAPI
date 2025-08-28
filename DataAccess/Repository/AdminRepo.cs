@@ -570,6 +570,17 @@ namespace MachineMonitoring.DataAccess.Repository
                     DateTime currentDateTime = DateTime.Now;
                     var dateOnly = currentDateTime.Date;
                     var timeOnly = currentDateTime.TimeOfDay;
+                    
+                    var errorDetails = "";
+                    if (model.detailsOfError == "Others")
+                    {
+                        errorDetails = model.OtherDetails;
+                    }
+                    else
+                    {
+                        errorDetails = model.detailsOfError;
+                    }
+
 
                     // Create the request object
                     var request = new WorkflowRequest
@@ -585,7 +596,7 @@ namespace MachineMonitoring.DataAccess.Repository
                             new FormField { name = "machineNumber", value = model.MachineCode},
                             new FormField { name = "mcErrorTimeStart", value = timeOnly.ToString(@"hh\:mm\:ss")},
                             new FormField { name = "mcErrorDateStart", value = dateOnly.ToString("yyyy-MM-dd")},
-                            new FormField { name = "detailsOfError", value = model.detailsOfError}
+                            new FormField { name = "detailsOfError", value = errorDetails}
 
                         }
                     };
@@ -620,7 +631,7 @@ namespace MachineMonitoring.DataAccess.Repository
                     {
                         p_machinecode = machineCode
                     };
-                    
+
                     var result = await connection.QueryAsync<OwsTicketDetails>(query, parameters, commandType: CommandType.StoredProcedure);
 
                     return result.ToList();
@@ -663,17 +674,16 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-
         #region 'GetDowntimeDetails'
-        public async Task<List<DowntimeDetails>> GetDowntimeDetails()
+        public async Task<List<DowntimeDetails>> GetDowntimeDetails(string process)
         {
             try
             {
                 using (var connection = Connection)
                 {
-                    var query = "SELECT downtimeID, downtimeDetails from downtime_details where IsActive = 1";
+                    var query = "SELECT ID, downtimeDetails from downtime_details where IsActive = 1 and Process = @process";
 
-                    var result = await connection.QueryAsync<DowntimeDetails>(query);
+                    var result = await connection.QueryAsync<DowntimeDetails>(query, new { process = process });
 
                     return result.ToList();
                 }
