@@ -275,6 +275,21 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
+        #region 'GetProcessCategory'
+        public async Task<IActionResult> GetProcessCategory()
+        {
+            try
+            {
+                var processcateg = await _adminrepo.GetProcessCateg(); // call your existing API function
+                return Json(new { success = true, category = processcateg });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error fetching category: " + ex.Message);
+            }
+        }
+        #endregion
+
         #region 'SaveMCCoordinates'
         [HttpPost]
         public async Task<IActionResult> SaveMcCoordinates(MachineLocation model)

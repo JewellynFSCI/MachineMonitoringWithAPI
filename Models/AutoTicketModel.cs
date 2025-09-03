@@ -4,6 +4,7 @@
     {
         public string? MachineCode { get; set; }
         public int PlantNo { get; set; }
+        public int Process_Category { get; set; }
         public string? Process { get;  set;}
         public string? Area { get; set; }
         public string? detailsOfError { get; set; }
@@ -39,6 +40,7 @@
     public class DowntimeDetails
     {
         public int ID { get; set; }
+        public string? processCategory { get; set; }
         public string? downtimeDetails { get; set; }
     }
 }

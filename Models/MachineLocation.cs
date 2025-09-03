@@ -28,5 +28,13 @@ namespace MachineMonitoring.Models
 
         public string? Area { get; set; } 
 
+        public int Process_Category {  get; set; }
+
+    }
+
+    public class Process_Category
+    {
+        public int id { get; set; }
+        public string? ProcessCategory { get; set; }
     }
 }

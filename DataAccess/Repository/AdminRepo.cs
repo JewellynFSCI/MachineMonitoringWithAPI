@@ -230,7 +230,8 @@ namespace MachineMonitoring.DataAccess.Repository
                         p_Y = model.Y,
                         p_CreatedBy = model.CreatedBy,
                         p_Process = model.Process,
-                        p_Area = model.Area
+                        p_Area = model.Area,
+                        p_Categ = model.Process_Category
                     };
                     var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
                     return new APIResponse<DbResponse>
@@ -256,7 +257,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = @"  SELECT MachineLocationId, MachineCode, PlantNo, ProductionMapId, Process, Area, X, Y
+                    var query = @"  SELECT MachineLocationId, MachineCode, PlantNo, ProductionMapId, Process_Category, Process, Area, X, Y
                                         FROM machinelocations
                                         WHERE PlantNo = @PlantNo and ProductionMapId = @ProductionMapId";
                     var result = await connection.QueryAsync<MachineLocation>(query, new { model.PlantNo, model.ProductionMapId });
@@ -267,6 +268,26 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 _logger.LogError(ex, "Error retrieving ProductionMap list");
                 return new List<MachineLocation>();
+            }
+        }
+        #endregion
+
+        #region 'GetMCLocationRepo'
+        public async Task<List<Process_Category>> GetProcessCateg()
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = @"SELECT ID, ProcessCategory FROM process_category";
+                    var result = await connection.QueryAsync<Process_Category>(query);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving ProductionMap list");
+                return new List<Process_Category>();
             }
         }
         #endregion
@@ -516,7 +537,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "SELECT MachineCode, PlantNo, Process, Area FROM machineLocations WHERE MachineCode = @MCCode";
+                    var query = "SELECT MachineCode, PlantNo, Process_Category, Process, Area FROM machineLocations WHERE MachineCode = @MCCode";
 
                     var result = await connection.QueryAsync<AutoTicketModel>(query, new { MCCOde = machineCode });
 
@@ -675,13 +696,13 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'GetDowntimeDetails'
-        public async Task<List<DowntimeDetails>> GetDowntimeDetails(string process)
+        public async Task<List<DowntimeDetails>> GetDowntimeDetails(int process)
         {
             try
             {
                 using (var connection = Connection)
                 {
-                    var query = "SELECT ID, downtimeDetails from downtime_details where IsActive = 1 and Process = @process";
+                    var query = "SELECT ID, processCategory, downtimeDetails from process_downtime_list where IsActive = 1 and processCategory = @process";
 
                     var result = await connection.QueryAsync<DowntimeDetails>(query, new { process = process });
 

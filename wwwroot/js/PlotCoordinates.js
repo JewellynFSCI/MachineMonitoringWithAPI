@@ -2,15 +2,18 @@
 var coordinates = [];
 var ImgName = [];
 var activeFeature = null;
+var processCategOptionsHTML = '<option disabled selected>Loading...</option>';
 
 $(function () {
+    preloadProcessCategories();  //preload
+
     $("#PlantNoSelect").val(null);
 
     GetProductionMap();
     GetImgNamefromDb();
     SearchBarMachine();
     LocateMC();
-
+    
     const existingPopup = document.querySelector('.ol-popup');
     if (existingPopup) {
         existingPopup.remove();
@@ -88,7 +91,9 @@ function GetImgNamefromDb() {
 //#endregion
 
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML(coord, name = '', id = '', process = '', area = '') { // Added default values for name and id
+function buildPopupHTML(coord, name = '', id = '',process_Category = '', process = '', area = '') { // Added default values for name and id
+    $('#process_Category').select2();
+    $('#process_Category').val(process_Category).trigger('change');
     return `
     <a href = "#" class="ol-popup-closer" id = "popupCloser" > <i class="fas fa-times"></i></a >
         <form method="POST" id="popupForm">
@@ -108,6 +113,13 @@ function buildPopupHTML(coord, name = '', id = '', process = '', area = '') { //
                 <label class="mr-2" style="margin-bottom: -0.5%"> <i class="fas fa-memory mr-1"></i> Machine</label>
                 <select name="machineCode" id="machineCode" class="form-control select2 w-100">
                     ${machineOptionsHTML}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: -0.5%">
+                <label class="mr-2" style="margin-bottom: -0.5%"> <i class="fas fa-cog mr-1"></i> Process Category</label>
+                <select name="process_Category" id="process_Category" class="form-control select2 w-100">
+                    ${processCategOptionsHTML}
                 </select>
             </div>
 
@@ -155,10 +167,11 @@ function SaveToDB(moved) {
 
     var process = formData.get("Process");
     var area = formData.get("Area");
-    if (!process || !area) {
+    var categ = formData.get("process_Category");
+    if (!process || !area || !categ) {
         Swal.fire({
             title: 'Error',
-            text: 'Please enter process or area.',
+            text: 'Please fill all fields.',
             icon: 'error',
             confirmButtonText: 'OK'
         });
@@ -419,6 +432,7 @@ function UpdateMachinePoints() {
                     const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
                     pointFeature.set('machineLocationId', item.machineLocationId);
                     pointFeature.set('name', item.machineCode);
+                    pointFeature.set('process_Category', item.process_Category);
                     pointFeature.set('process', item.process);
                     pointFeature.set('area', item.area);
                     window.pointSource.addFeature(pointFeature);
@@ -532,13 +546,14 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection, modify
             const coord = activeFeature.getGeometry().getCoordinates();
             const name = activeFeature.get('name') || '';
             const id = activeFeature.get('machineLocationId') || '';
+            const process_Category = activeFeature.get('process_Category') || '';
             const process = activeFeature.get('process') || '';
             const area = activeFeature.get('area') || '';
-            popupElement.innerHTML = buildPopupHTML(coord, name, id, process, area);
+            popupElement.innerHTML = buildPopupHTML(coord, name, id, process_Category, process, area);
             popupOverlay.setPosition(coord);
 
-            $('#machineCode').select2();
-            $('#machineCode').val(name).trigger('change');
+            $('#machineCode').select2().val(name).trigger('change');
+            $('#process_Category').select2().val(process_Category).trigger('change');
 
             document.getElementById('X').value = Math.round(coord[0]);
             document.getElementById('Y').value = Math.round(coord[1]);
@@ -645,6 +660,29 @@ function loadMachineOptions(plantNo) {
 }
 //#endregion
 
+//#region 'loadProcessCategOptions'
+function preloadProcessCategories() {
+    $.ajax({
+        url: '/Admin/GetProcessCategory',
+        type: 'GET',
+        success: function (response) {
+            if (response.success && response.category.length > 0) {
+                const options = response.category.map(c =>
+                    `<option value="${c.id}">${c.processCategory}</option>`
+                );
+                // ✅ Store options in global variable for popup HTML
+                processCategOptionsHTML = `<option disabled selected>--Select Category--</option>${options.join("")}`;
+            } else {
+                processCategOptionsHTML = `<option disabled selected>--No category available--</option>`;
+            }
+        },
+        error: function () {
+            processCategOptionsHTML = `<option disabled selected>--Failed to load category--</option>`;
+        }
+    });
+}
+//#endregion
+
 //#region 'Get MachineLocation'
 function SearchBarMachine() {
     $("#ProductionMapIdSelect").on("change", function () {
@@ -700,12 +738,13 @@ function LocateMC() {
             const coord = targetFeature.getGeometry().getCoordinates();
             const name = targetFeature.get('name');
             const id = targetFeature.get('machineLocationId');
+            const process_Category = targetFeature.get('process_Category');
             const process = targetFeature.get('process');
             const area = targetFeature.get('area');
 
             // Update popup content
             const popupElement = window.popupOverlay.getElement();
-            popupElement.innerHTML = buildPopupHTML(coord, name, id, process, area);
+            popupElement.innerHTML = buildPopupHTML(coord, name, id, process_Category, process, area);
             window.popupOverlay.setPosition(coord);
 
             // Activate feature for modification
@@ -723,8 +762,8 @@ function LocateMC() {
             });
 
             // Initialize select2 and set value
-            $('#machineCode').select2();
-            $('#machineCode').val(name).trigger('change');
+            $('#machineCode').select2().val(name).trigger('change');
+            $('#process_Category').select2().val(process_Category).trigger('change');
 
             // Set coordinate inputs
             document.getElementById('X').value = Math.round(coord[0]);
