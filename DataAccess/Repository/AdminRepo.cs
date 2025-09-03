@@ -724,9 +724,9 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "SELECT MachineCode, PlantNo, Process_Category, Process, Area FROM machineLocations";
+                    var query = "sp_api_GetMachineDetails";
 
-                    var result = await connection.QueryAsync<MachineLocationDTO>(query);
+                    var result = await connection.QueryAsync<MachineLocationDTO>(query, commandType: CommandType.StoredProcedure);
 
                     return result.ToList();
                 }

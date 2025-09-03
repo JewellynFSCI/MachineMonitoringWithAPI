@@ -43,6 +43,7 @@ namespace MachineMonitoring.Models
         public string MachineCode { get; set; }
         public int PlantNo { get; set; }
         public int Process_Category { get; set; }
+        public string? ProcessCategoryName { get; set; }
         public string? Process { get; set; }
         public string? Area { get; set; }
     }
