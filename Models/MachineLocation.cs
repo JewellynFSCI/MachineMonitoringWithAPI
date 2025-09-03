@@ -37,4 +37,13 @@ namespace MachineMonitoring.Models
         public int id { get; set; }
         public string? ProcessCategory { get; set; }
     }
+
+    public class MachineLocationDTO
+    {
+        public string MachineCode { get; set; }
+        public int PlantNo { get; set; }
+        public int Process_Category { get; set; }
+        public string? Process { get; set; }
+        public string? Area { get; set; }
+    }
 }

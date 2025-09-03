@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
+using MySqlX.XDevAPI.Common;
 using Newtonsoft.Json;
 
 namespace MachineMonitoring.Controllers.API
@@ -59,5 +60,30 @@ namespace MachineMonitoring.Controllers.API
         }
 
 
+        [HttpGet("MachinesInMDM")]
+        [ProducesResponseType(typeof(APIResponse<List<MachineLocationDTO>>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> GetMachineDetails()
+        {
+            try
+            {
+                var machines = await _adminrepo.APIGetMachines();
+                return Ok(new APIResponse<List<MachineLocationDTO>>
+                {
+                    Success = true,
+                    Data = machines,
+                    Message = "Data retrieved successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new APIResponse<List<MachineLocationDTO>>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = ex.Message
+                });
+            }
+        }
     }
 }

@@ -717,5 +717,27 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
+        #region 'API-Get Machines'
+        public async Task<List<MachineLocationDTO>> APIGetMachines()
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "SELECT MachineCode, PlantNo, Process_Category, Process, Area FROM machineLocations";
+
+                    var result = await connection.QueryAsync<MachineLocationDTO>(query);
+
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
+            }
+        }
+        #endregion
+
     }
 }
