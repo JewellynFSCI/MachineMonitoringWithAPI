@@ -41,6 +41,11 @@ p {
     margin-bottom: -1%;
     font-size: 15px;
 }
+.pmachinecard {
+    margin-bottom: -5%;
+    margin-top: -2%;
+    font-size: 15px;
+}
 
 h3 {
     font-size: 20px;
@@ -69,11 +74,11 @@ h5 {
     #machine-cards .card {
         flex: 0 0 auto; /* Fixed width */
         min-width: 200px;
-        max-height: 70px;
-        border: 1px solid black;
+        max-height: 35px;
+        border: 01px solid black;
         padding: 0;
         box-sizing: border-box;
-        margin: 0 0 10px 0;
+        margin: 0 0 0 0;
     }
 
     #machine-cards .card-body {
@@ -82,8 +87,8 @@ h5 {
     }
 
     #machine-cards .cardcontent{
-        padding-top: 5px;
-        padding-bottom: 5px;
+        padding-top: 0px;
+        padding-bottom: 0px;
     }
 
 .containerpopup {
@@ -162,9 +167,9 @@ h5 {
 
 #legend-container {
     display: flex;
-    flex-wrap: wrap; /* Optional: allow wrapping on small screens */
-    gap: 1rem; /* Space between items */
-    /*align-items: center;*/
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: -10px;
 }
 
 .legend-item {
@@ -180,8 +185,8 @@ h5 {
 
 
 .circle {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     display: inline-block;
     margin-right: 6px;
@@ -189,7 +194,7 @@ h5 {
 }
 
 .labelcolor {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .p-popup {
@@ -214,3 +219,4 @@ hr {
 .card-header {
     padding: 4%;
 }
+

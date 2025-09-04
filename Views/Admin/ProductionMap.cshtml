@@ -33,15 +33,14 @@
 					<div class="card mt-2">
 						<div class="card-body" style="margin-top:-0.5%">
 
-							<div class="row mb-2 ml-1">
-								@* <span class="labelcolor mr-3"> LEGENDS:   </span> *@
+							<div class="row ml-1">
 								
 								<div id="legend-container">
-									<h4 class="mr-2 mt-0" style="align-items:normal;">Legends:</h4>
+									<h4 class="mr-1 mt-0" style="align-items:normal;">Legends:</h4>
 									@foreach (var item in Model.mcStatusColor)
 									{
 										<button type="button" class="card rounded p-1 border-0 bg-transparent" style="cursor: pointer;">
-											<div class="legend-item mr-3" data-status="@item.status_details">
+											<div class="legend-item mr-2" data-status="@item.status_details">
 												<span class="circle" style="background-color: @item.hex_value;"></span>
 												<span class="labelcolor">@item.status_details</span>
 											</div>
@@ -49,7 +48,7 @@
 
 									}
 									<div class="card rounded p-1">
-									<div class="legend-item mr-3" id="clear-filter">
+									<div class="legend-item mr-2" id="clear-filter">
 										<span class="labelcolor pl-2">Show All</span>
 									</div>
 									</div>

@@ -1,7 +1,7 @@
 ﻿var ImgName = [];
 
 $(function () {
-    $("#PlantNoSelect").val(null);
+    $("#PlantNoSelect").prop('selectedIndex', 0);
 
     GetProductionMap();
     GetImgNamefromDb();
@@ -396,8 +396,8 @@ function GetMachineStatus(map, pointSource) {
                                         <div class="row">
                                             <div class="col-md-2 rounded" style="background-color: ${item.hex_value};"></div>
                                             <div class="col-md-10 cardcontent">
-                                                <p><strong>${item.machinecode}</strong> </p>
-                                                <p><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
+                                                <p class="pmachinecard"><strong>${item.machinecode}</strong> </p>
+                                                <p class="mb-1"><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
                                             </div>
                                         </div>
                                     </div>
