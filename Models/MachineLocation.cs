@@ -47,4 +47,9 @@ namespace MachineMonitoring.Models
         public string? Process { get; set; }
         public string? Area { get; set; }
     }
+
+    public class MachineCodeDTO
+    {
+        public string MachineCode { get; set; }
+    }
 }

@@ -1,4 +1,5 @@
-﻿using MachineMonitoring.DataAccess.Repository;
+﻿using System.Text.RegularExpressions;
+using MachineMonitoring.DataAccess.Repository;
 using MachineMonitoring.Hubs;
 using MachineMonitoring.Models;
 using MachineMonitoring.Models.DTOs;
@@ -101,7 +102,7 @@ namespace MachineMonitoring.Controllers.API
             try
             {
                 var machines = await _adminrepo.APIGetMachinesDetails();
-                
+
                 var machine = machines
                     .FirstOrDefault(m => m.MachineCode.Equals(machinecode, StringComparison.OrdinalIgnoreCase));
 
@@ -125,6 +126,50 @@ namespace MachineMonitoring.Controllers.API
             catch (Exception ex)
             {
                 return StatusCode(500, new APIResponse<MachineLocationDTO>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = ex.Message
+                });
+            }
+        }
+
+
+        [HttpGet("MachinesPerPlantInMDM/{plant}")]
+        [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> GetSpecificMachineDetailsPerPlant(string plant)
+        {
+            try
+            {
+                int plantno = int.Parse(Regex.Match(plant, @"\d+").Value); ; 
+                var machines = await _adminrepo.APIGetMachinesDetails();
+
+                var machineCodes = machines
+                    .Where(m => m.PlantNo == plantno)
+                    .Select(m => new MachineCodeDTO { MachineCode = m.MachineCode })
+                    .ToList();
+
+                if (!machineCodes.Any())
+                {
+                    return NotFound(new APIResponse<List<MachineCodeDTO>>
+                    {
+                        Success = false,
+                        Data = null,
+                        Message = $"No machines found in plant {plantno}"
+                    });
+                }
+
+                return Ok(new APIResponse<List<MachineCodeDTO>>
+                {
+                    Success = true,
+                    Data = machineCodes,
+                    Message = "Data retrieved successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new APIResponse<List<MachineCodeDTO>>
                 {
                     Success = false,
                     Data = null,
