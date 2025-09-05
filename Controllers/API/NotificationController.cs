@@ -38,7 +38,7 @@ namespace MachineMonitoring.Controllers.API
             }
 
             // Get ME Support Name
-            if(model.me_support != null)
+            if (model.me_support != null)
             {
                 var supportName = await _adminrepo.GetEmployeeName(model.me_support);
                 model.me_support = $"{supportName} ({model.me_support})";
@@ -56,28 +56,75 @@ namespace MachineMonitoring.Controllers.API
 
             //Return success
             await _hubContext.Clients.All.SendAsync("ReceivedAlert", SaveNewTicket);
-            return Ok(new { success = true, message = SaveNewTicket.Message});
+            return Ok(new { success = true, message = SaveNewTicket.Message });
         }
 
 
         [HttpGet("MachinesInMDM")]
         [ProducesResponseType(typeof(APIResponse<List<MachineLocationDTO>>), 200)]
         [ProducesResponseType(500)]
-        public async Task<IActionResult> GetMachineDetails()
+        public async Task<IActionResult> GetAllMachine()
         {
             try
             {
-                var machines = await _adminrepo.APIGetMachines();
-                return Ok(new APIResponse<List<MachineLocationDTO>>
+                var machines = await _adminrepo.APIGetMachinesDetails();
+
+                // Only select MachineCode
+                var machineCodes = machines.Select(m => new
+                {
+                    machineCode = m.MachineCode
+                }).ToList();
+
+                return Ok(new APIResponse<object>
                 {
                     Success = true,
-                    Data = machines,
+                    Data = machineCodes,
                     Message = "Data retrieved successfully!"
                 });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new APIResponse<List<MachineLocationDTO>>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("MachinesInMDM/{machinecode}")]
+        [ProducesResponseType(typeof(APIResponse<List<MachineLocationDTO>>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> GetSpecificMachineDetails(string machinecode)
+        {
+            try
+            {
+                var machines = await _adminrepo.APIGetMachinesDetails();
+                
+                var machine = machines
+                    .FirstOrDefault(m => m.MachineCode.Equals(machinecode, StringComparison.OrdinalIgnoreCase));
+
+                if (machine == null)
+                {
+                    return NotFound(new APIResponse<MachineLocationDTO>
+                    {
+                        Success = false,
+                        Data = null,
+                        Message = $"No machine found with code {machinecode}"
+                    });
+                }
+
+                return Ok(new APIResponse<MachineLocationDTO>
+                {
+                    Success = true,
+                    Data = machine,
+                    Message = "Data retrieved successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new APIResponse<MachineLocationDTO>
                 {
                     Success = false,
                     Data = null,

@@ -718,14 +718,13 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'API-Get Machines'
-        public async Task<List<MachineLocationDTO>> APIGetMachines()
+        public async Task<List<MachineLocationDTO>> APIGetMachinesDetails()
         {
             try
             {
                 using (var connection = Connection)
                 {
                     var query = "sp_api_GetMachineDetails";
-
                     var result = await connection.QueryAsync<MachineLocationDTO>(query, commandType: CommandType.StoredProcedure);
 
                     return result.ToList();
