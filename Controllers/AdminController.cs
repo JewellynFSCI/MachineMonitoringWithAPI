@@ -15,18 +15,15 @@ namespace MachineMonitoring.Controllers
 {
     public class AdminController : Controller
     {
-        private readonly ILogger<AdminController> _logger;
+        
         private readonly AdminRepo _adminrepo;
         private readonly IWebHostEnvironment _env;
-        private readonly AdminVM _adminvm;
 
 
-        public AdminController(ILogger<AdminController> logger, AdminRepo adminrepo, IWebHostEnvironment env, AdminVM adminvm)
+        public AdminController(AdminRepo adminrepo, IWebHostEnvironment env)
         {
-            _logger = logger;
             _adminrepo = adminrepo;
             _env = env;
-            _adminvm = adminvm;
         }
 
         #region 'ListProductionMaps - View'

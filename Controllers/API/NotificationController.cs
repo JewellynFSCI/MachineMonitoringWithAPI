@@ -25,6 +25,7 @@ namespace MachineMonitoring.Controllers.API
             _adminrepo = adminrepo;
         }
 
+        #region 'Signal - Received Signal from OWS'
         [HttpPost("Signal")]
         public async Task<IActionResult> MachineMonitoringAlert([FromBody] OwsTicketDetails model)
         {
@@ -59,8 +60,10 @@ namespace MachineMonitoring.Controllers.API
             await _hubContext.Clients.All.SendAsync("ReceivedAlert", SaveNewTicket);
             return Ok(new { success = true, message = SaveNewTicket.Message });
         }
+        #endregion
 
 
+        #region 'Get All Machines details w/out open ticket'
         [HttpGet("MachinesInMDM")]
         [ProducesResponseType(typeof(APIResponse<List<MachineLocationDTO>>), 200)]
         [ProducesResponseType(500)]
@@ -93,7 +96,10 @@ namespace MachineMonitoring.Controllers.API
                 });
             }
         }
+        #endregion
 
+
+        #region 'Get Machine Details'
         [HttpGet("MachinesInMDM/{machinecode}")]
         [ProducesResponseType(typeof(APIResponse<List<MachineLocationDTO>>), 200)]
         [ProducesResponseType(500)]
@@ -133,8 +139,10 @@ namespace MachineMonitoring.Controllers.API
                 });
             }
         }
+        #endregion
 
 
+        #region 'Get Machines in specific plant#'
         [HttpGet("MachinesPerPlantInMDM/{plant}")]
         [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
         [ProducesResponseType(500)]
@@ -142,7 +150,7 @@ namespace MachineMonitoring.Controllers.API
         {
             try
             {
-                int plantno = int.Parse(Regex.Match(plant, @"\d+").Value); ; 
+                int plantno = int.Parse(Regex.Match(plant, @"\d+").Value);
                 var machines = await _adminrepo.APIGetMachinesDetails();
 
                 var machineCodes = machines
@@ -177,5 +185,6 @@ namespace MachineMonitoring.Controllers.API
                 });
             }
         }
+        #endregion
     }
 }
