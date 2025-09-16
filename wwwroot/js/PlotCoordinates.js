@@ -1,8 +1,8 @@
-﻿var productionMaps = [];
-var coordinates = [];
-var ImgName = [];
-var activeFeature = null;
-var processCategOptionsHTML = '<option disabled selected>Loading...</option>';
+﻿let productionMaps = [];
+let coordinates = [];
+let ImgName = [];
+let activeFeature = null;
+let processCategOptionsHTML = '<option disabled selected>Loading...</option>';
 
 $(function () {
     preloadProcessCategories();  //preload
@@ -23,10 +23,10 @@ $(function () {
 //#region 'Get List of Production Map'
 function GetProductionMap() {
     $("#PlantNoSelect").on("change", function () {
-        var SelectedPlantNo = $(this).val();
-        var dropdownProdMapName = $("#ProductionMapIdSelect");
+        let SelectedPlantNo = $(this).val();
+        let dropdownProdMapName = $("#ProductionMapIdSelect");
         dropdownProdMapName.empty();
-        var dropdownMCLocator = $("#MCLocator");
+        let dropdownMCLocator = $("#MCLocator");
         dropdownMCLocator.empty();
 
         loadMachineOptions(SelectedPlantNo);
@@ -72,14 +72,14 @@ function GetProductionMap() {
 //#region 'Get Image Name from cache'
 function GetImgNamefromDb() {
     $("#ProductionMapIdSelect").on("change", function () {
-        var SelectedProdMapId = $(this).val();
+        let SelectedProdMapId = $(this).val();
 
         if (!productionMaps || productionMaps.length === 0) {
             $('#map').text('No image retrieved.');
             return;
         }
 
-        var GetImgName = productionMaps.find(x => x.productionMapId == SelectedProdMapId);
+        let GetImgName = productionMaps.find(x => x.productionMapId == SelectedProdMapId);
         if (GetImgName && GetImgName.imgName) {
             ImgName = GetImgName.imgName;
             ShowImage();
@@ -150,24 +150,24 @@ function buildPopupHTML(coord, name = '', id = '',process_Category = '', process
 
 //#region 'SaveCoordinatesToDb'
 function SaveToDB(moved) {
-    var form = $('#popupForm')[0];
-    var formData = new FormData(form);
+    let form = $('#popupForm')[0];
+    let formData = new FormData(form);
 
-    var PlantNo = $('#PlantNoSelect').val();
-    var ProductionMapId = $('#ProductionMapIdSelect').val();
+    let PlantNo = $('#PlantNoSelect').val();
+    let ProductionMapId = $('#ProductionMapIdSelect').val();
 
     formData.append('PlantNo', PlantNo);
     formData.append('ProductionMapId', ProductionMapId);
 
-    var MCLocId = formData.get("MachineLocationId");
+    let MCLocId = formData.get("MachineLocationId");
 
     if (moved == "moved" && (MCLocId === null || MCLocId === "")) {
         return;
     }
 
-    var process = formData.get("Process");
-    var area = formData.get("Area");
-    var categ = formData.get("process_Category");
+    let process = formData.get("Process");
+    let area = formData.get("Area");
+    let categ = formData.get("process_Category");
     if (!process || !area || !categ) {
         Swal.fire({
             title: 'Error',
@@ -230,7 +230,7 @@ function SaveToDB(moved) {
 
 //#region 'Delete'
 function Delete(id) {
-    var mcName = $('#machineCode').val();
+    let mcName = $('#machineCode').val();
     Swal.fire({
         title: 'Are you sure you want to delete Machine ' + mcName + ' in this location?',
         text: "You won't be able to revert this!",
@@ -686,8 +686,8 @@ function preloadProcessCategories() {
 //#region 'Get MachineLocation'
 function SearchBarMachine() {
     $("#ProductionMapIdSelect").on("change", function () {
-        var SelectedProdMapId = $(this).val();
-        var dropdownMCLocator = $("#MCLocator");
+        let SelectedProdMapId = $(this).val();
+        let dropdownMCLocator = $("#MCLocator");
         dropdownMCLocator.empty();
 
         const PlantNo = $('#PlantNoSelect').val();

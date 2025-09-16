@@ -75,8 +75,14 @@ C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\Machin
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\P3.jpg
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\P3.pdf
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\Bldg2_a6129b46-449d-4d5f-9dda-30f3a510b2db.png
+C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\FSCT Calendar_0ec743f4-cbb0-43cf-866e-b3baffbc16cd.png
+C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\FSCT Calendar_163d0d37-72c2-4794-bb45-6c7a58cd76a4.png
+C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\FSCT Calendar_47ae13e2-27da-49d9-b931-df2790af9b73.png
+C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\FSCT Calendar_b94d855a-aa52-44c2-900d-26113f4a99a1.png
+C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\FSCT Calendar_ee893367-acb9-4326-812b-18f01527cbaf.png
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\new layout_90e2b416-aac8-435e-9770-bf6eb5d96aa4.png
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\P3_f69b64c8-4beb-4e9b-bb63-4f7f5749879b.jpg
+C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\sample2_b859742c-1266-4e31-867a-3d3bb601643a.png
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\productionmap\Test Map_b3a62976-19b3-406c-9b1e-eec5037e7e8b.png
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\img\user.png
 C:\Users\jpguillermo\Documents\Visual Studio 2022\MachineStatusMonitoring\MachineMonitoring - With API\wwwroot\js\ListofProductionMaps.js

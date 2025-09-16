@@ -100,7 +100,7 @@
 						<div class="row">
 							<div class="col-sm-4">
 								<div class="form-inline">
-									<label class=" mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
+									<label for="PlantNoSelect" class=" mr-2"><i class="fa fa-flag mr-1"></i>Plant No</label>
 									<select id="PlantNoSelect" name="PlantNoSelect" class="form-control w-100">
 										<option disabled selected>--Select Plant No--</option>
 										@foreach (var plant in Model.Plants)
@@ -113,7 +113,7 @@
 
 							<div class="col-sm-4">
 								<div class="form-inline">
-									<label class="mr-2"><i class="fas fa-map mr-1"></i> Production Map</label>
+									<label for="ProductionMapIdSelect" class="mr-2"><i class="fas fa-map mr-1"></i> Production Map</label>
 									<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control w-100">
 										<!-- Options are populated in jQuery -->
 									</select>
@@ -123,7 +123,7 @@
 
 							<div class="col-sm-4">
 								<div class="form-inline form-group">
-									<label class="mr-2"><i class="fas fa-search-location mr-1"></i> Locate Machine</label>
+									<label for="MCLocator" class="mr-2"><i class="fas fa-search-location mr-1"></i> Locate Machine</label>
 									<select name="MCLocator" id="MCLocator" class="form-control select2 w-100">
 										<!-- Options are populated in jQuery -->
 									</select>

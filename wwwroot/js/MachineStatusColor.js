@@ -55,7 +55,7 @@ function Update(btn) {
     $.ajax({
         url: '/Admin/SaveMachineStatusColor',
         type: 'POST',
-        data: { status_id: status_id, status_color: status_color, hex_value: hex_value },
+        data: { status_id, status_color, hex_value },
         success: function (response) {
             Swal.fire({
                 title: 'Success',

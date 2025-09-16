@@ -1,4 +1,4 @@
-﻿var ImgName = [];
+﻿let ImgName = [];
 
 $(function () {
     $("#PlantNoSelect").prop('selectedIndex', 0);
@@ -61,8 +61,8 @@ $(function () {
 //#region 'Get List of Production Map'
 function GetProductionMap() {
     $("#PlantNoSelect").on("change", function () {
-        var SelectedPlantNo = $(this).val();
-        var dropdownProdMapName = $("#ProductionMapIdSelect");
+        let SelectedPlantNo = $(this).val();
+        let dropdownProdMapName = $("#ProductionMapIdSelect");
         dropdownProdMapName.empty();
         $('.legend-item').removeClass('selected');
         $("#machine-cards").empty();
@@ -108,14 +108,14 @@ function GetProductionMap() {
 //#region 'Get Image Name from cache'
 function GetImgNamefromDb() {
     $("#ProductionMapIdSelect").on("change", function () {
-        var SelectedProdMapId = $(this).val();
+        let SelectedProdMapId = $(this).val();
 
         if (!productionMaps || productionMaps.length === 0) {
             $('#map').text('No image retrieved.');
             return;
         }
 
-        var GetImgName = productionMaps.find(x => x.productionMapId == SelectedProdMapId);
+        let GetImgName = productionMaps.find(x => x.productionMapId == SelectedProdMapId);
         if (GetImgName && GetImgName.imgName) {
             ImgName = GetImgName.imgName;
             ShowImage();
@@ -623,11 +623,12 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 
     const timeAgo = formatTimeAgo(mc_error_buyoff_repair_date);
 
+    let requestorToOws;
 
     if (requestor === " (sapphire2)") {
-        var requestorToOws = "";
+        requestorToOws = "";
     } else{
-        var requestorToOws = requestor;
+        requestorToOws = requestor;
     }
 
     // Example: Convert to local string

@@ -15,7 +15,7 @@ namespace MachineMonitoring.Controllers
 {
     public class AdminController : Controller
     {
-        
+
         private readonly AdminRepo _adminrepo;
         private readonly IWebHostEnvironment _env;
 
@@ -53,11 +53,16 @@ namespace MachineMonitoring.Controllers
 
         #region 'GetProductionMaps'
         [HttpGet]
-        public async Task<IActionResult> GetProductionMaps(ProductionMap? model)
+        public async Task<IActionResult> GetProductionMaps(int PlantNo)
         {
             try
             {
-                var locationList = await _adminrepo.GetProductionMapList(model);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var locationList = await _adminrepo.GetProductionMapList(PlantNo);
                 return Json(new { locationList });
             }
             catch (Exception ex)
@@ -129,19 +134,23 @@ namespace MachineMonitoring.Controllers
         #endregion
 
         #region 'DeleteMap'
-        public async Task<IActionResult> DeleteMap(ProductionMap model)
+        public async Task<IActionResult> DeleteMap(int ProductionMapId, string ImgName)
         {
             try
             {
-                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
-                if (_sessionEmployeeNUmber == null)
+                if (!ModelState.IsValid)
                 {
-                    return RedirectToAction("Logout", "WinLoginAuth");
+                    return BadRequest(ModelState);
                 }
 
+                var _sessionEmployeeNumber = HttpContext.Session.GetString("_EmployeeNumber");
                 var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
-                model.CreatedBy = _sessionEmployeeName;
-                var delete = await _adminrepo.DeleteMapData(model);
+                if (_sessionEmployeeNumber == null || _sessionEmployeeName == null)
+                {
+                    return BadRequest("Please reload page.");
+                }
+
+                var delete = await _adminrepo.DeleteMapData(ProductionMapId, _sessionEmployeeName);
                 if (delete)
                 {
                     return Ok("Deleted successfully.");
@@ -227,10 +236,15 @@ namespace MachineMonitoring.Controllers
         #endregion
 
         #region 'ListMachineLocation - View'
-        public async Task<IActionResult> ListMachineLocation(ProductionMap? model)
+        public async Task<IActionResult> ListMachineLocation(int PlantNo)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
                 if (_sessionEmployeeNUmber == null)
                 {
@@ -240,7 +254,7 @@ namespace MachineMonitoring.Controllers
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
-                    ProductionMaps = await _adminrepo.GetProductionMapList(model),
+                    ProductionMaps = await _adminrepo.GetProductionMapList(PlantNo),
                 };
 
                 return View(viewModel);
@@ -258,6 +272,11 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var allMachines = await _adminrepo.GetMachineCodes(); // call your existing API function
                 var filteredMachines = allMachines
                     .Where(mc => mc.plantNo == plantNo)
@@ -293,6 +312,11 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
                 if (_sessionEmployeeNUmber == null)
                 {
@@ -318,26 +342,36 @@ namespace MachineMonitoring.Controllers
 
         #region 'GetMCLocation'
         [HttpGet]
-        public async Task<IActionResult> GetMCLocation(MachineLocation? model)
+        public async Task<IActionResult> GetMCLocation(int PlantNo, int ProductionMapId)
         {
-            var getmclist = await _adminrepo.GetMCLocationRepo(model);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var getmclist = await _adminrepo.GetMCLocationRepo(PlantNo, ProductionMapId);
             var mclist = getmclist.OrderBy(x => x.MachineCode).ToList();
             return Json(new { mclist });
         }
         #endregion
 
         #region 'DeleteMCLocation'
-        public async Task<IActionResult> DeleteMCLocation(MachineLocation model)
+        public async Task<IActionResult> DeleteMCLocation(int machineLocationId)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
                 if (_sessionEmployeeNUmber == null)
                 {
                     return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
-                var delete = await _adminrepo.DeleteMCLocationRepo(model);
+                var delete = await _adminrepo.DeleteMCLocationRepo(machineLocationId);
                 if (delete)
                 {
                     return Ok("Deleted successfully.");
@@ -383,14 +417,19 @@ namespace MachineMonitoring.Controllers
 
         #region 'ProductionMap - View'
         [HttpGet]
-        public async Task<IActionResult> ProductionMap(ProductionMap? model)
+        public async Task<IActionResult> ProductionMap(int PlantNo)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var viewModel = new AdminVM
                 {
                     Plants = await _adminrepo.GetPLantNoList(),
-                    ProductionMaps = await _adminrepo.GetProductionMapList(model),
+                    ProductionMaps = await _adminrepo.GetProductionMapList(PlantNo),
                     mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
                 };
                 return View(viewModel);
@@ -405,57 +444,58 @@ namespace MachineMonitoring.Controllers
 
         #region 'GetMachineStatus'
         [HttpGet]
-        public async Task<IActionResult> GetMachineStatus(MachineStatusDetails? model)
+        public async Task<IActionResult> GetMachineStatus(int PlantNo, int ProductionMapId)
         {
-            var mclist = await _adminrepo.GetMachineStatusRepo(model);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var mclist = await _adminrepo.GetMachineStatusRepo(PlantNo, ProductionMapId);
             return Json(new { mclist });
         }
         #endregion
 
         #region 'StatusColor - View'
         [HttpGet]
-        public async Task<IActionResult> StatusColor(MCStatusColor model)
+        public async Task<IActionResult> StatusColor()
         {
-            try
+            var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
+            if (_sessionEmployeeNUmber == null)
             {
-                var _sessionEmployeeNUmber = HttpContext.Session.GetString("_EmployeeNumber");
-                if (_sessionEmployeeNUmber == null)
-                {
-                    return RedirectToAction("Logout", "WinLoginAuth");
-                }
-
-                var viewModel = new AdminVM
-                {
-                    mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
-                };
-                return View(viewModel);
+                return RedirectToAction("Logout", "WinLoginAuth");
             }
 
-            catch (Exception ex)
+            var viewModel = new AdminVM
             {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
+                mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
+            };
+            return View(viewModel);
+
         }
         #endregion
 
         #region 'SaveMachineStatusColor'
         [HttpPost]
-        public async Task<IActionResult> SaveMachineStatusColor(MCStatusColor model)
+        public async Task<IActionResult> SaveMachineStatusColor(int status_id, string status_color, string hex_value)
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
                 if (_sessionEmployeeName == null)
                 {
                     return RedirectToAction("Logout", "WinLoginAuth");
                 }
 
-                
-                model.currentuser = _sessionEmployeeName;
-                var saved = await _adminrepo.SaveMachineStatusColorRepo(model);
+                var saved = await _adminrepo.SaveMachineStatusColorRepo(status_id, status_color, hex_value, _sessionEmployeeName);
                 if (!saved.Success)
                 {
-                    return BadRequest(new {success = false, message = saved.Message});
+                    return BadRequest(new { success = false, message = saved.Message });
                 }
                 return Ok(saved);
             }

@@ -62,7 +62,7 @@ function GetProductionMaps() {
 
 //#region 'Set function for save button of modal'
 function SetupSaveButton() {
-    var operation = $("#Operation").val().trim(); // "Add" or "Edit"
+    let operation = $("#Operation").val().trim(); // "Add" or "Edit"
     //var button = $("#saveButton");
 
     if (operation === "Edit") {
@@ -112,7 +112,7 @@ function EditProdMapModal(productionMapId, productionMapName, plantName, imgName
 //#region 'Close Modal'
 function Close() {
     // Get the form inside the modal by ID or jQuery selector
-    var form = $('#ProdMapModal').find('form')[0];
+    let form = $('#ProdMapModal').find('form')[0];
 
     if (form) {
         form.reset(); // reset all form fields
@@ -134,13 +134,13 @@ function Close() {
 
 //#region 'UploadProdMap'
 function UploadProdMap() {
-    var form = $('#ProdMapModal').find('form')[0]; // Get the form element
+    let form = $('#ProdMapModal').find('form')[0]; // Get the form element
 
     // Access form fields using form.fieldName
-    var PlantNo = form.PlantNo.value.trim();
-    var ProdMapName = form.ProductionMapName.value.trim();
-    var ImgFileInput = form.ImgFile;
-    var isEdit = form.Operation.value === "Edit";
+    let PlantNo = form.PlantNo.value.trim();
+    let ProdMapName = form.ProductionMapName.value.trim();
+    let ImgFileInput = form.ImgFile;
+    let isEdit = form.Operation.value === "Edit";
 
     // Simple validation
     if (!PlantNo || !ProdMapName || (!isEdit && ImgFileInput.files.length === 0)) {
@@ -153,7 +153,7 @@ function UploadProdMap() {
         return;
     }
 
-    var formData = new FormData(form);  // Includes all inputs, including files
+    let formData = new FormData(form);  // Includes all inputs, including files
 
     $.ajax({
         url: '/Admin/UploadProdMap',
@@ -187,7 +187,7 @@ function UploadProdMap() {
 //#region 'Delete Production Map'
 function deletemap(productionMapId, productionMapName, imgName) {
     Swal.fire({
-        title: 'Are you sure you want to delete Production Map ID ' + productionMapId + ' - ' + productionMapName ,
+        title: 'Are you sure you want to delete Production Map ID ' + productionMapId + ' - ' + productionMapName,
         text: "You won't be able to revert this!",
         icon: 'warning',
         showCancelButton: true,
@@ -213,26 +213,29 @@ function deletemap(productionMapId, productionMapName, imgName) {
                 error: function (xhr, status, error) {
                     Swal.fire({
                         title: 'Error!',
-                        text:  xhr.responseText,
+                        text: xhr.responseText,
                         icon: 'error',
                         confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
                     });
                 }
+
             });
-        }
+        };
     });
 }
 //#endregion
 
 //#region 'EditData'
 function EditData() {
-    var form = $('#ProdMapModal').find('form')[0]; // Get the form element
+    let form = $('#ProdMapModal').find('form')[0]; // Get the form element
 
     // Access form fields using form.fieldName
-    var PlantNo = form.PlantNo.value.trim();
-    var ProdMapName = form.ProductionMapName.value.trim();
-    var ImgFileInput = form.ImgFile;
-    var isAdd = form.Operation.value === "Add";
+    let PlantNo = form.PlantNo.value.trim();
+    let ProdMapName = form.ProductionMapName.value.trim();
+    let ImgFileInput = form.ImgFile;
+    let isAdd = form.Operation.value === "Add";
 
     // Simple validation
     if (!PlantNo || !ProdMapName || (!isAdd  === 0)) {

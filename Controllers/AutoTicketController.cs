@@ -19,13 +19,11 @@ namespace MachineMonitoring.Controllers
     {
         private readonly ILogger<AutoTicketController> _logger;
         private readonly AdminRepo _adminrepo;
-        private readonly AdminVM _adminvm;
 
-        public AutoTicketController(ILogger<AutoTicketController> logger, AdminRepo adminrepo, AdminVM adminvm)
+        public AutoTicketController(ILogger<AutoTicketController> logger, AdminRepo adminrepo)
         {
             _logger = logger;
             _adminrepo = adminrepo;
-            _adminvm = adminvm;
         }
 
         
@@ -88,6 +86,11 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 //Get OWS account to be use
                 var owsDetails = await _adminrepo.GetOwsDetails();
                 var ows = owsDetails.FirstOrDefault();

@@ -13,14 +13,14 @@
 
     public class FormField
     {
-        public string name { get; set; }
-        public string value { get; set; }
+        public string? name { get; set; }
+        public string? value { get; set; }
     }
 
     public class WorkflowRequest
     {
         public int workflowId { get; set; }
-        public string requestorId { get; set; }
+        public string? requestorId { get; set; }
         public List<FormField> formData { get; set; }
     }
 

@@ -18,17 +18,15 @@ namespace MachineMonitoring.DataAccess.Repository
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<AdminRepo> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _mcCodes = "";
         private readonly string _sendDataToOws = "";
         private readonly string _getEmployeeDetails = "";
         private readonly string _createTicket = "";
 
-        public AdminRepo(IConfiguration configuration, ILogger<AdminRepo> logger, IHttpContextAccessor httpContextAccessor)
+        public AdminRepo(IConfiguration configuration, ILogger<AdminRepo> logger)
         {
             _configuration = configuration;
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
             _mcCodes = _configuration.GetConnectionString("MachineCodes") ?? "";
             _sendDataToOws = _configuration.GetConnectionString("SendDataToOws") ?? "";
             _getEmployeeDetails = _configuration.GetConnectionString("GetEmployeeDetails") ?? "";
@@ -38,7 +36,7 @@ namespace MachineMonitoring.DataAccess.Repository
         private IDbConnection Connection => new MySqlConnection(_configuration.GetConnectionString("DefaultConnection"));
 
         #region 'GetProductionMapList'
-        public async Task<List<ProductionMap>> GetProductionMapList(ProductionMap? model)
+        public async Task<List<ProductionMap>> GetProductionMapList(int PlantNo)
         {
             try
             {
@@ -46,7 +44,7 @@ namespace MachineMonitoring.DataAccess.Repository
                 {
 
                     var result = await connection.QueryAsync<ProductionMap>("sp_SelectProdMapLocation",
-                        new { p_PlantNo = model.PlantNo }, commandType: CommandType.StoredProcedure);
+                        new { p_PlantNo = PlantNo }, commandType: CommandType.StoredProcedure);
                     return result.ToList();
                 }
             }
@@ -135,7 +133,7 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'DeleteMapData'
-        public async Task<bool> DeleteMapData(ProductionMap model)
+        public async Task<bool> DeleteMapData(int ProductionMapId, string _sessionEmployeeName)
         {
             try
             {
@@ -144,8 +142,8 @@ namespace MachineMonitoring.DataAccess.Repository
                     var query = "sp_DisableProdMap";
                     var parameters = new
                     {
-                        p_ProductionMapId = model.ProductionMapId,
-                        p_UpdatedBy = model.CreatedBy
+                        p_ProductionMapId = ProductionMapId,
+                        p_UpdatedBy = _sessionEmployeeName
                     };
                     var deleteExec = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
                     return deleteExec > 0;
@@ -251,7 +249,7 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'GetMCLocationRepo'
-        public async Task<List<MachineLocation>> GetMCLocationRepo(MachineLocation? model)
+        public async Task<List<MachineLocation>> GetMCLocationRepo(int PlantNo, int ProductionMapId)
         {
             try
             {
@@ -260,7 +258,7 @@ namespace MachineMonitoring.DataAccess.Repository
                     var query = @"  SELECT MachineLocationId, MachineCode, PlantNo, ProductionMapId, Process_Category, Process, Area, X, Y
                                         FROM machinelocations
                                         WHERE PlantNo = @PlantNo and ProductionMapId = @ProductionMapId";
-                    var result = await connection.QueryAsync<MachineLocation>(query, new { model.PlantNo, model.ProductionMapId });
+                    var result = await connection.QueryAsync<MachineLocation>(query, new { PlantNo, ProductionMapId });
                     return result.ToList();
                 }
             }
@@ -293,7 +291,7 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'DeleteMCLocationRepo'
-        public async Task<bool> DeleteMCLocationRepo(MachineLocation model)
+        public async Task<bool> DeleteMCLocationRepo(int machineLocationId)
         {
             try
             {
@@ -302,7 +300,7 @@ namespace MachineMonitoring.DataAccess.Repository
                     var query = "sp_DeleteMachineLocation";
                     var parameters = new
                     {
-                        p_MachineLocationId = model.MachineLocationId
+                        p_MachineLocationId = machineLocationId
                     };
                     var deleteExec = await connection.ExecuteAsync(query, parameters, commandType: CommandType.StoredProcedure);
                     return deleteExec > 0;
@@ -409,14 +407,14 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'GetMachineStatusRepo'
-        public async Task<List<MachineStatusDetails>> GetMachineStatusRepo(MachineStatusDetails? model)
+        public async Task<List<MachineStatusDetails>> GetMachineStatusRepo(int PlantNo,int ProductionMapId)
         {
             try
             {
                 using (var connection = Connection)
                 {
                     var query = "sp_SelectMachineStatus";
-                    var result = await connection.QueryAsync<MachineStatusDetails>(query, new { p_plantno = model.plantno, p_productionmapid = model.productionmapid }, commandType: CommandType.StoredProcedure);
+                    var result = await connection.QueryAsync<MachineStatusDetails>(query, new { p_plantno = PlantNo, p_productionmapid = ProductionMapId }, commandType: CommandType.StoredProcedure);
                     return result.ToList();
                 }
             }
@@ -449,7 +447,7 @@ namespace MachineMonitoring.DataAccess.Repository
         #endregion
 
         #region 'SaveMachineStatusColorRepo'
-        public async Task<APIResponse<DbResponse>> SaveMachineStatusColorRepo(MCStatusColor model)
+        public async Task<APIResponse<DbResponse>> SaveMachineStatusColorRepo(int status_id, string status_color,string hex_value,string _sessionEmployeeName)
         {
             try
             {
@@ -458,10 +456,10 @@ namespace MachineMonitoring.DataAccess.Repository
                     var query = "sp_UpdateStatusColor";
                     var parameters = new
                     {
-                        p_status_id = model.status_id,
-                        p_status_color = model.status_color,
-                        p_hex_value = model.hex_value,
-                        p_user = model.currentuser
+                        p_status_id = status_id,
+                        p_status_color = status_color,
+                        p_hex_value = hex_value,
+                        p_user = _sessionEmployeeName
                     };
                     var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
                     return new APIResponse<DbResponse>
