@@ -227,7 +227,7 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 function addPointLayer(map, pointSource) {
     let start = new Date().getTime(); // animation reference
     const ONE_MINUTE = 60 * 1000;
-    const baseSize = 6;
+    const baseSize = 10;
 
     // Set start time only once for each feature with status "DONE"
     pointSource.getFeatures().forEach(feature => {
@@ -242,12 +242,13 @@ function addPointLayer(map, pointSource) {
             const status = feature.get('status_id');
             const status_color = feature.get('hex_value');
             const adjustedRadius = baseSize / resolution;
+            const pulse = 8 / resolution;
 
             if (status === 1) {  //"Machine Downtime"
                 const elapsed = new Date().getTime() - start;
                 const pulseDuration = 500;
                 const progress = (elapsed % pulseDuration) / pulseDuration;
-                const radius = adjustedRadius * progress;
+                const radius = pulse * progress;
                 const opacity = 1 - progress;
 
                 return new ol.style.Style({
@@ -617,7 +618,7 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
 //#endregion
 
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support = '', errorcode, errorname) {
+function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support = '', errorcode, errorname='') {
     const isoDate = mc_error_buyoff_repair_date;
     const dateObj = new Date(isoDate);
 
@@ -671,7 +672,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
                             <div class="mb-1">
                                 <p><strong>Maintenance Personnel:</strong></p>
                                 <p>${me_support}</p>
-                                <p>${errorname}</p>
+                                <p>${errorname ? `${errorname}` : ``}</p>
                             </div>
                         ` : ``}
                     </div>

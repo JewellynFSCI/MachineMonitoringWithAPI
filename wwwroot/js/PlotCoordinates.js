@@ -457,7 +457,7 @@ function addPointLayer(map, pointSource) {
         source: pointSource,
         style: function (feature, resolution) {
             // Desired size in map units (e.g., 10 pixels at base resolution)
-            const baseSize = 5;
+            const baseSize = 6;
             const adjustedRadius = baseSize / resolution;
 
             return new ol.style.Style({
