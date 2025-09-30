@@ -664,7 +664,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
                         <hr />
                         <div class="mb-1">
                             <p><strong>ControlNo: </strong> ${controlno}</p>
-                            <p><strong>Details of error:</strong> ${details}</p>
+                            <p><strong>Details:</strong> ${details}</p>
                         </div>
 
                         ${me_support ? `
