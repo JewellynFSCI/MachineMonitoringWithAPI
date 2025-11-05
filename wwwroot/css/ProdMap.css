@@ -66,15 +66,19 @@ h5 {
     display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
+    overflow-y: hidden;
     padding: 0;
     gap: 0.5%; /* optional spacing between cards */
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    /*for firefox*/
+    scrollbar-width: thin; /* options: auto, thin, none */
+    scrollbar-color: rgba(0,0,0,0.5) rgba(0,0,0,0.1); /* thumb and track */
 }
 
     #machine-cards .card {
         flex: 0 0 auto; /* Fixed width */
         min-width: 200px;
-        max-height: 35px;
+        min-height: 33px;
+        max-height: 33px;
         border: 01px solid black;
         padding: 0;
         box-sizing: border-box;

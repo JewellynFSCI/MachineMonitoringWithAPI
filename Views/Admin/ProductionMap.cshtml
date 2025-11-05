@@ -31,39 +31,38 @@
 			<div class="row">
 				<div class="col-12">
 					<div class="card mt-2">
-						<div class="card-body" style="margin-top:-0.5%">
-
+						<div class="card-body" style="margin-top:-1%">
 							<div class="row ml-1">
-								
-								<div id="legend-container">
-									<h4 class="mr-1 mt-0" style="align-items:normal;">Legends:</h4>
+								<div id="legend-container" class="d-flex align-items-center flex-nowrap" style="overflow-x:auto; gap:0.5rem; padding:0.5rem;">
+									<span class="mr-2 font-weight-bold">Legends:</span>
+
 									@foreach (var item in Model.mcStatusColor)
 									{
-										<button type="button" class="card rounded p-1 border-0 bg-transparent" style="cursor: pointer;">
-											<div class="legend-item mr-2" data-status="@item.status_details">
-												<span class="circle" style="background-color: @item.hex_value;"></span>
-												<span class="labelcolor">@item.status_details</span>
-											</div>
-										</button>
-
+										<div class="legend-item d-flex align-items-center px-2 py-1 text-nowrap" data-status="@item.status_details" style="border-radius:4px; cursor:pointer; background:#fff; box-shadow:0 0 2px rgba(0,0,0,0.15);">
+											<span class="circle mr-1" style="background-color:@item.hex_value; width:10px; height:10px; border-radius:50%; display:inline-block;"></span>
+											<span class="labelcolor">@item.status_details</span>
+										</div>
 									}
-									<div class="card rounded p-1">
-									<div class="legend-item mr-2" id="clear-filter">
-										<span class="labelcolor pl-2">Show All</span>
-									</div>
+
+									<div class="legend-item d-flex align-items-center px-2 py-1 text-nowrap" id="clear-filter" style="border-radius:4px; cursor:pointer; background:#fff; box-shadow:0 0 2px rgba(0,0,0,0.15);">
+										<span class="labelcolor">Show All</span>
 									</div>
 
+									<div class="input-group input-group-sm" style="min-width:400px; margin-left:auto;">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><i class="fas fa-search-location"></i></span>
+										</div>
+										<select name="MCLocator" id="MCLocator" class="form-control form-control-sm select2" style="background: #fff">
+										</select>
+									</div>
 								</div>
-								
 							</div>
 
-							<div id="machine-cards">
-							</div>
+							<div class="mt-2" id="machine-cards"></div>
 
 							<div class="mt-2">
 								<div id="map"></div>
 							</div>
-
 						</div>
 					</div>
 				</div>
@@ -71,7 +70,6 @@
 		</div>
 
 	</section>
-
 
 
 	<!-- jQuery -->

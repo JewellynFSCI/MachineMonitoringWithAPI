@@ -1,4 +1,5 @@
-﻿@{
+﻿@inject IConfiguration Configuration
+@{
 	var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 	var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 }
@@ -7,10 +8,24 @@
 	<!-- Navbar -->
 	<nav class="main-header navbar navbar-expand navbar-white navbar-light ml-0">
 		<ul class="navbar-nav ml-2">
-			<li class="nav-item">
-				<a asp-controller="Admin" asp-action="ProductionMap" class="navbar-brand" style="cursor: default;">
-					<img src="@Url.Content("~/img/icon3.png")" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8;border: solid 1px dimgray; width:4%">
-					<span class="brand-text font-weight-strong" style="color:dimgray">Machine Downtime Monitoring</span>
+			<li class="nav-item d-flex align-items-center">
+
+				<a asp-controller="Admin" asp-action="ProductionMap"
+				   class="navbar-brand m-0 p-0 d-flex align-items-center"
+				   style="cursor: pointer; text-decoration: none;">
+					<img src="@Url.Content("~/img/icon3.png")"
+						 alt="AdminLTE Logo"
+						 class="brand-image img-circle elevation-3"
+						 style="opacity: .8;border: solid 1px dimgray; width: 40px; height: 40px;">
+
+					<div class="d-flex flex-column align-items-start ml-2">
+						<span class="brand-text font-weight-strong" style="color:dimgray; white-space: nowrap; font-size: 18px;">
+							Machine Downtime Monitoring
+						</span>
+						<span style="font-size: 70%; color: dimgray; white-space: nowrap; margin-top: -3%;">
+							ver. @Configuration["AppVersion"]
+						</span>
+					</div>
 				</a>
 			</li>
 		</ul>
@@ -18,10 +33,11 @@
 
 		@if (currentController == "Admin" && currentAction == "ProductionMap")
 		{
-			<ul class="navbar-nav" style="width:45%;">
+			<div class="collapse navbar-collapse d-flex justify-content-end">
+			<ul class="navbar-nav mr-3 d-flex flex-row w-50">
 				<li class="nav-item w-100">
 					<select id="PlantNoSelect" name="PlantNoSelect" class="form-control">
-						<option disabled selected>--Select Plant No--</option>
+						<option disabled selected><--Select Plant No--></></option>
 						@foreach (var plant in Model.Plants)
 						{
 							<option id="PlantSelected" value="@plant.PlantNo">@plant.PlantName</option>
@@ -36,6 +52,7 @@
 				</li>
 
 			</ul>
+			</div>
 		}
 
 		<ul class="navbar-nav ml-auto">
@@ -47,7 +64,7 @@
 			<!-- Profile Dropdown Menu -->
 			<li class="nav-item">
 				<a asp-controller="WinLoginAuth" asp-action="Win_Login" class="nav-link">
-					<i class="nav-icon fas fa-sign-in-alt ml-1"> LogIn </i>
+					<i class="nav-icon fas fa-sign-in-alt mr-3"> LogIn </i>
 				</a>
 			</li>
 		</ul>

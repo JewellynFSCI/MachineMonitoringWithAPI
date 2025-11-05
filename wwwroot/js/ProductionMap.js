@@ -1,11 +1,25 @@
-﻿let ImgName = [];
+﻿// --- Global State ---
+let ImgName = [];
+let productionMaps = [];
+let map = null;
+let pointSource = null;
+let featureMap = {}; // Maps machinecode -> ol.Feature
+let timestampInterval = null;
+
+// --- Constants ---
+const ONE_MINUTE = 60 * 1000;
 
 $(function () {
     $("#PlantNoSelect").prop('selectedIndex', 0);
 
+    // Initialize all event-driven functions
     GetProductionMap();
     GetImgNamefromDb();
     Legend();
+    LocateMC();
+
+    // Attach card click handler once
+    InitCardClickHandler();
 
     //#region 'Connection for SignalR'
     const connection = new signalR.HubConnectionBuilder()
@@ -30,7 +44,6 @@ $(function () {
 
     // Start the connection.
     start();
-
     //#endregion
 
 
@@ -38,19 +51,15 @@ $(function () {
     connection.on("ReceivedAlert", function (ticket) {
         console.log("Received Ticket Alert:", ticket);
 
-        if (ticket.success) {
-            if (window.map && window.map instanceof ol.Map) {
-                const pointLayer = window.map.getLayers().getArray().find(layer => layer instanceof ol.layer.Vector);
-                const pointSource = pointLayer?.getSource();
+        if (ticket.success && map) {
+            // Check if our pointSource exists
+            if (pointSource) {
+                pointSource.clear(); // remove old features
 
-                if (pointSource) {
-                    pointSource.clear(); // remove old features
-
-                    // Re-fetch and re-add new features
-                    GetMachineStatus(window.map, pointSource);
-                } else {
-                    console.warn("Point source not found. Unable to replot.");
-                }
+                // Re-fetch and re-add new features
+                GetMachineStatus(map, pointSource);
+            } else {
+                console.warn("Point source not found. Unable to replot.");
             }
         }
     });
@@ -68,11 +77,7 @@ function GetProductionMap() {
         $("#machine-cards").empty();
 
         // Reset the map container safely
-        if (window.map instanceof ol.Map) {
-            window.map.setTarget(null); // Detach map from DOM
-            window.map = null;
-        }
-        $('#map').empty(); // Clear map div contents
+        resetMap();
 
         $.ajax({
             url: '/Admin/GetProductionMaps',
@@ -131,11 +136,7 @@ function GetImgNamefromDb() {
 function ShowImage() {
     const imageUrl = '/img/productionmap/' + ImgName;
 
-    if (window.map instanceof ol.Map) {
-        window.map.setTarget(null);
-        window.map = null;
-    }
-    $('#map').empty();
+    resetMap(); // Use the new helper function
 
     const img = new Image();
     img.onload = function () {
@@ -143,17 +144,19 @@ function ShowImage() {
         const imageHeight = img.naturalHeight;
         const imageExtent = [0, 0, imageWidth, imageHeight];
 
-        const map = initializeMap(imageUrl, imageExtent, imageWidth, imageHeight);
-        const pointSource = new ol.source.Vector();
+        // Assign to global map and pointSource
+        map = initializeMap(imageUrl, imageExtent, imageWidth, imageHeight);
+        pointSource = new ol.source.Vector();
+
         GetMachineStatus(map, pointSource);
         const pointLayer = addPointLayer(map, pointSource);
         const modifyCollection = new ol.Collection();
         const modifyInteraction = new ol.interaction.Modify({ features: modifyCollection });
         modifyInteraction.setActive(false);
         const popupOverlay = setupPopup(map);
-        handleMapClick(map, pointSource, popupOverlay, modifyCollection);
 
-        window.map = map;
+        // Pass map-specific variables to the click handler
+        handleMapClick(map, pointSource, popupOverlay, modifyCollection);
 
         let zoomInfo = document.getElementById('zoom-info');
         if (!zoomInfo) {
@@ -186,11 +189,10 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
     const padding = 600;
     const paddedExtent = [
         imageExtent[0] - padding, // minX - padding
-        imageExtent[1], // minY - padding
+        imageExtent[1], // minY 
         imageExtent[2] + padding, // maxX + padding
-        imageExtent[3] // maxY + padding
+        imageExtent[3] // maxY 
     ];
-
 
     const imageLayer = new ol.layer.Image({
         source: new ol.source.ImageStatic({
@@ -226,7 +228,6 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 //#region 'addPointLayer'
 function addPointLayer(map, pointSource) {
     let start = new Date().getTime(); // animation reference
-    const ONE_MINUTE = 60 * 1000;
     const baseSize = 10;
 
     // Set start time only once for each feature with status "DONE"
@@ -239,6 +240,7 @@ function addPointLayer(map, pointSource) {
     const pointLayer = new ol.layer.Vector({
         source: pointSource,
         style: function (feature, resolution) {
+            if (feature.get('visible') === false) return null; // hide feature
             const status = feature.get('status_id');
             const status_color = feature.get('hex_value');
             const adjustedRadius = baseSize / resolution;
@@ -263,7 +265,7 @@ function addPointLayer(map, pointSource) {
                         })
                     })
                 });
-            } else if (status === 3 || status === 8) {     //"Done = 3"    "Cancelled = 8"
+            } else if (status === 3 || status === 8) {    //"Done = 3"    "Cancelled = 8"
                 const completedDateStr = feature.get('completedDate'); // "2025-07-02T08:27:21"
                 const startTime = new Date(completedDateStr).getTime(); // Convert to timestamp
                 const now = new Date().getTime();
@@ -341,7 +343,6 @@ function GetMachineStatus(map, pointSource) {
     const PlantNo = $('#PlantNoSelect').val();
     const ProductionMapId = $('#ProductionMapIdSelect').val();
 
-    // Get the container element
     const container = document.getElementById("machine-cards");
     if (!container) {
         console.warn("machine-cards container not found in DOM.");
@@ -351,7 +352,8 @@ function GetMachineStatus(map, pointSource) {
     // Clear previous content
     container.innerHTML = "";
 
-    const featureMap = {};
+    // Reset the global feature map
+    featureMap = {};
 
     $.ajax({
         url: '/Admin/GetMachineStatus',
@@ -365,25 +367,31 @@ function GetMachineStatus(map, pointSource) {
 
                 data.mclist.forEach(function (item) {
                     const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
-                    pointFeature.set('machineLocationId', item.machineLocationId);
-                    pointFeature.set('machinecode', item.machinecode);
-                    pointFeature.set('controlno', item.controlno);
-                    pointFeature.set('status_id', item.status_id);
-                    pointFeature.set('status', item.status);
-                    pointFeature.set('hex_value', item.hex_value);
-                    pointFeature.set('type', item.type);
-                    pointFeature.set('process', item.process);
-                    pointFeature.set('area', item.area);
-                    pointFeature.set('mc_error_buyoff_repair_date', item.mc_error_buyoff_repair_date);
-                    pointFeature.set('details', item.details);
-                    pointFeature.set('requestor', item.requestor);
-                    pointFeature.set('me_support', item.me_support);
-                    pointFeature.set('errorcode', item.errorcode);
-                    pointFeature.set('errorname', item.errorname);
-                    pointFeature.set('completedDate', item.completedDate);
-                    pointFeature.set('addDate', item.addDate);
+                    // Set all properties at once
+                    pointFeature.setProperties({
+                        'machineLocationId': item.machineLocationId,
+                        'machinecode': item.machinecode,
+                        'controlno': item.controlno,
+                        'status_id': item.status_id,
+                        'status': item.status,
+                        'hex_value': item.hex_value,
+                        'type': item.type,
+                        'process': item.process,
+                        'area': item.area,
+                        'mc_error_buyoff_repair_date': item.mc_error_buyoff_repair_date,
+                        'details': item.details,
+                        'requestor': item.requestor,
+                        'me_support': item.me_support,
+                        'errorcode': item.errorcode,
+                        'errorname': item.errorname,
+                        'completedDate': item.completedDate,
+                        'addDate': item.addDate,
+                        'visible': true // Default to visible
+                    });
+
                     pointSource.addFeature(pointFeature);
 
+                    // Add to our global lookup map
                     featureMap[item.machinecode] = pointFeature;
 
                     if (item.status !== "Completed" && item.status !== "Cancelled") {
@@ -391,77 +399,31 @@ function GetMachineStatus(map, pointSource) {
 
                         // Create the card HTML
                         const cardHtml = `
-                            
-                                <div class="card rounded machine-card" data-machinecode="${item.machinecode}" data-status="${item.status}">
+                                <div class="card rounded machine-card mb-2" data-machinecode="${item.machinecode}" data-status="${item.status}">
                                     <div class="card-body rounded">
                                         <div class="row">
-                                            <div class="col-md-2 rounded" style="background-color: ${item.hex_value};"></div>
+                                            <div class="col-md-2 rounded" style="background-color: ${item.hex_value}; max-height: 31px;"></div>
                                             <div class="col-md-10 cardcontent">
                                                 <p class="pmachinecard"><strong>${item.machinecode}</strong> </p>
-                                                <p class="mb-1"><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
+                                                <p><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            
-                        `;
-
+                            `;
                         // Append the card to the container
                         container.insertAdjacentHTML("beforeend", cardHtml);
                     }
                 });
 
-                // 🧠 Add click handler to cards
-                container.querySelectorAll('.machine-card').forEach(card => {
-                    card.addEventListener('click', function () {
-                        const machinecode = this.getAttribute('data-machinecode');
-                        const feature = featureMap[machinecode]; // 👈 this is the only way to access it
+                SearchBarMachine();
 
-                        if (feature) {
-                            const coord = feature.getGeometry().getCoordinates();
-                            const popupOverlay = map.getOverlays().item(0);
-                            const popupElement = popupOverlay.getElement();
-
-                            const popupHtml = buildPopupHTML(
-                                feature.get('machinecode'),
-                                feature.get('controlno'),
-                                feature.get('status'),
-                                feature.get('type'),
-                                feature.get('process'),
-                                feature.get('area'),
-                                feature.get('mc_error_buyoff_repair_date'),
-                                feature.get('details'),
-                                feature.get('requestor'),
-                                feature.get('me_support'),
-                                feature.get('errorcode'),
-                                feature.get('errorname')
-                            );
-
-                            popupElement.innerHTML = popupHtml;
-                            //popupOverlay.setPosition(coord);
-                            popupOverlay.setDynamicPosition(coord);
-                            popupOverlay.setPosition(coord);
-                            map.getView().animate({ center: coord, duration: 0 });
-
-                            // ✅ Add close button behavior
-                            const closer = popupElement.querySelector(".ol-popup-closer");
-                            if (closer) {
-                                closer.onclick = function (evt) {
-                                    evt.preventDefault();
-                                    popupOverlay.setPosition(undefined);
-                                    closer.blur();
-                                    return false;
-                                };
-                            }
-                        } else {
-                            console.warn(`Feature for machinecode ${machinecode} not found.`);
-                        }
-                    });
-                });
-
-
-                //update every minute
-                setInterval(updateTimestamps, 60000);
+                // 🧠 **FIX:** Clear old interval and set a new one
+                // This prevents multiple intervals from running
+                if (timestampInterval) {
+                    clearInterval(timestampInterval);
+                }
+                timestampInterval = setInterval(updateTimestamps, 60000);
             }
         },
         error: function () {
@@ -471,6 +433,27 @@ function GetMachineStatus(map, pointSource) {
                 icon: 'error',
                 confirmButtonText: 'OK'
             });
+        }
+    });
+}
+//#endregion
+
+//#region 'Machine Card Click Handler'
+function InitCardClickHandler() {
+    // Use event delegation. This listener is attached ONCE.
+    // It listens for clicks on elements with class '.machine-card'
+    // that are added to '#machine-cards' now or in the future.
+    $("#machine-cards").on("click", ".machine-card", function () {
+        const machinecode = $(this).data('machinecode');
+        const feature = featureMap[machinecode]; // Use global featureMap
+
+        if (feature) {
+            $("#MCLocator").val(machinecode); // Update dropdown
+
+            // Use the new helper function
+            showPopupForFeature(feature);
+        } else {
+            console.warn(`Feature for machinecode ${machinecode} not found.`);
         }
     });
 }
@@ -547,10 +530,8 @@ function setupPopup(map) {
 }
 //#endregion
 
-//#region 'hanldeMapClick'
+//#region 'handleMapClick'
 function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
-    let activeFeature = null;
-    const popupElement = popupOverlay.getElement();
 
     map.on('singleclick', function (evt) {
         const clickedFeature = map.forEachFeatureAtPixel(evt.pixel, f => f);
@@ -558,38 +539,18 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
         //close popup if click outside the popup
         if (!clickedFeature) {
             popupOverlay.setPosition(undefined);
-            activeFeature = null;
             modifyCollection.clear();
+            return;
         }
 
+        // Clicked on a feature
         if (clickedFeature) {
-            activeFeature = clickedFeature;
-
             modifyCollection.clear();
-            modifyCollection.push(activeFeature);
+            modifyCollection.push(clickedFeature);
 
-            const coord = activeFeature.getGeometry().getCoordinates();
-            const machinecode = activeFeature.get('machinecode');
-            const controlno = activeFeature.get('controlno');
-            const status = activeFeature.get('status');
-            const type = activeFeature.get('type');
-            const process = activeFeature.get('process');
-            const area = activeFeature.get('area');
-            const mc_error_buyoff_repair_date = activeFeature.get('mc_error_buyoff_repair_date');
-            const details = activeFeature.get('details');
-            const requestor = activeFeature.get('requestor');
-            const me_support = activeFeature.get('me_support');
-            const errorcode = activeFeature.get('errorcode');
-            const errorname = activeFeature.get('errorname');
-
-
-            popupElement.innerHTML = buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support, errorcode, errorname);
-            //popupOverlay.setPosition(coord);
-            popupOverlay.setDynamicPosition(coord);
-            popupOverlay.setPosition(coord);
+            // Use the new helper function
+            showPopupForFeature(clickedFeature);
         }
-
-
     });
 
     map.on('pointermove', function (evt) {
@@ -599,26 +560,71 @@ function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
 
         map.getTargetElement().style.cursor = hit ? 'pointer' : '';
     });
+}
+//#endregion
 
-    popupElement.addEventListener('click', function (e) {
-        if (!activeFeature) return;
+//#region 'Show Popup Helper'
+// --- NEW HELPER ---
+// Centralized function to show a popup for any given feature
+function showPopupForFeature(feature) {
+    if (!map || !feature) return;
 
-        const target = e.target;
-        const closer = popupElement.querySelector('.ol-popup-closer');
+    const coord = feature.getGeometry().getCoordinates();
+    const popupOverlay = map.getOverlays().item(0); // Assumes overlay 0 is popup
+    const popupElement = popupOverlay.getElement();
 
-        if (closer && (target === closer || closer.contains(target))) {
+    // Get all properties from the feature
+    const props = feature.getProperties();
+
+    const popupHtml = buildPopupHTML(
+        props.machinecode, props.controlno, props.status, props.type,
+        props.process, props.area, props.mc_error_buyoff_repair_date,
+        props.details, props.requestor, props.me_support,
+        props.errorcode, props.errorname
+    );
+
+    popupElement.innerHTML = popupHtml;
+    popupOverlay.setDynamicPosition(coord); // Call the dynamic positioner
+    popupOverlay.setPosition(coord);
+    map.getView().animate({ center: coord, duration: 0 });
+
+    // Add close button behavior (needs to be done every time HTML is set)
+    const closer = popupElement.querySelector(".ol-popup-closer");
+    if (closer) {
+        closer.onclick = function (evt) {
+            evt.preventDefault();
             popupOverlay.setPosition(undefined);
-            activeFeature = null;
-            modifyCollection.clear();
-            e.preventDefault();
-            return;
-        }
-    });
+            closer.blur();
+            return false;
+        };
+    }
+}
+//#endregion
+
+//#region 'Map Reset Helper'
+// --- NEW HELPER ---
+// Centralized function to completely reset the map
+function resetMap() {
+    if (map instanceof ol.Map) {
+        map.setTarget(null); // Detach map from DOM
+        map = null;
+    }
+    $('#map').empty(); // Clear map div contents
+
+    // Clear global state
+    pointSource = null;
+    featureMap = {};
+
+    // Clear the timestamp interval
+    if (timestampInterval) {
+        clearInterval(timestampInterval);
+        timestampInterval = null;
+    }
 }
 //#endregion
 
 //#region Utility: Build Popup HTML Form
-function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support = '', errorcode, errorname='') {
+function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support = '', errorcode, errorname = '') {
     const isoDate = mc_error_buyoff_repair_date;
     const dateObj = new Date(isoDate);
 
@@ -628,7 +634,7 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 
     if (requestor === " (sapphire2)") {
         requestorToOws = "";
-    } else{
+    } else {
         requestorToOws = requestor;
     }
 
@@ -684,26 +690,101 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 
 //#region Legend
 function Legend() {
-    // Filter by legend click
     $('.legend-item').on('click', function () {
         const selectedStatus = $(this).data('status');
 
-        // highlight selected legend
+        // Highlight selected legend
         $('.legend-item').removeClass('selected');
         $(this).addClass('selected');
 
-        if (!selectedStatus) {
-            // "Show All" clicked
-            $('.machine-card').show();
-            return;
+        // Close any open popup
+        if (map && map.getOverlays().getLength() > 0) {
+            const popupOverlay = map.getOverlays().item(0);
+            if (popupOverlay) popupOverlay.setPosition(undefined);
         }
 
-        // show only matching cards
+        // Filter machine cards
         $('.machine-card').each(function () {
             const cardStatus = $(this).data('status');
-            $(this).toggle(cardStatus === selectedStatus);
+            $(this).toggle(!selectedStatus || cardStatus === selectedStatus);
+        });
+
+        // Filter map points
+        if (pointSource) {
+            pointSource.getFeatures().forEach(f => {
+                if (!selectedStatus) {
+                    f.set('visible', true); // show all
+                } else {
+                    f.set('visible', f.get('status') === selectedStatus);
+                }
+                f.changed(); // trigger style update
+            });
+        }
+
+        // Update MCLocator dropdown
+        const dropdown = $("#MCLocator");
+        dropdown.empty();
+        dropdown.append("<option value='' disabled selected><--Locate Machine Code--></option>");
+
+        // **NOTE:** This is jQuery, so ':visible' is a valid selector here.
+        $('.machine-card:visible').each(function () {
+            const mcCode = $(this).data('machinecode');
+            dropdown.append($('<option></option>').val(mcCode).text(mcCode));
         });
     });
 }
 //#endregion
 
+//#region 'Search bar Menu'
+function SearchBarMachine() {
+    const dropdownMCLocator = $("#MCLocator");
+    dropdownMCLocator.empty();
+
+    // Get all machine codes that have cards
+    const cardMachineCodes = Array.from(document.querySelectorAll('.machine-card'))
+        .map(card => card.getAttribute('data-machinecode'));
+
+    if (cardMachineCodes.length === 0) {
+        dropdownMCLocator.append("<option value='' disabled selected><--No machines on map--></option>");
+        return;
+    }
+
+    // Sort ascending
+    cardMachineCodes.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+    dropdownMCLocator.append("<option value='' disabled selected><--Locate Machine Code--></option>");
+
+    cardMachineCodes.forEach(mc => {
+        dropdownMCLocator.append($('<option></option>').val(mc).text(mc));
+    });
+
+}
+//#endregion
+
+//#region 'Locate'
+function LocateMC() {
+    $("#MCLocator").on("change", function () {
+        const selectedMachineCode = $(this).val();
+
+        if (!selectedMachineCode) {
+            console.warn("No machine code selected.");
+            return;
+        }
+
+        // Find the corresponding card element
+        const card = document.querySelector(`.machine-card[data-machinecode="${selectedMachineCode}"]`);
+        if (card) {
+            card.click(); // ✅ Trigger the card click (handled by InitCardClickHandler)
+            // Optional: scroll to the card if the container has overflow
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            Swal.fire({
+                title: 'Not Found',
+                text: 'Machine card not found on the page.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+}
+//#endregion

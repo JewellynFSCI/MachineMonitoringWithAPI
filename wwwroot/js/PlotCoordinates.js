@@ -296,7 +296,7 @@ function ShowImage() {
 
 //#region 'ShowImageBase'
 function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
-    const padding = 600;
+    const padding = 1200;
     const paddedExtent = [
         imageExtent[0] - padding, // minX - padding
         imageExtent[1] - (padding / 2), // minY - padding
@@ -382,8 +382,6 @@ function ShowImageBase(imageUrl, imageExtent, imageWidth, imageHeight) {
     setupModifyListener(modifyInteraction, popupOverlay);
 
     window.map = map;
-
-
 }
 //#endregion
 
