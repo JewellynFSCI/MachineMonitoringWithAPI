@@ -231,6 +231,8 @@
 		document.addEventListener("DOMContentLoaded", function () {
 			const radios = document.querySelectorAll('input[name="detailsOfError"]');
 			const otherInput = document.getElementById("OtherDetails");
+			const form = document.querySelector("form");
+			const saveButton = document.getElementById("saveButton");
 
 			radios.forEach(radio => {
 				radio.addEventListener("change", function () {
@@ -244,6 +246,22 @@
 					}
 				});
 			});
+
+
+			// Prevent double submit + show spinner
+			form.addEventListener("submit", function (e) {
+				if (saveButton.disabled) {
+					e.preventDefault(); // Prevent double click
+					return;
+				}
+
+				saveButton.disabled = true;
+				saveButton.innerHTML = `
+					<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+					Processing...
+				`;
+			});
+
 		});
 	</script>
 

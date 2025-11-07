@@ -481,12 +481,12 @@ function formatTimeAgo(timestamp) {
 
     if (diff < 60) return `${diff}secs ago`;
     const mins = Math.floor(diff / 60);
-    if (mins < 60) return `${mins}mins ago`;
+    if (mins < 60) return `${mins}min/s ago`;
     const hrs = Math.floor(mins / 60);
     const remMins = mins % 60;
     if (hrs < 24) return remMins === 0 ? `${hrs}h ago` : `${hrs}h ${remMins}m ago`;
     const days = Math.floor(hrs / 24);
-    return `${days}days ago`;
+    return `${days}day/s ago`;
 }
 //#endregion
 
