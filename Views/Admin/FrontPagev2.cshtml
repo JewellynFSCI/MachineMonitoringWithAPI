@@ -1,0 +1,159 @@
+﻿@model MachineMonitoring.Models.ViewModel.AdminVM
+
+<!DOCTYPE html>
+@{
+	Layout = null;
+}
+
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Prod Map | MDM</title>
+
+	<link rel="icon" type="image/png" href="~/img/icon3.png" />
+
+	<link href="~/plugins/fontawesome-free/css/all.min.css" rel="stylesheet" />
+	<link href="~/dist/css/adminlte.min.css" rel="stylesheet" />
+
+	<link href="~/plugins/sweetalert2/sweetalert2.min.css" rel="stylesheet" />
+	<link href="~/plugins/openlayers/ol.css" rel="stylesheet" />
+
+	<link href="~/css/FrontPagev2.css" rel="stylesheet" />
+
+</head>
+<body class="hold-transition">
+
+	@await Html.PartialAsync("_PartialNavBarLogout")
+
+	<section class="content" style="background-color: #e9ecef;">
+		<div class="container-fluid">
+			<div class="row">
+
+				<!--LEFT SIDE-->
+				<div class="col-2 left-panel">
+
+					<!--Search MAP-->
+					<div class="card mt-2">
+						<div class="card-body" style="margin-top:-5%">
+							<div class="row">
+								<span class="mr-2 font-weight-bold">Production Map: </span>
+
+								<!--SELECT PLANTNO-->
+								<div class="input-group input-group-sm mt-2">
+									<div class="input-group-prepend">
+										<span class="input-group-text"><i class="fas fa-search-location"></i></span>
+									</div>
+									<select id="PlantNoSelect" name="PlantNoSelect" class="form-control form-control-sm select2" style="background: #fff">
+										<option disabled selected><--Select Plant No--></></option>
+										@foreach (var plant in Model.Plants)
+										{
+											<option id="PlantSelected" value="@plant.PlantNo">@plant.PlantName</option>
+										}
+									</select>
+								</div>
+
+								<!--SELECT PROD MAP-->
+								<div class="input-group input-group-sm mt-2">
+									<div class="input-group-prepend">
+										<span class="input-group-text"><i class="fas fa-search-location"></i></span>
+									</div>
+									<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control" style="background: #fff">
+									</select>
+								</div>
+
+							</div>
+						</div>
+					</div>
+
+					<!--Summary-->
+					<div class="card summary-card">
+						<div class="card-body" style="margin-top:-5%">
+							<div class="row">
+								<span class="mr-2 font-weight-bold">Summary: </span>
+
+								<!--LEGEND-->
+								<table class="legend-table" style="border-collapse: collapse; width: 100%; text-align: left;">
+									<thead>
+										<tr>
+											<th style="border-bottom: 1px solid #ccc;">LEGEND</th>
+											<th style="border-bottom: 1px solid #ccc;">Count</th>
+										</tr>
+									</thead>
+									<tbody>
+										@foreach (var item in Model.mcStatusColor)
+										{
+											<tr class="legend-item" data-status="@item.status_details">
+												<td style="display: flex; align-items: center; gap: 0.5rem; cursor:pointer"> 
+													<span class="circle" style="background-color:@item.hex_value; width:12px; height:12px; border-radius:50%; display:inline-block;"></span>
+													<span>@item.status_details</span>
+												</td>
+												@* <td style="padding: 0.5rem;">@item.request_count</td> *@
+												<td>2</td>
+											</tr>
+										}
+										<tr class="legend-item">
+											<td style="font-weight: bold; border-top: 1px solid #ccc; cursor:pointer">Show All</td>
+											@* <td style="padding: 0.5rem; font-weight: bold;">@Model.mcStatusColor.Sum(x => x.request_count)</td> *@
+											<td style="font-weight: bold;border-top: 1px solid #ccc;">20</td>
+										</tr>
+									</tbody>
+								</table>
+
+								<!--SEARCH BAR-->
+								<div class="input-group input-group-sm mt-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text"><i class="fas fa-search-location"></i></span>
+									</div>
+									<select name="MCLocator" id="MCLocator" class="form-control form-control-sm select2" style="background: #fff">
+									</select>
+								</div>
+
+								<!--CARDS-->
+								<div class="machine-cards-container">
+									<div id="machine-cards"></div>
+								</div>
+								
+								
+
+							</div>							
+						</div>
+					</div>					
+				</div>
+
+
+				<!--RIGHT SIDE (MAP) -->
+				<div class="col-10">
+					<div class="card mt-2">
+						<div class="card-body" style="margin-top:-1%">
+
+							<div class="mt-2">
+								<div id="map"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+
+			</div>
+		</div>
+
+	</section>
+
+
+	<!-- jQuery -->
+	<script src="~/plugins/jquery/jquery.min.js"></script>
+	<script src="~/plugins/jquery-ui/jquery-ui.min.js"></script>
+	<script src="~/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<script src="~/dist/js/adminlte.js"></script>
+	<script src="~/plugins/openlayers/ol.js"></script>	<!--OpenLayer JS-->
+	<script src="~/plugins/sweetalert2/sweetalert2.min.js"></script>
+	<script src="~/plugins/signalr/signalr.js"></script>
+	@* <script src="~/js/productionmap.js"></script> *@
+	<script src="~/js/FrontPagev2.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+
+
+</body>
+</html>

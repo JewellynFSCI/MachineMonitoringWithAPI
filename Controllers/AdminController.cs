@@ -518,5 +518,32 @@ namespace MachineMonitoring.Controllers
         #endregion
 
 
+        #region 'FrontPage v2 - View'
+        [HttpGet]
+        public async Task<IActionResult> FrontPagev2(int PlantNo)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var viewModel = new AdminVM
+                {
+                    Plants = await _adminrepo.GetPLantNoList(),
+                    ProductionMaps = await _adminrepo.GetProductionMapList(PlantNo),
+                    mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
+                };
+                return View(viewModel);
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+        #endregion
+
     }
 }

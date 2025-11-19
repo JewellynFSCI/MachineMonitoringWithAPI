@@ -50,6 +50,6 @@ app.MapHub<NotificationHub>("/Notification");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Admin}/{action=ProductionMap}/{id?}");
+    pattern: "{controller=Admin}/{action=FrontPagev2}/{id?}");
 
 app.Run();
