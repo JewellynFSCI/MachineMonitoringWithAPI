@@ -224,7 +224,7 @@ h5 {
     }
 
 .legend-table tbody tr.selected {
-    background-color: #e0f7fa;
+    background-color: #8CE4FF;
 }
 
 .circle {
@@ -267,8 +267,7 @@ hr {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    margin-top: 10px;
+    margin-top: 0px;
     padding-right: 5px;
-    border-top: 1px solid #dee2e6;
     padding-top: 10px;
 }

@@ -146,7 +146,7 @@ namespace MachineMonitoring.Controllers.API
         [HttpGet("MachinesPerPlantInMDM/{plant}")]
         [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
         [ProducesResponseType(500)]
-        public async Task<IActionResult> GetSpecificMachineDetailsPerPlant(string plant)
+        public async Task<IActionResult> GetSpecificMachinePerPlantNo(string plant)
         {
             try
             {
@@ -157,6 +157,107 @@ namespace MachineMonitoring.Controllers.API
                     .Where(m => m.PlantNo == plantno)
                     .Select(m => new MachineCodeDTO { MachineCode = m.MachineCode })
                     .ToList();
+
+                if (!machineCodes.Any())
+                {
+                    return NotFound(new APIResponse<List<MachineCodeDTO>>
+                    {
+                        Success = false,
+                        Data = null,
+                        Message = $"No machines found in plant {plantno}"
+                    });
+                }
+
+                return Ok(new APIResponse<List<MachineCodeDTO>>
+                {
+                    Success = true,
+                    Data = machineCodes,
+                    Message = "Data retrieved successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new APIResponse<List<MachineCodeDTO>>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = ex.Message
+                });
+            }
+        }
+        #endregion
+
+
+        #region 'Get Machine Code for Downtime OWS Form '
+        [HttpGet("DT_BOFF_MachineCodes/{plant}")]
+        [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> Downtime_GetMachinePerPlant(string plant)
+        {
+            try
+            {
+                int plantno = int.Parse(Regex.Match(plant, @"\d+").Value);
+                var machines = await _adminrepo.APIGetMachinesDetails();
+                var excludedStatuses = new[] { "Machine Downtime", "BuyOff" };
+
+                var machineCodes = machines
+                                    .Where(m => m.PlantNo == plantno
+                                             && !excludedStatuses.Contains(m.Status))  // <-- lowercase
+                                    .Select(m => new MachineCodeDTO
+                                    {
+                                        MachineCode = m.MachineCode,
+                                        Status = m.Status
+                                    })
+                                    .ToList();
+
+                if (!machineCodes.Any())
+                {
+                    return NotFound(new APIResponse<List<MachineCodeDTO>>
+                    {
+                        Success = false,
+                        Data = null,
+                        Message = $"No machines found in plant {plantno}"
+                    });
+                }
+
+                return Ok(new APIResponse<List<MachineCodeDTO>>
+                {
+                    Success = true,
+                    Data = machineCodes,
+                    Message = "Data retrieved successfully!"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new APIResponse<List<MachineCodeDTO>>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = ex.Message
+                });
+            }
+        }
+        #endregion
+
+        #region 'Get Machine Code for Tempo OWS Form'
+        [HttpGet("Tempo_MachineCodes/{plant}")]
+        [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> Tempo_GetMachinePerPlant(string plant)
+        {
+            try
+            {
+                int plantno = int.Parse(Regex.Match(plant, @"\d+").Value);
+                var machines = await _adminrepo.APIGetMachinesDetails();
+
+                var machineCodes = machines
+                                    .Where(m => m.PlantNo == plantno)
+                                    .Select(m => new MachineCodeDTO
+                                    {
+                                        MachineCode = m.MachineCode,
+                                        Status = m.Status
+                                    })
+                                    .ToList();
 
                 if (!machineCodes.Any())
                 {

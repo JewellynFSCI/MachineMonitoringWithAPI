@@ -42,7 +42,7 @@
 								<!--SELECT PLANTNO-->
 								<div class="input-group input-group-sm mt-2">
 									<div class="input-group-prepend">
-										<span class="input-group-text"><i class="fas fa-search-location"></i></span>
+										<span class="input-group-text"><i class="fas fa-location-arrow"></i></span>
 									</div>
 									<select id="PlantNoSelect" name="PlantNoSelect" class="form-control form-control-sm select2" style="background: #fff">
 										<option disabled selected><--Select Plant No--></></option>
@@ -56,7 +56,7 @@
 								<!--SELECT PROD MAP-->
 								<div class="input-group input-group-sm mt-2">
 									<div class="input-group-prepend">
-										<span class="input-group-text"><i class="fas fa-search-location"></i></span>
+										<span class="input-group-text"><i class="fas fa-map"></i></span>
 									</div>
 									<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control" style="background: #fff">
 									</select>
@@ -89,13 +89,13 @@
 													<span>@item.status_details</span>
 												</td>
 												@* <td style="padding: 0.5rem;">@item.request_count</td> *@
-												<td>2</td>
+												<td style="text-align:center;">2</td>
 											</tr>
 										}
 										<tr class="legend-item">
 											<td style="font-weight: bold; border-top: 1px solid #ccc; cursor:pointer">Show All</td>
 											@* <td style="padding: 0.5rem; font-weight: bold;">@Model.mcStatusColor.Sum(x => x.request_count)</td> *@
-											<td style="font-weight: bold;border-top: 1px solid #ccc;">20</td>
+											<td style="font-weight: bold;border-top: 1px solid #ccc;text-align:center;">20</td>
 										</tr>
 									</tbody>
 								</table>
@@ -103,10 +103,9 @@
 								<!--SEARCH BAR-->
 								<div class="input-group input-group-sm mt-3">
 									<div class="input-group-prepend">
-										<span class="input-group-text"><i class="fas fa-search-location"></i></span>
+										<span class="input-group-text"><i class="fas fa-search"></i></span>
 									</div>
-									<select name="MCLocator" id="MCLocator" class="form-control form-control-sm select2" style="background: #fff">
-									</select>
+									<input type="text" id="MCFilterInput" class="form-control form-control-sm" placeholder="Search Machine Number" style="background: #fff; text-transform:uppercase" />
 								</div>
 
 								<!--CARDS-->

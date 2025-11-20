@@ -5,10 +5,11 @@ let map = null;
 let pointSource = null;
 let featureMap = {}; // Maps machinecode -> ol.Feature
 let timestampInterval = null;
-
+let currentLegendStatusFilter = null;
 // --- Constants ---
 const ONE_MINUTE = 60 * 1000;
 
+//#region 'Main Function'
 $(function () {
     $("#PlantNoSelect").prop('selectedIndex', 0);
 
@@ -16,7 +17,8 @@ $(function () {
     GetProductionMap();
     GetImgNamefromDb();
     Legend();
-    LocateMC();
+    //LocateMC();
+    InitMachineCardFilter();
 
     // Attach card click handler once
     InitCardClickHandler();
@@ -66,15 +68,18 @@ $(function () {
     //#endregion
 
 });
+//#endregion
 
-//#region 'Get List of Production Map'
+//#region 'Get List of Production Map / Plant No Select Change'
 function GetProductionMap() {
     $("#PlantNoSelect").on("change", function () {
         let SelectedPlantNo = $(this).val();
         let dropdownProdMapName = $("#ProductionMapIdSelect");
         dropdownProdMapName.empty();
+
         $('.legend-item').removeClass('selected');
         $("#machine-cards").empty();
+
 
         // Reset the map container safely
         resetMap();
@@ -110,7 +115,7 @@ function GetProductionMap() {
 }
 //#endregion
 
-//#region 'Get Image Name from cache'
+//#region 'Get Image Name from cache / Prod Map Selection Change'
 function GetImgNamefromDb() {
     $("#ProductionMapIdSelect").on("change", function () {
         let SelectedProdMapId = $(this).val();
@@ -178,6 +183,9 @@ function ShowImage() {
 
         view.on('change:resolution', updateZoomPercentage);
         updateZoomPercentage(); // Set initial value
+
+        $('.legend-item').removeClass('selected');
+        $('.legend-item:last').addClass('selected'); // Selects the last row, which is 'Show All'
 
     };
     img.src = imageUrl;
@@ -421,7 +429,6 @@ function GetMachineStatus(map, pointSource) {
 
                 SearchBarMachine();
 
-                // 🧠 **FIX:** Clear old interval and set a new one
                 // This prevents multiple intervals from running
                 if (timestampInterval) {
                     clearInterval(timestampInterval);
@@ -443,15 +450,12 @@ function GetMachineStatus(map, pointSource) {
 
 //#region 'Machine Card Click Handler'
 function InitCardClickHandler() {
-    // Use event delegation. This listener is attached ONCE.
-    // It listens for clicks on elements with class '.machine-card'
-    // that are added to '#machine-cards' now or in the future.
     $("#machine-cards").on("click", ".machine-card", function () {
         const machinecode = $(this).data('machinecode');
-        const feature = featureMap[machinecode]; // Use global featureMap
+        const feature = featureMap[machinecode];
 
         if (feature) {
-            $("#MCLocator").val(machinecode); // Update dropdown
+            $("#MCLocator").val(machinecode);
 
             // Use the new helper function
             showPopupForFeature(feature);
@@ -669,21 +673,20 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
                                 <p><i>${area}</i></p>
                             </div>
                         </div>
-
-                        <hr />
                         <div class="mb-1">
                             <p><strong>ControlNo: </strong> ${controlno}</p>
                             <p><strong>Details:</strong> ${details}</p>
                         </div>
 
                         ${me_support ? `
-                            <hr />
                             <div class="mb-1">
                                 <p><strong>Maintenance Personnel:</strong></p>
                                 <p>${me_support}</p>
                                 <p>${errorname ? `${errorname}` : ``}</p>
                             </div>
                         ` : ``}
+
+                        <hr />
                     </div>
                 </div>
             </div>
@@ -695,72 +698,25 @@ function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_
 function Legend() {
     $('.legend-item').on('click', function () {
         const selectedStatus = $(this).data('status');
+        currentLegendStatusFilter = selectedStatus || null;
+        $('#MCFilterInput').val('');
 
-        // Highlight selected legend
         $('.legend-item').removeClass('selected');
         $(this).addClass('selected');
 
-        // Close any open popup
-        if (map && map.getOverlays().getLength() > 0) {
-            const popupOverlay = map.getOverlays().item(0);
-            if (popupOverlay) popupOverlay.setPosition(undefined);
-        }
-
-        // Filter machine cards
-        $('.machine-card').each(function () {
-            const cardStatus = $(this).data('status');
-            $(this).toggle(!selectedStatus || cardStatus === selectedStatus);
-        });
-
-        // Filter map points
         if (pointSource) {
             pointSource.getFeatures().forEach(f => {
-                if (!selectedStatus) {
-                    f.set('visible', true); // show all
+                if (!currentLegendStatusFilter) {
+                    f.set('visible', true);
                 } else {
-                    f.set('visible', f.get('status') === selectedStatus);
+                    f.set('visible', f.get('status') === currentLegendStatusFilter);
                 }
-                f.changed(); // trigger style update
+                f.changed(); 
             });
         }
 
-        // Update MCLocator dropdown
-        const dropdown = $("#MCLocator");
-        dropdown.empty();
-        dropdown.append("<option value='' disabled selected><--Locate Machine Code--></option>");
-
-        // **NOTE:** This is jQuery, so ':visible' is a valid selector here.
-        $('.machine-card:visible').each(function () {
-            const mcCode = $(this).data('machinecode');
-            dropdown.append($('<option></option>').val(mcCode).text(mcCode));
-        });
+        ApplyCardFilters();
     });
-}
-//#endregion
-
-//#region 'Search bar Menu'
-function SearchBarMachine() {
-    const dropdownMCLocator = $("#MCLocator");
-    dropdownMCLocator.empty();
-
-    // Get all machine codes that have cards
-    const cardMachineCodes = Array.from(document.querySelectorAll('.machine-card'))
-        .map(card => card.getAttribute('data-machinecode'));
-
-    if (cardMachineCodes.length === 0) {
-        dropdownMCLocator.append("<option value='' disabled selected><--No machines on map--></option>");
-        return;
-    }
-
-    // Sort ascending
-    cardMachineCodes.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-
-    dropdownMCLocator.append("<option value='' disabled selected><--Locate Machine Code--></option>");
-
-    cardMachineCodes.forEach(mc => {
-        dropdownMCLocator.append($('<option></option>').val(mc).text(mc));
-    });
-
 }
 //#endregion
 
@@ -788,6 +744,34 @@ function LocateMC() {
                 confirmButtonText: 'OK'
             });
         }
+    });
+}
+//#endregion
+
+//#region 'Real-time Machine Card Filtering'
+function InitMachineCardFilter() {
+    $('#MCFilterInput').on('input', function () {
+        if (map && map.getOverlays().getLength() > 0) {
+            map.getOverlays().item(0).setPosition(undefined);
+        }
+
+        ApplyCardFilters();
+    });
+}
+//#endregion
+
+//#region 'Apply Card Filters (Shared Logic)'
+function ApplyCardFilters() {
+    const searchText = $('#MCFilterInput').val().toUpperCase();
+    const activeStatus = currentLegendStatusFilter;
+
+    $('.machine-card').each(function () {
+        const card = $(this);
+        const cardCode = card.data('machinecode').toString().toUpperCase();
+        const cardStatus = card.data('status');
+        const matchesSearch = !searchText || cardCode.includes(searchText);
+        const matchesStatus = !activeStatus || cardStatus === activeStatus;
+        card.toggle(matchesSearch && matchesStatus);
     });
 }
 //#endregion
