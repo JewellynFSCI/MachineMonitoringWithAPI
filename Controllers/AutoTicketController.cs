@@ -56,7 +56,7 @@ namespace MachineMonitoring.Controllers
                     var result = "Failed";
                     var message = mcLoc.Message;
                     var machinecode = machineCode;
-                    return RedirectToAction("TicketSent", new { machinecode, result, message });
+                    return RedirectToAction("DBResponse", new { machinecode, result, message });
                 }
                 var MachineDetails= await _adminrepo.GetMachineDetails(machineCode);
                 var process = MachineDetails[0].Process_Category;
@@ -95,13 +95,23 @@ namespace MachineMonitoring.Controllers
                 var owsDetails = await _adminrepo.GetOwsDetails();
                 var ows = owsDetails.FirstOrDefault();
 
+                var machinecode = model.MachineCode;
+
+                var ticketExists = await _adminrepo.CheckMachineTicket(model.MachineCode);
+                if (!ticketExists.Success)      // Ticket exists with this machine code
+                {
+                    var result = "FAILED!";
+                    var message = $"No request sent! {machinecode} is already in downtime status.";
+                    return RedirectToAction("DBResponse", new { machinecode, result, message });
+                }
+
                 var response = await _adminrepo.CreateOWSTicketAPI(model, ows);
                 if (response.Contains("successfully", StringComparison.OrdinalIgnoreCase))
                 {
                     var result = "Success";
                     var message = "Request already sent!";
-                    var machinecode = model.MachineCode;
-                    return RedirectToAction("TicketSent",new { machinecode, result, message });
+                    
+                    return RedirectToAction("DBResponse", new { machinecode, result, message });
                 }
 
                 return StatusCode(500, response);
@@ -112,11 +122,11 @@ namespace MachineMonitoring.Controllers
                 var result = "Failed";
                 var message = $"An error occurred: {ex.Message}";
                 var machinecode = model.MachineCode;
-                return RedirectToAction("TicketSent", new { machinecode, result, message });
+                return RedirectToAction("DBResponse", new { machinecode, result, message });
             }
         }
 
-        public IActionResult TicketSent(string machinecode, string result, string message)
+        public IActionResult DBResponse(string machinecode, string result, string message)
         {
             var ticket = new TicketResponse
             {
