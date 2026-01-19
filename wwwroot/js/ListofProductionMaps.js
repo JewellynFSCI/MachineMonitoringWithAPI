@@ -101,7 +101,11 @@ function EditProdMapModal(productionMapId, productionMapName, plantName, imgName
     $('#ImgFile').val("");
     $('#fileNote').text("(To replace. Accept only .jpeg and .png format)");
     $('#ImgContainer').show();
-    $('#ImgContainer img').attr('src', '/img/productionmap/' + imgName, 'alt', imgName);
+    /*$('#ImgContainer img').attr('src', '/mdm-prod-maps/' + imgName, 'alt', imgName);*/
+    $('#ImgContainer img').attr({
+        src: `/mdm-prod-maps/${encodeURIComponent(imgName)}`,
+        alt: imgName
+    });
     $('#ImgName').val(imgName);
     $('#ProdMapIdContainer').show();
     $('#PlantNo').val(plantNo);

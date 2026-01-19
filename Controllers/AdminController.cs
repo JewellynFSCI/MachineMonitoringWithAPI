@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using System.Reflection.PortableExecutable;
 using MachineMonitoring.Models.DTOs;
 using Mysqlx;
+using System.Configuration;
 
 namespace MachineMonitoring.Controllers
 {
@@ -18,12 +19,13 @@ namespace MachineMonitoring.Controllers
 
         private readonly AdminRepo _adminrepo;
         private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration _configuration;
 
-
-        public AdminController(AdminRepo adminrepo, IWebHostEnvironment env)
+        public AdminController(AdminRepo adminrepo, IWebHostEnvironment env, IConfiguration configuration)
         {
             _adminrepo = adminrepo;
             _env = env;
+            _configuration = configuration;
         }
 
         #region 'ListProductionMaps - View'
@@ -107,7 +109,12 @@ namespace MachineMonitoring.Controllers
                 var fileName = Path.GetFileNameWithoutExtension(ImgFile.FileName);
                 var fileExtension = Path.GetExtension(ImgFile.FileName);
                 var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{fileExtension}";
-                var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
+                //var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
+                
+                //Save to Drive C folder
+                var basePath = _configuration["ProductionMaps:PhysicalPath"];
+                var savePath = Path.Combine(basePath, uniqueFileName);
+
 
                 var _sessionEmployeeName = HttpContext.Session.GetString("_EmployeeName");
                 model.CreatedBy = _sessionEmployeeName;
@@ -206,11 +213,17 @@ namespace MachineMonitoring.Controllers
                     var fileName = Path.GetFileNameWithoutExtension(ImgFile.FileName);
                     var fileExtension = Path.GetExtension(ImgFile.FileName);
                     var uniqueFileName = $"{fileName}_{Guid.NewGuid()}{fileExtension}";
-                    var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
+
+                    //var savePath = Path.Combine(_env.WebRootPath, "img/productionmap", uniqueFileName);
+                    //Save to Drive C folder
+                    var basePath = _configuration["ProductionMaps:PhysicalPath"];
+                    var savePath = Path.Combine(basePath, uniqueFileName);
+
 
                     // ❗ Get old image filename (you must pass it in the model or retrieve it from DB)
                     string oldImageFileName = model.ImgName;
-                    var oldImagePath = Path.Combine(_env.WebRootPath, "img/productionmap", oldImageFileName);
+                    //var oldImagePath = Path.Combine(_env.WebRootPath, "img/productionmap", oldImageFileName);
+                    var oldImagePath = Path.Combine(basePath, oldImageFileName);
 
                     var success = await _adminrepo.UploadProdMapReplacedImg(model, uniqueFileName);
                     if (success)
@@ -415,33 +428,6 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-        #region 'ProductionMap - View'
-        [HttpGet]
-        public async Task<IActionResult> ProductionMap(int PlantNo)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                var viewModel = new AdminVM
-                {
-                    Plants = await _adminrepo.GetPLantNoList(),
-                    ProductionMaps = await _adminrepo.GetProductionMapList(PlantNo),
-                    mcStatusColor = await _adminrepo.GetMCStatusColorsRepo()
-                };
-                return View(viewModel);
-            }
-
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
-        }
-        #endregion
-
         #region 'GetMachineStatus'
         [HttpGet]
         public async Task<IActionResult> GetMachineStatus(int PlantNo, int ProductionMapId)
@@ -517,7 +503,6 @@ namespace MachineMonitoring.Controllers
         }
         #endregion
 
-
         #region 'FrontPage v2 - View'
         [HttpGet]
         public async Task<IActionResult> FrontPagev2(int PlantNo)
@@ -542,6 +527,20 @@ namespace MachineMonitoring.Controllers
             {
                 return StatusCode(500, "Internal server error: " + ex.Message);
             }
+        }
+        #endregion
+
+        #region 'Get Open Tickets'
+        [HttpGet]
+        public async Task<IActionResult> GetOpenTicket(int PlantNo, int ProductionMapId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var opentickets = await _adminrepo.GetOpenTicketsRepo(PlantNo, ProductionMapId);
+            return Json(new { opentickets });
         }
         #endregion
 

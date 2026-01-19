@@ -111,7 +111,7 @@ namespace MachineMonitoring.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction("ProductionMap", "Admin");
+            return RedirectToAction("FrontPagev2", "Admin");
         }
         #endregion
 

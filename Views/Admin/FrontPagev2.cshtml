@@ -84,18 +84,18 @@
 										@foreach (var item in Model.mcStatusColor)
 										{
 											<tr class="legend-item" data-status="@item.status_details">
-												<td style="display: flex; align-items: center; gap: 0.5rem; cursor:pointer"> 
-													<span class="circle" style="background-color:@item.hex_value; width:12px; height:12px; border-radius:50%; display:inline-block;"></span>
+												<td style="display: flex; align-items: center; gap: 0.5rem; cursor:pointer">
+													@* <span class="circle" style="background-color:@item.hex_value; width:12px; height:12px; border-radius:50%; display:inline-block;"></span> *@
+													<span class="legend-indicator @(item.status_details == "Machine Downtime" ? "pulse-red" : "")"
+														  style="background-color:@item.hex_value;"></span>
 													<span>@item.status_details</span>
 												</td>
-												@* <td style="padding: 0.5rem;">@item.request_count</td> *@
-												<td style="text-align:center;">2</td>
+												<td style="text-align:center;">0</td>
 											</tr>
 										}
-										<tr class="legend-item">
+										<tr class="legend-item" id="showAll">
 											<td style="font-weight: bold; border-top: 1px solid #ccc; cursor:pointer">Show All</td>
-											@* <td style="padding: 0.5rem; font-weight: bold;">@Model.mcStatusColor.Sum(x => x.request_count)</td> *@
-											<td style="font-weight: bold;border-top: 1px solid #ccc;text-align:center;">20</td>
+											<td style="font-weight: bold;border-top: 1px solid #ccc;text-align:center;">0</td>
 										</tr>
 									</tbody>
 								</table>
@@ -106,20 +106,18 @@
 										<span class="input-group-text"><i class="fas fa-search"></i></span>
 									</div>
 									<input type="text" id="MCFilterInput" class="form-control form-control-sm" placeholder="Search Machine Number" style="background: #fff; text-transform:uppercase" />
+
+									<span class="clear-btn">&times;</span>
 								</div>
 
 								<!--CARDS-->
 								<div class="machine-cards-container">
 									<div id="machine-cards"></div>
 								</div>
-								
-								
-
-							</div>							
+							</div>
 						</div>
-					</div>					
+					</div>
 				</div>
-
 
 				<!--RIGHT SIDE (MAP) -->
 				<div class="col-10">
@@ -133,12 +131,22 @@
 					</div>
 				</div>
 
-
-
+				<div id="image-preview-overlay">
+					<img id="image-preview" />
+				</div>
+				
 			</div>
 		</div>
-
 	</section>
+
+
+
+				
+
+
+
+	
+
 
 
 	<!-- jQuery -->

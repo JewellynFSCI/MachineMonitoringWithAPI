@@ -1,16 +1,12 @@
 ﻿@inject IConfiguration Configuration
-@{
-	var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-	var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-}
 
 <div class="wrapper">
 	<!-- Navbar -->
-	<nav class="main-header navbar navbar-expand navbar-white navbar-light ml-0">
+	<nav class="main-header navbar navbar-expand navbar-white navbar-light ml-0" >
 		<ul class="navbar-nav ml-2">
 			<li class="nav-item d-flex align-items-center">
 
-				<a asp-controller="Admin" asp-action="ProductionMap"
+				<a asp-controller="Admin" asp-action="FrontPagev2"
 				   class="navbar-brand m-0 p-0 d-flex align-items-center"
 				   style="cursor: pointer; text-decoration: none;">
 					<img src="@Url.Content("~/img/icon3.png")"
@@ -29,31 +25,6 @@
 				</a>
 			</li>
 		</ul>
-
-
-		@if (currentController == "Admin" && currentAction == "ProductionMap")
-		{
-			<div class="collapse navbar-collapse d-flex justify-content-end">
-			<ul class="navbar-nav mr-3 d-flex flex-row w-50">
-				<li class="nav-item w-100">
-					<select id="PlantNoSelect" name="PlantNoSelect" class="form-control">
-						<option disabled selected><--Select Plant No--></></option>
-						@foreach (var plant in Model.Plants)
-						{
-							<option id="PlantSelected" value="@plant.PlantNo">@plant.PlantName</option>
-						}
-					</select>
-				</li>
-
-				<li class="nav-item ml-2 w-100">
-					<select name="ProductionMapIdSelect" id="ProductionMapIdSelect" class="form-control">
-						<!-- Options are populated in jQuery -->
-					</select>
-				</li>
-
-			</ul>
-			</div>
-		}
 
 		<ul class="navbar-nav ml-auto">
 			<li class="nav-item">

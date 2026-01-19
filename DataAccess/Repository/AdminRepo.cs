@@ -359,7 +359,8 @@ namespace MachineMonitoring.DataAccess.Repository
                         p_me_support = model.me_support,
                         p_errorcode = model.errorcode,
                         p_errorname = model.errorname,
-                        p_status = model.status
+                        p_status = model.status,
+                        p_imgName = model.imgName,
                     };
                     var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
                     return new APIResponse<DbResponse>
@@ -433,7 +434,8 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "SELECT status_id, status_details, status_color, hex_value FROM status";
+                    //var query = "SELECT status_id, status_details, status_color, hex_value FROM status";
+                    var query = "sp_GetStatus";
                     var result = await connection.QueryAsync<MCStatusColor>(query);
                     return result.ToList();
                 }
@@ -550,35 +552,6 @@ namespace MachineMonitoring.DataAccess.Repository
         }
         #endregion
 
-        #region 'ValidateMachineCode'
-        public async Task<APIResponse<DbResponse>> ValidateMachineCode(string machineCode)
-        {
-            try
-            {
-                using (var connection = Connection)
-                {
-                    var query = "sp_checkmachinestatus";
-                    var parameters = new
-                    {
-                        p_machinecode = machineCode
-                    };
-                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
-                    return new APIResponse<DbResponse>
-                    {
-                        Data = result,
-                        Message = result?.Message ?? "No message",
-                        Success = result?.Success ?? false
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving data");
-                throw;
-            }
-        }
-        #endregion
-
         #region 'Send Ticket to OWS'
         public async Task<string> CreateOWSTicketAPI(AutoTicketModel model, OwsDetails ows)
         {
@@ -671,7 +644,36 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "sp_Select_machine_ticket";
+                    var query = "sp_GetMachineTicket";
+                    var parameters = new
+                    {
+                        p_machinecode = machineCode
+                    };
+                    var result = await connection.QueryFirstOrDefaultAsync<DbResponse>(query, parameters, commandType: CommandType.StoredProcedure);
+                    return new APIResponse<DbResponse>
+                    {
+                        Data = result,
+                        Message = result?.Message ?? "No message",
+                        Success = result?.Success ?? false
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving data");
+                throw;
+            }
+        }
+        #endregion
+
+        #region 'CheckMachineExistence'
+        public async Task<APIResponse<DbResponse>> CheckMachineExistence(string machineCode)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_check_machine_existence";
                     var parameters = new
                     {
                         p_machinecode = machineCode
@@ -732,6 +734,26 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 _logger.LogError(ex, "Error retrieving data");
                 throw;
+            }
+        }
+        #endregion
+
+        #region 'GetOpenTicketsRepo'
+        public async Task<List<OpenTickets>> GetOpenTicketsRepo(int PlantNo, int ProductionMapId)
+        {
+            try
+            {
+                using (var connection = Connection)
+                {
+                    var query = "sp_Get_OpenTicket";
+                    var result = await connection.QueryAsync<OpenTickets>(query, new { p_plantno = PlantNo, p_productionmapid = ProductionMapId }, commandType: CommandType.StoredProcedure);
+                    return result.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving ProductionMap list");
+                return new List<OpenTickets>();
             }
         }
         #endregion

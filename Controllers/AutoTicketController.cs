@@ -33,31 +33,31 @@ namespace MachineMonitoring.Controllers
         {
             try
             {
-                //Check if ticket exists
-                var ticketExists = await _adminrepo.CheckMachineTicket(machineCode);
-                if (!ticketExists.Success)      // Ticket exists with this machine code
+                AdminVM viewModel = new AdminVM();
+
+                //Check if machine code exists
+                var MachineExist = await _adminrepo.CheckMachineExistence(machineCode);
+                if (!MachineExist.Success)
                 {
-                    //Get ticket details
-                    var viewModel = new AdminVM
+                    ViewBag.Result = "NG MachineCode";
+                    ViewBag.Message = $"This machine: {machineCode}  is not in the system";
+                    return View(viewModel);
+                }
+
+                //Check if ticket exists
+                var ticket = await _adminrepo.CheckMachineTicket(machineCode);
+                if (!ticket.Success)      // Ticket exists with this machine code
+                {
+                    //Get Downtime ticket details
+                    viewModel = new AdminVM
                     {
                         OwsTicketDetails = await _adminrepo.GetTicketDetails(machineCode)
                     };
-
                     ViewBag.Result = "NG";
                     ViewBag.Message = $"This machine: {machineCode}  has a task that has not been completed yet";
                     return View(viewModel);
                 }
 
-
-                //Check if machine code has location
-                var mcLoc = await _adminrepo.ValidateMachineCode(machineCode);
-                if (!mcLoc.Success)     //Machine code has no location in the system
-                {
-                    var result = "Failed";
-                    var message = mcLoc.Message;
-                    var machinecode = machineCode;
-                    return RedirectToAction("DBResponse", new { machinecode, result, message });
-                }
                 var MachineDetails= await _adminrepo.GetMachineDetails(machineCode);
                 var process = MachineDetails[0].Process_Category;
 

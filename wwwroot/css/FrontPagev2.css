@@ -1,4 +1,7 @@
-﻿.left-panel {
+﻿/* ===============================
+   LAYOUT
+================================ */
+.left-panel {
     height: 92vh;
     overflow: hidden;
     display: flex;
@@ -9,8 +12,10 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    margin-top: 10px;
-    padding-right: 4px;
+    margin-top: 0;
+    padding-right: 5px;
+    padding-top: 10px;
+    cursor: pointer;
 }
 
 .summary-card {
@@ -29,13 +34,16 @@
         padding-bottom: 5px;
     }
 
-    .summary-card .card-body .row {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
+        .summary-card .card-body .row {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
 
+/* ===============================
+   MAP
+================================ */
 #map {
     height: 88vh;
     width: 100%;
@@ -66,7 +74,9 @@
     pointer-events: none;
 }
 
-
+/* ===============================
+   TEXT / TYPOGRAPHY
+================================ */
 .form-group {
     margin-bottom: 0.5rem;
 }
@@ -92,7 +102,6 @@ h3 {
 }
 
 h4 {
-    padding-left: -10px;
     font-size: 20px;
     margin-top: 1%;
 }
@@ -104,9 +113,11 @@ h5 {
 .time-ago-text {
     font-size: 12px;
     color: #666;
-    margin-top: 0;
 }
 
+/* ===============================
+   MACHINE CARDS
+================================ */
 #machine-cards {
     display: flex;
     flex-wrap: wrap;
@@ -116,12 +127,10 @@ h5 {
 }
 
     #machine-cards .card {
-        flex: 0 0 auto;
         width: 97%;
         min-height: 45px;
         border: 1px solid #ccc;
         margin-bottom: 5px;
-        overflow: hidden;
     }
 
     #machine-cards .card-body {
@@ -129,102 +138,170 @@ h5 {
         height: 100%;
     }
 
-    #machine-cards .cardcontent {
-        padding-top: 0px;
-        padding-bottom: 0px;
-        margin-left: 2%;
-        margin-top: 1%;
-    }
+.cardcontent {
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 3%;
+    margin-top: 1%;
+}
 
 .h-100-row {
     height: 100%;
     margin: 0;
 }
 
-.cardcontent {
-    padding-top: 2px;
-    padding-left: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.containerpopup {
-    width: 400px;
-    max-height: 260px;
-    background-color: white;
-    overflow-x: auto;
-    scrollbar-width: none;
-    display: block;
-    cursor: default;
-}
-
-    .containerpopup::-webkit-scrollbar {
-        display: none;
-    }
-
+/* ===============================
+   POPUP (ABOVE COORDINATE + TAIL)
+================================ */
 .ol-popup {
     position: absolute;
-    background-color: white;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    padding: 5px;
-    border-radius: 10px;
-    border: 2px solid #393E46;
-    bottom: 12px;
-    left: -50px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #cccccc;
+    min-width: 450px;
+    max-width: 500px;
+    min-height: 150px;
+    max-height: 300px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    transform: translate(-50%, -100%);
+    margin-bottom: 12px;
 }
 
-    .ol-popup::after,
+
+/* ===============================
+   POPUP TAIL (POINTS DOWN)
+================================ */
+    /* The arrow outline (border color) */
     .ol-popup::before {
-        position: absolute;
-        display: block;
         content: "";
-        border-style: solid;
+        position: absolute;
+        top: 100%; /* Push to bottom of box */
         left: 50%;
-        transform: translateX(-50%);
-        left: 48px;
+        margin-left: -11px; /* Half of border width to center */
+        border-width: 11px;
+        border-style: solid;
+        border-color: #cccccc transparent transparent transparent;
+        pointer-events: none;
     }
 
-    .ol-popup.arrow-bottom::after {
-        bottom: -10px;
-        border-width: 10px 10px 0;
-        border-color: white transparent transparent transparent;
+    /* The arrow fill (white) covers the outline slightly to look seamless */
+    .ol-popup::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -10px;
+        border-width: 10px;
+        border-style: solid;
+        border-color: #ffffff transparent transparent transparent;
+        pointer-events: none;
     }
 
-    .ol-popup.arrow-bottom::before {
-        bottom: -12px;
-        border-width: 12px 12px 0;
-        border-color: rgba(0,0,0,2) transparent transparent transparent;
-    }
-
-    .ol-popup.arrow-top::after {
-        top: -10px;
-        border-width: 0 10px 10px;
-        border-color: transparent transparent white transparent;
-    }
-
-    .ol-popup.arrow-top::before {
-        top: -12px;
-        border-width: 0 12px 12px;
-        border-color: transparent transparent rgba(0,0,0,2) transparent;
-    }
-
-
-.ol-popup-closer {
-    text-decoration: none;
-    position: absolute;
-    top: 5px;
-    right: 8px;
-    cursor: pointer;
+/* ===============================
+   POPUP HEADER (FIXED)
+================================ */
+.popup-header {
+    background-color: antiquewhite;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0d2aa;
+    flex-shrink: 0;
 }
 
-    .ol-popup-closer i {
-        font-size: 25px;
-        color: dimgray;
+/* ===============================
+   POPUP BODY (SCROLLS)
+================================ */
+.popup-body {
+    background-color: ghostwhite;
+    padding: 10px 12px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.popup-ticket {
+    background-color: ghostwhite;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.popup-image {
+    max-width: 100%;
+    max-height: 180px;
+    width: 75%;
+    height: 75%;
+    display: block;
+    margin: 8px auto;
+    border-radius: 6px;
+    border: 2px solid;
+    cursor: zoom-in;
+}
+
+    /* FULLSCREEN PREVIEW */
+    .popup-image.fullscreen {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 100vw;
+        max-height: 100vh;
+        width: auto;
+        height: auto;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.95);
+        border: none;
+        border-radius: 0;
+        cursor: zoom-out;
     }
 
-.legend-table tbody tr.selected {
-    background-color: #8CE4FF;
+#image-preview-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+}
+
+    #image-preview-overlay img {
+        max-width: 95vw;
+        max-height: 95vh;
+        object-fit: contain;
+    }
+
+/* ===============================
+   CLOSE BUTTON
+================================ */
+.ol-popup-closer {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    z-index: 3;
+}
+
+/* ===============================
+   LEGEND / STATUS
+================================ */
+.selected-status {
+    background-color: #d1ecf1;
+}
+
+.legend-indicator {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 .circle {
@@ -236,38 +313,51 @@ h5 {
     border: 1px solid #333;
 }
 
-.labelcolor {
-    font-size: 12px;
+/* ===============================
+   CLEAR BUTTON
+================================ */
+.clear-btn {
+    position: absolute;
+    right: 10px;
+    top: 35%;
+    transform: translateY(-50%);
+    font-size: 30px;
+    color: #888;
+    cursor: pointer;
+    z-index: 5;
 }
 
-.p-popup {
-    font-size: 13px;
+    .clear-btn:hover {
+        color: red;
+        text-shadow: 1px 1px 2px indianred;
+    }
+
+/* ===============================
+   PULSE ANIMATION
+================================ */
+.pulse-red::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background-color: rgba(255, 0, 0, 0.5);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse-red 0.5s infinite ease-out;
 }
 
-.card-header {
-    margin-top: -2%;
-    max-height: 40px;
-}
+@keyframes pulse-red {
+    0% {
+        width: 12px;
+        height: 12px;
+        opacity: 0.7;
+    }
 
-hr {
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-}
-
-.pop-up-body {
-    margin: 0;
-    padding: 5px 15px 15px 15px;
-}
-
-.card-header {
-    padding: 4%;
-}
-
-.machine-cards-container {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    margin-top: 0px;
-    padding-right: 5px;
-    padding-top: 10px;
+    100% {
+        width: 28px;
+        height: 28px;
+        opacity: 0;
+    }
 }

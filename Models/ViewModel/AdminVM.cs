@@ -23,6 +23,7 @@ namespace MachineMonitoring.Models.ViewModel
         public List<TicketResponse> ticketResponses { get; set; }
         public List<DowntimeDetails> downtimeDetails { get; set; }
         public List<Process_Category> process_Categories { get; set; }
+        public List<OpenTickets> openTickets { get; set; }
 
     }
 }

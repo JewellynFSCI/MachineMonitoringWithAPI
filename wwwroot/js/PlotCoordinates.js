@@ -272,7 +272,8 @@ function Delete(id) {
 
 //#region 'ShowImage()'
 function ShowImage() {
-    const imageUrl = '/img/productionmap/' + ImgName;
+    //const imageUrl = '/img/productionmap/' + ImgName;
+    const imageUrl = `/mdm-prod-maps/${encodeURIComponent(ImgName)}`;
 
     if (window.map instanceof ol.Map) {
         window.map.setTarget(null);

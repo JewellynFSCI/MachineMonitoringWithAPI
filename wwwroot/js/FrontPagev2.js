@@ -1,29 +1,126 @@
 ﻿// --- Global State ---
-let ImgName = [];
-let productionMaps = [];
 let map = null;
 let pointSource = null;
-let featureMap = {}; // Maps machinecode -> ol.Feature
-let timestampInterval = null;
-let currentLegendStatusFilter = null;
-// --- Constants ---
-const ONE_MINUTE = 60 * 1000;
+let productionMaps = [];
+let ImgName = [];
+let OpenTickets = [];
+let selectedStatusFilter = "";
+let searchFilter = "";
+let popupInitialized = false;
+let popupOverlay = null;
+let popupContent = null;
+let popupContainer = null;
+let pulseInterval = null;
+
+const invisibleStyle = new ol.style.Style({
+    image: new ol.style.Circle({
+        radius: 0
+    })
+});
 
 //#region 'Main Function'
 $(function () {
+    initSignalR();
     $("#PlantNoSelect").prop('selectedIndex', 0);
-
-    // Initialize all event-driven functions
+    $("#MCFilterInput").val('');
+    $(".clear-btn").hide();
     GetProductionMap();
     GetImgNamefromDb();
-    Legend();
-    //LocateMC();
-    InitMachineCardFilter();
 
-    // Attach card click handler once
-    InitCardClickHandler();
+    $("#MCFilterInput").on("keyup", function () {
+        searchFilter = $(this).val().trim().toUpperCase();
+        $(".clear-btn").show();
+        popupOverlay.setPosition(undefined);
+        applyCardFilters();
+    });
 
-    //#region 'Connection for SignalR'
+    // Click on status rows
+    $(".legend-item[data-status]").on("click", function () {
+        const clickedStatus = $(this).data("status");
+        popupOverlay.setPosition(undefined);
+
+        // Toggle
+        if (selectedStatusFilter === clickedStatus) {
+            selectedStatusFilter = "";
+        } else {
+            selectedStatusFilter = clickedStatus;
+        }
+
+        // Visual highlight
+        $(".legend-item").removeClass("selected-status");
+        if (selectedStatusFilter) {
+            $(this).addClass("selected-status");
+        }
+
+        applyCardFilters();
+    });
+
+
+    $("#showAll").on("click", function () {
+        selectedStatusFilter = "";
+        $(".legend-item").removeClass("selected-status");
+        $("#showAll").addClass("selected-status");
+        applyCardFilters();
+    });
+
+    // Clear when X in Search Bar is clicked
+    $(".clear-btn").on("click", function () {
+        $("#MCFilterInput").val("");
+        $(".clear-btn").hide();
+        popupOverlay.setPosition(undefined);
+        searchFilter = "";
+        applyCardFilters();
+    });
+
+    $(document).on('click', '.machine-card', function () {
+        if (!map || !pointSource) return;
+
+        const machineCode = $(this).data('machinecode');
+
+        const feature = pointSource.getFeatures().find(
+            f => f.get('machinecode') === machineCode
+        );
+
+        if (!feature) return;
+
+        const extent = map.getView().calculateExtent(map.getSize());
+        const coord = feature.getGeometry().getCoordinates();
+
+        if (!ol.extent.containsCoordinate(extent, coord)) {
+            return;
+        }
+
+        showMachinePopup(feature);
+    });
+
+    $("#image-preview-overlay").hide();
+    $("#image-preview").attr("src", "");
+
+    $(document).on("click", ".popup-image", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const src = $(this).attr("src");
+
+        $("#image-preview").attr("src", src);
+        $("#image-preview-overlay").fadeIn(150);
+    });
+
+    $("#image-preview-overlay").on("click", function () {
+        $(this).fadeOut(150);
+    });
+
+    $(document).on("keydown", function (e) {
+        if (e.key === "Escape") {
+            $("#image-preview-overlay").fadeOut(150);
+        }
+    });
+
+});
+//#endregion
+
+//#region 'initSignalR'
+function initSignalR() {
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/Notification")
         .configureLogging(signalR.LogLevel.Information)
@@ -44,44 +141,24 @@ $(function () {
         await start();
     });
 
-    // Start the connection.
     start();
-    //#endregion
 
-
-    //#region 'STAND-BY for every connection made by SignalR/OWS'
     connection.on("ReceivedAlert", function (ticket) {
         console.log("Received Ticket Alert:", ticket);
-
-        if (ticket.success && map) {
-            // Check if our pointSource exists
-            if (pointSource) {
-                pointSource.clear(); // remove old features
-
-                // Re-fetch and re-add new features
-                GetMachineStatus(map, pointSource);
-            } else {
-                console.warn("Point source not found. Unable to replot.");
-            }
+        if (ticket.success && map && pointSource) {
+            GetOpenTicket();
         }
     });
-    //#endregion
-
-});
+}
 //#endregion
 
-//#region 'Get List of Production Map / Plant No Select Change'
+//#region 'Get List of Production Map'
 function GetProductionMap() {
     $("#PlantNoSelect").on("change", function () {
         let SelectedPlantNo = $(this).val();
         let dropdownProdMapName = $("#ProductionMapIdSelect");
+
         dropdownProdMapName.empty();
-
-        $('.legend-item').removeClass('selected');
-        $("#machine-cards").empty();
-
-
-        // Reset the map container safely
         resetMap();
 
         $.ajax({
@@ -90,47 +167,31 @@ function GetProductionMap() {
             data: { PlantNo: SelectedPlantNo },
             contentType: 'application/json',
             success: function (response) {
-                productionMaps = response.locationList || []; //save globally
-
-                // Add default disabled option
+                productionMaps = response.locationList || [];
                 dropdownProdMapName.append("<option value='' disabled selected><--Select Production Map Name--></option>");
-
-                // Loop through the response
                 $.each(response.locationList, function (index, item) {
-                    dropdownProdMapName.append(
-                        $('<option></option>').val(item.productionMapId).text(item.productionMapName)
-                    );
+                    dropdownProdMapName.append($('<option></option>').val(item.productionMapId).text(item.productionMapName));
                 });
             },
-            error: function (xhr, status, error) {
-                Swal.fire({
-                    title: 'Error',
-                    text: xhr.responseText || "Failed to load production maps.",
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+            error: function (xhr) {
+                console.error("Failed to load maps:", xhr.responseText);
             }
         });
     });
 }
 //#endregion
 
-//#region 'Get Image Name from cache / Prod Map Selection Change'
+//#region 'Prod Map Selection Change'
 function GetImgNamefromDb() {
     $("#ProductionMapIdSelect").on("change", function () {
         let SelectedProdMapId = $(this).val();
-
-        if (!productionMaps || productionMaps.length === 0) {
-            $('#map').text('No image retrieved.');
-            return;
-        }
-
         let GetImgName = productionMaps.find(x => x.productionMapId == SelectedProdMapId);
+
         if (GetImgName && GetImgName.imgName) {
             ImgName = GetImgName.imgName;
             ShowImage();
-            $('.legend-item').removeClass('selected');
         } else {
+            resetMap();
             $('#map').html('<p>No image retrieved.</p>');
         }
     });
@@ -139,53 +200,104 @@ function GetImgNamefromDb() {
 
 //#region 'ShowImage'
 function ShowImage() {
-    const imageUrl = '/img/productionmap/' + ImgName;
+    console.log("Showing Image:");
+    const imageUrl = `/mdm-prod-maps/${encodeURIComponent(ImgName)}`;
 
-    resetMap(); // Use the new helper function
-
+    resetMap();
+    popupInitialized = false;
     const img = new Image();
-    img.onload = function () {
-        const imageWidth = img.naturalWidth;
-        const imageHeight = img.naturalHeight;
-        const imageExtent = [0, 0, imageWidth, imageHeight];
 
-        // Assign to global map and pointSource
-        map = initializeMap(imageUrl, imageExtent, imageWidth, imageHeight);
+    img.onload = function () {
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        const extent = [0, 0, w, h];
+
+        // 1. Initialize Map
+        console.log("Loading: Initalizing Map");
+        map = initializeMap(imageUrl, extent, w, h);
+
+        // 2. Initialize Point Source (Required for SignalR to work)
+        console.log("Loading: Initalizing Point Source");
         pointSource = new ol.source.Vector();
 
-        GetMachineStatus(map, pointSource);
-        const pointLayer = addPointLayer(map, pointSource);
-        const modifyCollection = new ol.Collection();
-        const modifyInteraction = new ol.interaction.Modify({ features: modifyCollection });
-        modifyInteraction.setActive(false);
-        const popupOverlay = setupPopup(map);
+        // 3. Add Vector Layer to Map
+        console.log("Loading: Adding vector layer to map");
+        const vectorLayer = new ol.layer.Vector({
+            source: pointSource,
+            zIndex: 999
+        });
+        map.addLayer(vectorLayer);
 
-        // Pass map-specific variables to the click handler
-        handleMapClick(map, pointSource, popupOverlay, modifyCollection);
+        startPulseLoop();
+
+        // 4. Zoom Percentage Display Logic
+        console.log("Loading: Displaying Zoom In and Out");
+        const view = map.getView();
+        const minZoom = view.getMinZoom();
+        const maxZoom = view.getMaxZoom();
 
         let zoomInfo = document.getElementById('zoom-info');
         if (!zoomInfo) {
             zoomInfo = document.createElement('div');
             zoomInfo.id = 'zoom-info';
-            zoomInfo.innerText = 'Zoom: 100%'; // Default text
             document.getElementById('map').appendChild(zoomInfo);
         }
 
-        const view = map.getView();
-        const minZoom = view.getMinZoom();
-        const maxZoom = view.getMaxZoom();
-
+        // 5. updateZoomPercentage
         function updateZoomPercentage() {
+            console.log("Loading: Updating zoom percentage");
             const currentZoom = view.getZoom();
-            const percentage = ((currentZoom - minZoom) / (maxZoom - minZoom)) * 100;
+            let percentage = ((currentZoom - minZoom) / (maxZoom - minZoom)) * 100;
+            percentage = Math.max(0, Math.min(100, percentage));
             document.getElementById('zoom-info').innerText = `Zoom: ${percentage.toFixed(0)}%`;
         }
-
         view.on('change:resolution', updateZoomPercentage);
-        updateZoomPercentage(); // Set initial value
+        updateZoomPercentage();
 
-        $('.legend-item').removeClass('selected');
-        $('.legend-item:last').addClass('selected'); // Selects the last row, which is 'Show All'
+        // 5. Get Open Tickets
+        GetOpenTicket();
+
+        // 6. Popup Overlay
+        popupContainer = document.getElementById('popup');
+        popupContent = document.getElementById('popup-content');
+        const popupCloser = document.getElementById('popup-closer');
+
+        popupOverlay = new ol.Overlay({
+            element: popupContainer,
+            autoPan: false
+            ,offset: [0, -10] // 15px above the circle
+        });
+
+        map.addOverlay(popupOverlay);
+
+        popupCloser.onclick = function () {
+            popupOverlay.setPosition(undefined);
+            $('#popup').hide(); // FIX: Explicitly hide
+            popupCloser.blur();
+            return false;
+        };
+
+        // 7. On click to map legends/circle
+        if (!popupInitialized) {
+            map.on('singleclick', function (evt) {
+                const feature = map.forEachFeatureAtPixel(evt.pixel, f => f);
+
+                if (!feature) {
+                    popupOverlay.setPosition(undefined);
+                    return;
+                }
+                showMachinePopup(feature);
+            });
+            popupInitialized = true;
+        }
+
+        // 8. Change cursor design for every hover to circles
+        map.on('pointermove', function (e) {
+            if (!map) return;
+
+            const hit = map.hasFeatureAtPixel(e.pixel);
+            map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        });
 
     };
     img.src = imageUrl;
@@ -194,12 +306,12 @@ function ShowImage() {
 
 //#region 'InitializedMap'
 function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
-    const padding = 600;
+    const padding = 300;
     const paddedExtent = [
-        imageExtent[0] - padding, // minX - padding
-        imageExtent[1], // minY 
-        imageExtent[2] + padding, // maxX + padding
-        imageExtent[3] // maxY 
+        imageExtent[0] - padding,
+        imageExtent[1] - padding,
+        imageExtent[2] + padding,
+        imageExtent[3] + padding
     ];
 
     const imageLayer = new ol.layer.Image({
@@ -211,15 +323,11 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
     });
 
     const view = new ol.View({
-        projection: new ol.proj.Projection({
-            code: 'PIXELS',
-            units: 'pixels',
-            extent: paddedExtent
-        }),
+        projection: new ol.proj.Projection({ code: 'PIXELS', units: 'pixels', extent: paddedExtent }),
         center: [imageWidth / 2, imageHeight / 2],
         zoom: 1,
         maxZoom: 5,
-        extent: paddedExtent // <-- LIMIT PANNING TO IMAGE BOUNDS
+        extent: paddedExtent
     });
 
     const map = new ol.Map({
@@ -233,248 +341,185 @@ function initializeMap(imageUrl, imageExtent, imageWidth, imageHeight) {
 }
 //#endregion
 
-//#region 'addPointLayer'
-function addPointLayer(map, pointSource) {
-    let start = new Date().getTime(); // animation reference
-    const baseSize = 10;
+//#region 'resetMap'
+function resetMap() {
+    if (map instanceof ol.Map) {
+        map.setTarget(null);
+        map = null;
+    }
+    $('#map').empty();
+    pointSource = null;
 
-    // Set start time only once for each feature with status "DONE"
-    pointSource.getFeatures().forEach(feature => {
-        if (feature.get('status_id') === 3 || feature.get('status_id') === 8) {
-            feature.set('showCircleStartTime', new Date().getTime());
-        }
+    // 🔁 Remove old popup if exists
+    $('#popup').remove();
+
+    // 🔁 Re-inject popup HTML
+    $('body').append(`
+        <div id="popup" class="ol-popup" style="display:none;">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+
+            <div class="popup-header" id="popup-header"></div>
+
+            <div id="popup-content" class="popup-body"></div>
+        </div>
+    `);
+
+    popupInitialized = false;
+
+    $(".legend-item").removeClass("selected-status");
+    OpenTickets = [];
+    selectedStatusFilter = "";
+    searchFilter = "";
+
+    const container = document.getElementById("machine-cards");
+    container.innerHTML = "";
+
+    // Reset all counts to 0
+    $(".legend-item").each(function () {
+        $(this).find("td:last-child").text(0);
     });
 
-    const pointLayer = new ol.layer.Vector({
-        source: pointSource,
-        style: function (feature, resolution) {
-            if (feature.get('visible') === false) return null; // hide feature
-            const status = feature.get('status_id');
-            const status_color = feature.get('hex_value');
-            const adjustedRadius = baseSize / resolution;
-            const pulse = 8 / resolution;
-
-            if (status === 1) {  //"Machine Downtime"
-                const elapsed = new Date().getTime() - start;
-                const pulseDuration = 500;
-                const progress = (elapsed % pulseDuration) / pulseDuration;
-                const radius = pulse * progress;
-                const opacity = 1 - progress;
-
-                return new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: radius * 3,
-                        stroke: new ol.style.Stroke({
-                            color: hexToRgba(status_color, opacity),
-                            width: 2
-                        }),
-                        fill: new ol.style.Fill({
-                            color: hexToRgba(status_color, opacity)
-                        })
-                    })
-                });
-            } else if (status === 3 || status === 8) {    //"Done = 3"    "Cancelled = 8"
-                const completedDateStr = feature.get('completedDate'); // "2025-07-02T08:27:21"
-                const startTime = new Date(completedDateStr).getTime(); // Convert to timestamp
-                const now = new Date().getTime();
-
-                if (startTime && (now - startTime <= ONE_MINUTE)) {
-                    return new ol.style.Style({
-                        image: new ol.style.Circle({
-                            radius: adjustedRadius,
-                            fill: new ol.style.Fill({
-                                color: hexToRgba(status_color, 1)
-                            }),
-                            stroke: new ol.style.Stroke({
-                                color: 'white',
-                                width: 1
-                            })
-                        })
-                    });
-                }
-                return null; // Hide after 1 minute
-            } else {
-                return new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: adjustedRadius,
-                        fill: new ol.style.Fill({
-                            color: hexToRgba(status_color)
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: 'white',
-                            width: 1
-                        })
-                    })
-                });
-            }
-        }
-    });
-
-    // 🔄 Re-render for animation (e.g. Machine Downtime)
-    const animate = () => {
-        pointLayer.changed();
-        requestAnimationFrame(animate);
-    };
-    animate();
-
-    // ⏱️ Re-evaluate 'DONE' status every second to update styles
-    setInterval(() => {
-        pointSource.getFeatures().forEach(f => f.changed());
-    }, 1000);
-
-    map.addLayer(pointLayer);
-    return pointLayer;
+    if (pulseInterval) {
+        clearInterval(pulseInterval);
+        pulseInterval = null;
+    }
 }
 //#endregion
 
-//#region hexToRgba
-function hexToRgba(hex, alpha = 1) {
-    let r = 0, g = 0, b = 0;
+//#region 'Get OpenTikets'
+function GetOpenTicket() {
+    const SelectedPlantNo = $('#PlantNoSelect').val();
+    const SelectedProductionMapId = $('#ProductionMapIdSelect').val();
+    console.log("Loading: Getting open tickets");
 
-    // Handle shorthand like "#f00"
-    if (hex.length === 4) {
-        r = parseInt(hex[1] + hex[1], 16);
-        g = parseInt(hex[2] + hex[2], 16);
-        b = parseInt(hex[3] + hex[3], 16);
-    } else if (hex.length === 7) {
-        r = parseInt(hex[1] + hex[2], 16);
-        g = parseInt(hex[3] + hex[4], 16);
-        b = parseInt(hex[5] + hex[6], 16);
-    }
+    $.ajax({
+        url: '/Admin/GetOpenTicket',
+        type: 'GET',
+        data: { PlantNo: SelectedPlantNo, ProductionMapId: SelectedProductionMapId },
+        contentType: 'application/json',
+        success: function (response) {
+            console.log("Loading: Successfully getting open tickets");
+            //Set globally the open tickets
+            OpenTickets = response.opentickets || [];
 
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            //update summary count
+            updateSummaryCounts();
+
+            const container = document.getElementById("machine-cards");
+            container.innerHTML = "";
+
+            // sort ASC
+            OpenTickets.sort((a, b) => new Date(b.mc_error_buyoff_repair_date) - new Date(a.mc_error_buyoff_repair_date));
+
+            console.log("Loading: Creating cards for each ticket");
+            //create cards for each ticket
+            OpenTickets.forEach(function (ticket) {
+                const timeAgo = formatTimeAgo(ticket.mc_error_buyoff_repair_date); // format the time before using
+
+                const cardHtml = `<div class="card rounded machine-card" data-machinecode="${ticket.machinecode}" data-status="${ticket.ticket_status}">
+                                    <div class="card-body">
+                                        <div class="row no-gutters h-100-row">
+                                            <div class="col-2 p-0" style="background-color: ${ticket.hex_value}; min-height: 100%;"></div>
+                                            <div class="col-10 cardcontent">
+                                                <p class="pmachinecard"><strong>${ticket.machinecode}</strong></p>
+                                                <p class="time-ago-text"><i class="time-ago" data-adddate="${ticket.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                  </div>`;
+                // Append the card to the container
+                container.insertAdjacentHTML("beforeend", cardHtml);
+            });
+
+            console.log("Loading: Setting up filter");
+            selectedStatusFilter = "";
+            $("#showAll").addClass("selected-status");
+            applyCardFilters();
+
+
+            if (map && pointSource) {
+                GetMachineStatus(map, pointSource);
+            }
+        },
+        error: function (xhr) {
+            console.error("Failed to load maps:", xhr.responseText);
+        }
+    });
+
 }
 //#endregion
 
 //#region 'GetMachineStatus'
 function GetMachineStatus(map, pointSource) {
-    const PlantNo = $('#PlantNoSelect').val();
-    const ProductionMapId = $('#ProductionMapIdSelect').val();
+    console.log("Loading: Getting Machine Status");
+    if (!map || !pointSource) return;
 
-    const container = document.getElementById("machine-cards");
-    if (!container) {
-        console.warn("machine-cards container not found in DOM.");
-        return;
-    }
+    pointSource.clear();
+    if (!OpenTickets || OpenTickets.length === 0) return;
 
-    // Clear previous content
-    container.innerHTML = "";
-
-    // Reset the global feature map
-    featureMap = {};
-
-    $.ajax({
-        url: '/Admin/GetMachineStatus',
-        type: 'GET',
-        data: { PlantNo, ProductionMapId },
-        dataType: 'json',
-        success: function (data) {
-            if (data.mclist && Array.isArray(data.mclist)) {
-                // 1. Sort the list by addDate (newest first)
-                data.mclist.sort((a, b) => new Date(b.addDate) - new Date(a.addDate));
-
-                data.mclist.forEach(function (item) {
-                    const pointFeature = new ol.Feature(new ol.geom.Point([item.x, item.y]));
-                    // Set all properties at once
-                    pointFeature.setProperties({
-                        'machineLocationId': item.machineLocationId,
-                        'machinecode': item.machinecode,
-                        'controlno': item.controlno,
-                        'status_id': item.status_id,
-                        'status': item.status,
-                        'hex_value': item.hex_value,
-                        'type': item.type,
-                        'process': item.process,
-                        'area': item.area,
-                        'mc_error_buyoff_repair_date': item.mc_error_buyoff_repair_date,
-                        'details': item.details,
-                        'requestor': item.requestor,
-                        'me_support': item.me_support,
-                        'errorcode': item.errorcode,
-                        'errorname': item.errorname,
-                        'completedDate': item.completedDate,
-                        'addDate': item.addDate,
-                        'visible': true // Default to visible
-                    });
-
-                    pointSource.addFeature(pointFeature);
-
-                    // Add to our global lookup map
-                    featureMap[item.machinecode] = pointFeature;
-
-                    if (item.status !== "Completed" && item.status !== "Cancelled") {
-                        const timeAgo = formatTimeAgo(item.mc_error_buyoff_repair_date); // format the time before using
-
-                        // Create the card HTML
-                        const cardHtml = `
-                                        <div class="card rounded machine-card" data-machinecode="${item.machinecode}" data-status="${item.status}">
-                                            <div class="card-body">
-                                                <div class="row no-gutters h-100-row">
-                
-                                                    <div class="col-2 p-0" style="background-color: ${item.hex_value}; min-height: 100%;"></div>
-                
-                                                    <div class="col-10 cardcontent">
-                                                        <p class="pmachinecard"><strong>${item.machinecode}</strong></p>
-                                                        <p class="time-ago-text"><i class="time-ago" data-adddate="${item.mc_error_buyoff_repair_date}">${timeAgo}</i></p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `;
-
-                        // Append the card to the container
-                        container.insertAdjacentHTML("beforeend", cardHtml);
-                    }
-                });
-
-                SearchBarMachine();
-
-                // This prevents multiple intervals from running
-                if (timestampInterval) {
-                    clearInterval(timestampInterval);
-                }
-                timestampInterval = setInterval(updateTimestamps, 60000);
-            }
-        },
-        error: function () {
-            Swal.fire({
-                title: 'Error',
-                text: 'Please refresh page!',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        }
+    // 1.GROUP TICKETS BY MACHINE CODE
+    const grouped = {};
+    OpenTickets.forEach(t => {
+        if (!grouped[t.machinecode]) grouped[t.machinecode] = [];
+        grouped[t.machinecode].push(t);
     });
-}
-//#endregion
 
-//#region 'Machine Card Click Handler'
-function InitCardClickHandler() {
-    $("#machine-cards").on("click", ".machine-card", function () {
-        const machinecode = $(this).data('machinecode');
-        const feature = featureMap[machinecode];
+    // 2. LOOP THROUGH MACHINES
+    Object.keys(grouped).forEach(mc => {
+        const tickets = grouped[mc];
 
-        if (feature) {
-            $("#MCLocator").val(machinecode);
+        // Sort by date DESC → latest first
+        // tickets.sort((a, b) => new Date(b.mc_error_buyoff_repair_date) - new Date(a.mc_error_buyoff_repair_date));
+        tickets.sort((a, b) => a.status_id - b.status_id);
 
-            // Use the new helper function
-            showPopupForFeature(feature);
+        const latest = tickets[0]; // this determines the circle color
+
+        const x = parseFloat(latest.x);
+        const y = parseFloat(latest.y);
+
+        if (isNaN(x) || isNaN(y)) return; // safety check
+
+        // 3.CREATE THE POINT FEATURE ----
+        const feature = new ol.Feature({
+            geometry: new ol.geom.Point([x, y]),
+            machinecode: mc,
+            tickets: tickets,
+            latestStatus: latest.ticket_status   // 🔑 store latest status
+        });
+
+        const baseStyle = new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 10,
+                fill: new ol.style.Fill({ color: latest.hex_value }),
+                stroke: new ol.style.Stroke({
+                    color: '#fff',
+                    width: 2
+                })
+            })
+        });
+
+        feature.set('baseStyle', baseStyle);
+
+        if (latest.ticket_status === "Machine Downtime") {
+            const pulseStyle = createLegendLikePulse(latest.hex_value);
+
+            feature.set('pulseStyle', pulseStyle); // 🔑 STORE IT
+            feature.setStyle(pulseStyle);
+            feature.set('isPulsing', true);
         } else {
-            console.warn(`Feature for machinecode ${machinecode} not found.`);
+            feature.setStyle(baseStyle);
+            feature.set('isPulsing', false);
         }
-    });
-}
-//#endregion
 
-//#region 'updateTimestamps'
-function updateTimestamps() {
-    const elements = document.querySelectorAll('.time-ago');
-    elements.forEach(el => {
-        const timestamp = el.getAttribute('data-adddate');
-        if (timestamp) {
-            el.textContent = formatTimeAgo(timestamp);
-        }
+        pointSource.addFeature(feature);
+
+        console.log(
+            mc,
+            latest.ticket_status,
+            feature.getGeometry().getCoordinates()
+        );
     });
+    console.log("Completed!");
 }
 //#endregion
 
@@ -497,281 +542,264 @@ function formatTimeAgo(timestamp) {
 }
 //#endregion
 
-//#region 'setupPopup'
-function setupPopup(map) {
-    const popupElement = document.createElement('div');
-    popupElement.className = 'ol-popup arrow-bottom'; // default arrow pointing down
-    document.body.appendChild(popupElement);
+//#region 'updateSummaryCounts'
+function updateSummaryCounts() {
 
-    const popupOverlay = new ol.Overlay({
-        element: popupElement,
-        offset: [0, -10],
-        positioning: 'bottom-center',
-        stopEvent: true
+    // Reset all counts to 0
+    $(".legend-item").each(function () {
+        $(this).find("td:last-child").text(0);
     });
-    map.addOverlay(popupOverlay);
 
-    // ✅ Dynamically adjust popup position and arrow direction
-    popupOverlay.setDynamicPosition = function (coordinate) {
-        const pixel = map.getPixelFromCoordinate(coordinate);
-        const thresholdY = 200;
+    // Count per status
+    let counts = {};
 
-        if (pixel[1] < thresholdY) {
-            // Near top, push popup below point
-            popupOverlay.setOffset([0, 255]);
-            popupOverlay.setPositioning('top-center');
+    OpenTickets.forEach(t => {
+        if (!counts[t.ticket_status]) counts[t.ticket_status] = 0;
+        counts[t.ticket_status]++;
+    });
 
-            popupElement.classList.remove('arrow-bottom');
-            popupElement.classList.add('arrow-top');
+    // Update table
+    for (let status in counts) {
+        let row = $(`.legend-item[data-status='${status}']`);
+        row.find("td:last-child").text(counts[status]);
+    }
+
+    // Update "Show All"
+    $(`.legend-item:last td:last`).text(OpenTickets.length);
+}
+//#endregion
+
+//#region 'applyCardFilters'
+function applyCardFilters() {
+    $(".machine-card").each(function () {
+        const mc = $(this).data("machinecode").toString().toUpperCase();
+        const st = $(this).data("status").toString();
+
+        const matchesSearch = filterBySearch(mc);
+        const matchesStatus = filterByStatus(st);
+
+        if (matchesSearch && matchesStatus) {
+            $(this).show();
         } else {
-            // Default: popup above point
-            popupOverlay.setOffset([0, -5]);
-            popupOverlay.setPositioning('bottom-center');
-
-            popupElement.classList.remove('arrow-top');
-            popupElement.classList.add('arrow-bottom');
+            $(this).hide();
         }
-    };
+    });
+    applyCircleFilters();
+}
 
-    return popupOverlay;
+function filterBySearch(machineCode) {
+    if (!searchFilter) return true;
+    return machineCode.includes(searchFilter);
+}
+
+function filterByStatus(status) {
+    if (!selectedStatusFilter) return true;
+    return status === selectedStatusFilter;
+}
+
+function applyCircleFilters() {
+    popupOverlay.setPosition(undefined);
+    if (!pointSource) return;
+
+    pointSource.getFeatures().forEach(feature => {
+        const machineCode = feature.get('machinecode').toUpperCase();
+        const status = feature.get('latestStatus');
+
+        const matchesSearch = filterBySearch(machineCode);
+        const matchesStatus = filterByStatus(status);
+
+        if (matchesSearch && matchesStatus) {
+
+            if (feature.get('isPulsing')) {
+                // 🔥 RESTORE pulse
+                feature.setStyle(feature.get('pulseStyle'));
+            } else {
+                feature.setStyle(feature.get('baseStyle'));
+            }
+
+        } else {
+            feature.setStyle(invisibleStyle);
+        }
+    });
 }
 //#endregion
 
-//#region 'handleMapClick'
-function handleMapClick(map, pointSource, popupOverlay, modifyCollection) {
+//#region 'showMachinePopup'
+function showMachinePopup(feature) {
+    const tickets = feature.get('tickets');
+    if (!tickets || tickets.length === 0) return;
 
-    map.on('singleclick', function (evt) {
-        const clickedFeature = map.forEachFeatureAtPixel(evt.pixel, f => f);
+    // Only set position if geometry exists
+    const coords = feature.getGeometry().getCoordinates();
+    if (!coords) return;
 
-        //close popup if click outside the popup
-        if (!clickedFeature) {
-            popupOverlay.setPosition(undefined);
-            modifyCollection.clear();
-            return;
-        }
+    // Show Ticket No per PopUp
+    //document.getElementById('popup-header').innerHTML = `
+    //  <div class="row pl-2 pr-2">
+    //    <h5 style="font-size:30px;">${feature.get('machinecode')}</h5>
+    //    ${tickets.length > 1
+    //            ? `<div class="text-right col">
+    //           <p>Ticket Count:</p>
+    //           <i class="pr-5">${tickets.length}</i>
+    //         </div>`
+    //            : ''
+    //        }
+    //  </div>
+    //`;
 
-        // Clicked on a feature
-        if (clickedFeature) {
-            modifyCollection.clear();
-            modifyCollection.push(clickedFeature);
+    document.getElementById('popup-header').innerHTML = `
+    <div class="text-center">
+        <h5 style="font-size:25px; margin-bottom:-1%; margin-top: -1%;">${feature.get('machinecode')}</h5>
+    </div>
+    `;
 
-            // Use the new helper function
-            showPopupForFeature(clickedFeature);
-        }
-    });
+    let html = '';
+    tickets.forEach((t, i) => {
 
-    map.on('pointermove', function (evt) {
-        const hit = map.hasFeatureAtPixel(evt.pixel, {
-            layerFilter: layer => layer === map.getLayers().getArray().find(l => l instanceof ol.layer.Vector)
+        let requestorToOws = (t.requestor === " (sapphire2)") ? "" : t.requestor;
+
+        const dbDate = new Date(t.mc_error_buyoff_repair_date);
+        const readableDate = dbDate.toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
+        
 
-        map.getTargetElement().style.cursor = hit ? 'pointer' : '';
-    });
-}
-//#endregion
-
-//#region 'Show Popup Helper'
-// --- NEW HELPER ---
-// Centralized function to show a popup for any given feature
-function showPopupForFeature(feature) {
-    if (!map || !feature) return;
-
-    const coord = feature.getGeometry().getCoordinates();
-    const popupOverlay = map.getOverlays().item(0); // Assumes overlay 0 is popup
-    const popupElement = popupOverlay.getElement();
-
-    // Get all properties from the feature
-    const props = feature.getProperties();
-
-    const popupHtml = buildPopupHTML(
-        props.machinecode, props.controlno, props.status, props.type,
-        props.process, props.area, props.mc_error_buyoff_repair_date,
-        props.details, props.requestor, props.me_support,
-        props.errorcode, props.errorname
-    );
-
-    popupElement.innerHTML = popupHtml;
-    popupOverlay.setDynamicPosition(coord); // Call the dynamic positioner
-    popupOverlay.setPosition(coord);
-    map.getView().animate({ center: coord, duration: 0 });
-
-    // Add close button behavior (needs to be done every time HTML is set)
-    const closer = popupElement.querySelector(".ol-popup-closer");
-    if (closer) {
-        closer.onclick = function (evt) {
-            evt.preventDefault();
-            popupOverlay.setPosition(undefined);
-            closer.blur();
-            return false;
-        };
-    }
-}
-//#endregion
-
-//#region 'Map Reset Helper'
-// --- NEW HELPER ---
-// Centralized function to completely reset the map
-function resetMap() {
-    if (map instanceof ol.Map) {
-        map.setTarget(null); // Detach map from DOM
-        map = null;
-    }
-    $('#map').empty(); // Clear map div contents
-
-    // Clear global state
-    pointSource = null;
-    featureMap = {};
-
-    // Clear the timestamp interval
-    if (timestampInterval) {
-        clearInterval(timestampInterval);
-        timestampInterval = null;
-    }
-}
-//#endregion
-
-//#region Utility: Build Popup HTML Form
-function buildPopupHTML(machinecode, controlno, status, type, process, area, mc_error_buyoff_repair_date, details, requestor, me_support = '', errorcode, errorname = '') {
-    const isoDate = mc_error_buyoff_repair_date;
-    const dateObj = new Date(isoDate);
-
-    const timeAgo = formatTimeAgo(mc_error_buyoff_repair_date);
-
-    let requestorToOws;
-
-    if (requestor === " (sapphire2)") {
-        requestorToOws = "";
-    } else {
-        requestorToOws = requestor;
-    }
-
-    // Example: Convert to local string
-    const datetime = dateObj.toLocaleString();
-    return `
-            <div class="containerpopup">
-                <div class="card" style="box-shadow: none;">
-                    <div class="card-header">
-                        <a href="#" class="ol-popup-closer" id="popupCloser">
-                            <i class="fas fa-times"></i>
-                        </a>
+        html += `
+            <div class="popup-ticket">
+                <div class="row">
+                    <div class="col">
+                        <h6>
+                            <i class="fas fa-flag" style="color:${t.hex_value}"> </i>
+                            <i>${t.ticket_status}</i>
+                        </h6>
+                        <h5>
+                            ${t.controlno}
+                        </h5>
+                        <p>${readableDate}</p>
+                        
                     </div>
-
-                    <div class="card-body pop-up-body">
-                        <div class="row mb-1">
-                            <div class="col">
-                                <h5 style="color: blue;">
-                                    <i>${timeAgo}</i>
-                                </h5>
-                                <p><i>${datetime}</i></p>
-                                <p><i>${requestorToOws}</i></p>
-                            </div>
-                            <div class="text-right col">
-                                <h5>
-                                    ${machinecode}
-                                </h5>
-                                <p><i>${process}</i></p>
-                                <p><i>${area}</i></p>
-                            </div>
-                        </div>
-                        <div class="mb-1">
-                            <p><strong>ControlNo: </strong> ${controlno}</p>
-                            <p><strong>Details:</strong> ${details}</p>
-                        </div>
-
-                        ${me_support ? `
-                            <div class="mb-1">
-                                <p><strong>Maintenance Personnel:</strong></p>
-                                <p>${me_support}</p>
-                                <p>${errorname ? `${errorname}` : ``}</p>
-                            </div>
-                        ` : ``}
-
-                        <hr />
+                    <div class="text-right col">
+                        <h5 style="color: blue;">
+                            <i>${formatTimeAgo(t.mc_error_buyoff_repair_date)}</i>
+                        </h5>
+                        <p>${t.process}</p>
+                        <p>${t.area}</p>
+                        
                     </div>
                 </div>
+                <hr style="height:1px;color:gray;background-color:gray;width:75%; margin-top: 2%; margin-bottom: 2%;">
+                <div>
+                    <p><i class="fas fa-info-circle mr-1" style="margin-top:-1%"></i><strong>Details:</strong></p>
+                    <p><i>${requestorToOws}</i></p>
+                    <p>${t.details}</p>
+                    ${t.imgName
+                           ? `<p>
+                             <img src="/api/Notification/image/${t.id}/${encodeURIComponent(t.imgName)}"
+                                  class="popup-image"
+                                  loading="lazy" />
+                           </p>`: ``
+                    }
+                </div>
+
+                ${t.me_support ? `
+                    <hr style="height:1px;color:gray;background-color:gray;width:75%; margin-top: 2%; margin-bottom: 2%;">
+                    <div class="mb-1">
+                        <p><i class="fas fa-tools mr-1" style="margin-top:-1%"></i><strong>Maintenance:</strong></p>
+                        <p><i>${t.me_support}</i></p>
+                        <p>${t.errorname ? `${t.errorname}` : ``}</p>
+                    </div>
+                ` : ``}
             </div>
-            `;
-}
-//#endregion
 
-//#region Legend
-function Legend() {
-    $('.legend-item').on('click', function () {
-        const selectedStatus = $(this).data('status');
-        currentLegendStatusFilter = selectedStatus || null;
-        $('#MCFilterInput').val('');
-
-        $('.legend-item').removeClass('selected');
-        $(this).addClass('selected');
-
-        if (pointSource) {
-            pointSource.getFeatures().forEach(f => {
-                if (!currentLegendStatusFilter) {
-                    f.set('visible', true);
-                } else {
-                    f.set('visible', f.get('status') === currentLegendStatusFilter);
-                }
-                f.changed(); 
-            });
-        }
-
-        ApplyCardFilters();
+            ${tickets.length > 1 ? `<hr style="height:2px;border-width:0;color:gray;background-color:gray">` : ``}
+        `;
     });
+
+
+    
+    popupContent.innerHTML = html;
+    $('#popup').show();
+    popupOverlay.setPosition(coords);
 }
 //#endregion
 
-//#region 'Locate'
-function LocateMC() {
-    $("#MCLocator").on("change", function () {
-        const selectedMachineCode = $(this).val();
+//#region 'createLegendLikePulse'
+function createLegendLikePulse(status_color) {
+    const start = Date.now();
+    const pulseDuration = 500;
 
-        if (!selectedMachineCode) {
-            console.warn("No machine code selected.");
-            return;
-        }
-
-        // Find the corresponding card element
-        const card = document.querySelector(`.machine-card[data-machinecode="${selectedMachineCode}"]`);
-        if (card) {
-            card.click(); // ✅ Trigger the card click (handled by InitCardClickHandler)
-            // Optional: scroll to the card if the container has overflow
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            Swal.fire({
-                title: 'Not Found',
-                text: 'Machine card not found on the page.',
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-        }
+    const centerStyle = new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 8,
+            fill: new ol.style.Fill({ color: status_color }),
+            stroke: new ol.style.Stroke({
+                color: '#ffffff',
+                width: 2
+            })
+        })
     });
+
+    return function () {
+        const elapsed = Date.now() - start;
+        const progress = (elapsed % pulseDuration) / pulseDuration;
+
+        const radius = 20 * progress;
+        const opacity = 0.6 * (1 - progress);
+
+        const haloStyle = new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: radius + 10,
+                fill: new ol.style.Fill({
+                    color: hexToRgba(status_color, opacity)
+                }),
+                stroke: new ol.style.Stroke({
+                    color: hexToRgba(status_color, opacity),
+                    width: 2
+                })
+            })
+        });
+
+        return [haloStyle, centerStyle];
+    };
 }
 //#endregion
 
-//#region 'Real-time Machine Card Filtering'
-function InitMachineCardFilter() {
-    $('#MCFilterInput').on('input', function () {
-        if (map && map.getOverlays().getLength() > 0) {
-            map.getOverlays().item(0).setPosition(undefined);
-        }
+//#region 'startPulseLoop'
+function startPulseLoop() {
+    if (pulseInterval) return;
 
-        ApplyCardFilters();
-    });
+    pulseInterval = setInterval(() => {
+        if (!pointSource) return;
+
+        pointSource.getFeatures().forEach(f => {
+            if (f.get('isPulsing')) f.changed();
+        });
+    }, 30);
 }
 //#endregion
 
-//#region 'Apply Card Filters (Shared Logic)'
-function ApplyCardFilters() {
-    const searchText = $('#MCFilterInput').val().toUpperCase();
-    const activeStatus = currentLegendStatusFilter;
+//#region hexToRgba
+function hexToRgba(hex, alpha = 1) {
+    let r = 0, g = 0, b = 0;
 
-    $('.machine-card').each(function () {
-        const card = $(this);
-        const cardCode = card.data('machinecode').toString().toUpperCase();
-        const cardStatus = card.data('status');
-        const matchesSearch = !searchText || cardCode.includes(searchText);
-        const matchesStatus = !activeStatus || cardStatus === activeStatus;
-        card.toggle(matchesSearch && matchesStatus);
-    });
+    // Handle shorthand like "#f00"
+    if (hex.length === 4) {
+        r = parseInt(hex[1] + hex[1], 16);
+        g = parseInt(hex[2] + hex[2], 16);
+        b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+        r = parseInt(hex[1] + hex[2], 16);
+        g = parseInt(hex[3] + hex[4], 16);
+        b = parseInt(hex[5] + hex[6], 16);
+    }
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 //#endregion
+
+
+

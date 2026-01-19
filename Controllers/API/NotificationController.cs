@@ -18,14 +18,16 @@ namespace MachineMonitoring.Controllers.API
     {
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly AdminRepo _adminrepo;
+        private readonly IConfiguration _configuration;
 
-        public NotificationController(IHubContext<NotificationHub> hubContext, AdminRepo adminrepo)
+        public NotificationController(IHubContext<NotificationHub> hubContext, AdminRepo adminrepo, IConfiguration configuration)
         {
             _hubContext = hubContext;
             _adminrepo = adminrepo;
+            _configuration = configuration;
         }
 
-        #region 'Signal - Received Signal from OWS'
+        #region 'Signal - Received data from OWS'
         [HttpPost("Signal")]
         public async Task<IActionResult> MachineMonitoringAlert([FromBody] OwsTicketDetails model)
         {
@@ -36,14 +38,15 @@ namespace MachineMonitoring.Controllers.API
             if (model.requestor != null)
             {
                 var employeename = await _adminrepo.GetEmployeeName(model.requestor);
-                model.requestor = $"{employeename} ({model.requestor})";
+                //model.requestor = $"{employeename} ({model.requestor})";
+                model.requestor = employeename;
             }
 
             // Get ME Support Name
             if (model.me_support != null)
             {
                 var supportName = await _adminrepo.GetEmployeeName(model.me_support);
-                model.me_support = $"{supportName} ({model.me_support})";
+                model.me_support = supportName;
             }
 
             var SaveNewTicket = await _adminrepo.SaveSignal(model);
@@ -61,7 +64,6 @@ namespace MachineMonitoring.Controllers.API
             return Ok(new { success = true, message = SaveNewTicket.Message });
         }
         #endregion
-
 
         #region 'Get All Machines details w/out open ticket'
         [HttpGet("MachinesInMDM")]
@@ -97,7 +99,6 @@ namespace MachineMonitoring.Controllers.API
             }
         }
         #endregion
-
 
         #region 'Get Machine Details'
         [HttpGet("MachinesInMDM/{machinecode}")]
@@ -140,7 +141,6 @@ namespace MachineMonitoring.Controllers.API
             }
         }
         #endregion
-
 
         #region 'Get Machines in specific plant#'
         [HttpGet("MachinesPerPlantInMDM/{plant}")]
@@ -187,28 +187,86 @@ namespace MachineMonitoring.Controllers.API
         }
         #endregion
 
-
         #region 'Get Machine Code for Downtime OWS Form '
         [HttpGet("DT_BOFF_MachineCodes/{plant}")]
         [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
         [ProducesResponseType(500)]
-        public async Task<IActionResult> Downtime_GetMachinePerPlant(string plant)
+        public async Task<IActionResult> DT_BOFF_GetMachinePerPlant(string plant)
+        {
+            try
+            {
+                int plantno = int.Parse(Regex.Match(plant, @"\d+").Value);  // Get PlantNo only from data received
+                var machines = await _adminrepo.APIGetMachinesDetails();    // Get all machine codes in PlantNo
+                var excludedStatuses = new HashSet<string>(
+                    new[] { "Machine Downtime", "Buy-off" },
+                    StringComparer.OrdinalIgnoreCase
+                );
+
+                var filteredMachineCodes = machines
+                    .Where(m => m.PlantNo == plantno)
+                    .Where(m =>
+                        string.IsNullOrWhiteSpace(m.Status) ||
+                        !m.Status
+                            .Split(',')
+                            .Select(s => s.Trim())
+                            .Any(s => excludedStatuses.Contains(s))
+                    )
+                    .Select(m => new MachineCodeDTO
+                    {
+                        MachineCode = m.MachineCode,
+                        Status = m.Status
+                    })
+                    .ToList();
+
+                if (!filteredMachineCodes.Any())
+                {
+                    return NotFound(new APIResponse<List<MachineCodeDTO>>
+                    {
+                        Success = false,
+                        Data = null,
+                        Message = $"No machines found in plant {plantno}"
+                    });
+                }
+
+                return Ok(new APIResponse<List<MachineCodeDTO>>
+                {
+                    Data = filteredMachineCodes,
+                    Message = "Data retrieved successfully!",
+                    Success = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new APIResponse<List<MachineCodeDTO>>
+                {
+                    Success = false,
+                    Data = null,
+                    Message = ex.Message
+                });
+            }
+        }
+        #endregion
+
+        #region 'Get Machine Code for Tempo OWS Form'
+        [HttpGet("Tempo_MachineCodes/{plant}")]
+        [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
+        [ProducesResponseType(500)]
+        public async Task<IActionResult> Tempo_GetMachinePerPlant(string plant)
         {
             try
             {
                 int plantno = int.Parse(Regex.Match(plant, @"\d+").Value);
                 var machines = await _adminrepo.APIGetMachinesDetails();
-                var excludedStatuses = new[] { "Machine Downtime", "BuyOff" };
 
                 var machineCodes = machines
-                                    .Where(m => m.PlantNo == plantno
-                                             && !excludedStatuses.Contains(m.Status))  // <-- lowercase
-                                    .Select(m => new MachineCodeDTO
-                                    {
-                                        MachineCode = m.MachineCode,
-                                        Status = m.Status
-                                    })
-                                    .ToList();
+                    .Where(m => m.PlantNo == plantno)
+                    .GroupBy(m => m.MachineCode)
+                    .Select(g => new MachineCodeDTO
+                    {
+                        MachineCode = g.Key,
+                        Status = g.First().Status
+                    })
+                    .ToList();
 
                 if (!machineCodes.Any())
                 {
@@ -239,51 +297,45 @@ namespace MachineMonitoring.Controllers.API
         }
         #endregion
 
-        #region 'Get Machine Code for Tempo OWS Form'
-        [HttpGet("Tempo_MachineCodes/{plant}")]
-        [ProducesResponseType(typeof(APIResponse<List<MachineCodeDTO>>), 200)]
-        [ProducesResponseType(500)]
-        public async Task<IActionResult> Tempo_GetMachinePerPlant(string plant)
+        #region 'Retreive Image'
+        [HttpGet("image/{id:int}/{fileName}")]
+        public ActionResult Image(int id, string fileName)
         {
-            try
+            // 1️⃣ Read from appsettings.json (NOT connection string)
+            var basePath = _configuration["OwsImagePath"];
+
+            if (string.IsNullOrEmpty(basePath))
+                return StatusCode(500, "Image path not configured");
+
+            // 2️⃣ Prevent directory traversal
+            fileName = Path.GetFileName(fileName);
+
+            // 3️⃣ Build full path
+            var fullPath = Path.Combine(basePath, id.ToString(), fileName);
+
+            // 4️⃣ File exists check
+            if (!System.IO.File.Exists(fullPath))
+                return NotFound();
+
+            // 5️⃣ Validate extension
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            var contentType = GetContentType(extension);
+
+            if (contentType == null)
+                return Forbid();
+
+            // 6️⃣ Stream file
+            return PhysicalFile(fullPath, contentType);
+        }
+
+        private string GetContentType(string extension)
+        {
+            switch (extension)
             {
-                int plantno = int.Parse(Regex.Match(plant, @"\d+").Value);
-                var machines = await _adminrepo.APIGetMachinesDetails();
-
-                var machineCodes = machines
-                                    .Where(m => m.PlantNo == plantno)
-                                    .Select(m => new MachineCodeDTO
-                                    {
-                                        MachineCode = m.MachineCode,
-                                        Status = m.Status
-                                    })
-                                    .ToList();
-
-                if (!machineCodes.Any())
-                {
-                    return NotFound(new APIResponse<List<MachineCodeDTO>>
-                    {
-                        Success = false,
-                        Data = null,
-                        Message = $"No machines found in plant {plantno}"
-                    });
-                }
-
-                return Ok(new APIResponse<List<MachineCodeDTO>>
-                {
-                    Success = true,
-                    Data = machineCodes,
-                    Message = "Data retrieved successfully!"
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new APIResponse<List<MachineCodeDTO>>
-                {
-                    Success = false,
-                    Data = null,
-                    Message = ex.Message
-                });
+                case ".png": return "image/png";
+                case ".jpg":
+                case ".jpeg": return "image/jpeg";
+                default: return "application/octet-stream";
             }
         }
         #endregion
