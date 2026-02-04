@@ -217,7 +217,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "sp_InsertUpdateMachineLocationDetails_v2";
+                    var query = "sp_InsertUpdateMachineLocation_v1";
                     var parameters = new
                     {
                         p_MachineLocationId = model.MachineLocationId,
@@ -343,7 +343,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "sp_InsertUpdateTicket";
+                    var query = "sp_InsertUpdateTicket_v1";
                     var parameters = new
                     {
                         p_id = model.id,
@@ -589,7 +589,6 @@ namespace MachineMonitoring.DataAccess.Repository
                             new FormField { name = "mcErrorTimeStart", value = timeOnly.ToString(@"hh\:mm\:ss")},
                             new FormField { name = "mcErrorDateStart", value = dateOnly.ToString("yyyy-MM-dd")},
                             new FormField { name = "detailsOfError", value = errorDetails}
-
                         }
                     };
 
@@ -618,7 +617,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "sp_getTicketDetails";
+                    var query = "sp_getTicketDetails_v1";
                     var parameters = new
                     {
                         p_machinecode = machineCode
@@ -724,7 +723,7 @@ namespace MachineMonitoring.DataAccess.Repository
             {
                 using (var connection = Connection)
                 {
-                    var query = "sp_api_GetMachineDetails";
+                    var query = "sp_api_GetMachineDetails_v1";
                     var result = await connection.QueryAsync<MachineLocationDTO>(query, commandType: CommandType.StoredProcedure);
 
                     return result.ToList();

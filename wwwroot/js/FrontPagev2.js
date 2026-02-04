@@ -21,6 +21,7 @@ const invisibleStyle = new ol.style.Style({
 //#region 'Main Function'
 $(function () {
     initSignalR();
+
     $("#PlantNoSelect").prop('selectedIndex', 0);
     $("#MCFilterInput").val('');
     $(".clear-btn").hide();
@@ -201,7 +202,8 @@ function GetImgNamefromDb() {
 //#region 'ShowImage'
 function ShowImage() {
     console.log("Showing Image:");
-    const imageUrl = `/mdm-prod-maps/${encodeURIComponent(ImgName)}`;
+    //const imageUrl = `/mdm-prod-maps/${encodeURIComponent(ImgName)}`;
+    const imageUrl = `/api/Notification/prodmap/${encodeURIComponent(ImgName)}`;
 
     resetMap();
     popupInitialized = false;
@@ -633,20 +635,6 @@ function showMachinePopup(feature) {
     const coords = feature.getGeometry().getCoordinates();
     if (!coords) return;
 
-    // Show Ticket No per PopUp
-    //document.getElementById('popup-header').innerHTML = `
-    //  <div class="row pl-2 pr-2">
-    //    <h5 style="font-size:30px;">${feature.get('machinecode')}</h5>
-    //    ${tickets.length > 1
-    //            ? `<div class="text-right col">
-    //           <p>Ticket Count:</p>
-    //           <i class="pr-5">${tickets.length}</i>
-    //         </div>`
-    //            : ''
-    //        }
-    //  </div>
-    //`;
-
     document.getElementById('popup-header').innerHTML = `
     <div class="text-center">
         <h5 style="font-size:25px; margin-bottom:-1%; margin-top: -1%;">${feature.get('machinecode')}</h5>
@@ -656,7 +644,12 @@ function showMachinePopup(feature) {
     let html = '';
     tickets.forEach((t, i) => {
 
-        let requestorToOws = (t.requestor === " (sapphire2)") ? "" : t.requestor;
+        //let requestorToOws = (t.requestor === " (sapphire2)") ? "" : t.requestor;
+
+        let requestorToOws =
+            (t.requestor.includes(" (sapphire2)") || t.requestor.includes("GUILLERMO, JEWEL LYN P."))
+                ? ""
+                : t.requestor;
 
         const dbDate = new Date(t.mc_error_buyoff_repair_date);
         const readableDate = dbDate.toLocaleString('en-US', {
@@ -718,8 +711,6 @@ function showMachinePopup(feature) {
             ${tickets.length > 1 ? `<hr style="height:2px;border-width:0;color:gray;background-color:gray">` : ``}
         `;
     });
-
-
     
     popupContent.innerHTML = html;
     $('#popup').show();

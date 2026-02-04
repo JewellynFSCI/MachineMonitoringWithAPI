@@ -48,12 +48,14 @@ app.UseAuthorization();
 var prodMapConfig = builder.Configuration.GetSection("ProductionMaps");
 var physicalPath = prodMapConfig["PhysicalPath"];
 var requestPath = prodMapConfig["RequestPath"];
-
-app.UseStaticFiles(new StaticFileOptions
+if (Directory.Exists(physicalPath))
 {
-    FileProvider = new PhysicalFileProvider(physicalPath),
-    RequestPath = requestPath
-});
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(physicalPath),
+        RequestPath = requestPath
+    });
+}
 
 app.MapHub<NotificationHub>("/Notification");
 

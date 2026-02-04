@@ -298,46 +298,56 @@ namespace MachineMonitoring.Controllers.API
         #endregion
 
         #region 'Retreive Image'
-        [HttpGet("image/{id:int}/{fileName}")]
+        [HttpGet("image/{id:int}/{*fileName}")]
         public ActionResult Image(int id, string fileName)
         {
-            // 1️⃣ Read from appsettings.json (NOT connection string)
-            var basePath = _configuration["OwsImagePath"];
+            var baseUrl = _configuration["OwsImagePath"];
+            if (string.IsNullOrEmpty(baseUrl))
+                return StatusCode(500, "Image URL not configured");
 
-            if (string.IsNullOrEmpty(basePath))
-                return StatusCode(500, "Image path not configured");
-
-            // 2️⃣ Prevent directory traversal
+            // Prevent path traversal
             fileName = Path.GetFileName(fileName);
 
-            // 3️⃣ Build full path
-            var fullPath = Path.Combine(basePath, id.ToString(), fileName);
+            var imageUrl =
+                $"{baseUrl.TrimEnd('/')}/{id}/file/{Uri.EscapeDataString(fileName)}";
 
-            // 4️⃣ File exists check
-            if (!System.IO.File.Exists(fullPath))
-                return NotFound();
-
-            // 5️⃣ Validate extension
-            var extension = Path.GetExtension(fileName).ToLowerInvariant();
-            var contentType = GetContentType(extension);
-
-            if (contentType == null)
-                return Forbid();
-
-            // 6️⃣ Stream file
-            return PhysicalFile(fullPath, contentType);
-        }
-
-        private string GetContentType(string extension)
-        {
-            switch (extension)
-            {
-                case ".png": return "image/png";
-                case ".jpg":
-                case ".jpeg": return "image/jpeg";
-                default: return "application/octet-stream";
-            }
+            return Redirect(imageUrl);
         }
         #endregion
+
+        #region 'Retreive Production Map Image'
+        [HttpGet("prodmap/{*fileName}")]
+        public IActionResult ProdMapImage(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                return BadRequest("File name is required.");
+
+            var basePath = _configuration["ProductionMaps:PhysicalPath"];
+            if (string.IsNullOrWhiteSpace(basePath))
+                return StatusCode(500, "Production map path not configured.");
+
+            // Prevent path traversal
+            fileName = Path.GetFileName(fileName);
+
+            var extension = Path.GetExtension(fileName).ToLowerInvariant();
+            if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                return BadRequest("Only JPG and PNG images are allowed.");
+
+            var fullPath = Path.Combine(basePath, fileName);
+
+            if (!System.IO.File.Exists(fullPath))
+                return NotFound("Production map image not found.");
+
+            var contentType = extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                _ => "application/octet-stream"
+            };
+
+            return PhysicalFile(fullPath, contentType);
+        }
+        #endregion
+
     }
 }
